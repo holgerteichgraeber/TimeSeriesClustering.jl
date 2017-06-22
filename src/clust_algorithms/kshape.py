@@ -1,3 +1,6 @@
+#!/data/cees/hteich/libraries/miniconda/bin/ python
+
+import sys
 import math
 import numpy as np
 
@@ -156,16 +159,16 @@ def _kshape(x, k, n_init=1, max_iter=100, n_jobs = 1, random_state=None ):
             delayed(_kshape_single)(x,k,max_iter=max_iter, random_state=seed)
             for seed in seeds )
         # Get results with the lowest distances
-        idx, centroids, dist_daily, tot_dist = zip(*results)
+        idx, centroids, dist_daily, tot_dist, iterations = zip(*results)
         best = np.argmin(tot_dist) 
         best_idx = idx[best]
         best_centroids = centroids[best]
         best_dist_daily = dist_daily[best]
         best_tot_dist = tot_dist[best]
-    print "k="+str(k)
-    return {'centroids':best_centroids, 'labels':best_idx, 'distance':best_tot_dist, 'daily_dist':best_dist_daily}
+    sys.stdout.write("Done: k="+str(k)+"\n")
+    return {'centroids':best_centroids, 'labels':best_idx, 'distance':best_tot_dist, 'daily_dist':best_dist_daily,'centroids_all':centroids,'labels_all':idx,'distance_all':tot_dist,'daily_dist_all':dist_daily,'iterations':iterations}
 
-def _kshape_single(x, k, max_iter=100, random_state=None):
+def _kshape_single(x, k, max_iter=10000, random_state=None):
 
     random_state = check_random_state(random_state)
     m = x.shape[0] # number of data points (365)
@@ -175,6 +178,7 @@ def _kshape_single(x, k, max_iter=100, random_state=None):
     distances = np.empty((m, k))
 
     for _ in range(max_iter):
+        # increase iterations with each k
         old_idx = idx
         for j in range(k):
             centroids[j] = _extract_shape(idx, x, j, centroids[j])
@@ -184,15 +188,18 @@ def _kshape_single(x, k, max_iter=100, random_state=None):
                 distances[i, j] = 1 - max(_ncc_c(x[i], centroids[j]))
         idx = distances.argmin(1)
         if np.array_equal(old_idx, idx):
-            print "iter: " +  str(_) + " k=" + str(k)
+            sys.stdout.write( "iter: " +  str(_) + " k=" + str(k)+"\n")
+            sys.stdout.flush() # empty the buffer
+            iterations = _
             break
         elif _==(max_iter-1):
-            print "iter: " + str(max_iter) + " k=" + str(k)
-
+            sys.stdout.write( "iter: " + str(max_iter*k) + " k=" + str(k)+"\n")
+            sys.stdout.flush() # empty the buffer 
+            iterations = _
     dist_daily = distances.min(1)
     tot_dist = np.sum(dist_daily) # total distance, for n_init>1
 
-    return idx, centroids, dist_daily, tot_dist
+    return idx, centroids, dist_daily, tot_dist, iterations
 
 
 def kshape(x, k):

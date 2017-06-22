@@ -1,0 +1,5 @@
+# Notes on cluster submission
+
+do everything in full paths - then run from scratch and only copy the actual python scirpt in there
+need for virtual env? - seems like no
+doesn't print k=300 - maybe because of simultaneous writing to out?
