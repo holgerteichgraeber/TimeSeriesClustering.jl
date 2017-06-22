@@ -289,7 +289,9 @@ for c in cluster_kind
   #println( revenue)
 end
 
-plt.show()
+if is_linux()
+  plt.show()
+end
 
 #=
 # optimize on one sample week from markov
