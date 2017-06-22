@@ -13,6 +13,7 @@ util_path = normpath(joinpath(pwd(),"..","utils"))
 unshift!(PyVector(pyimport("sys")["path"]), util_path) # add util path to search path
 @pyimport load_clusters
 
+# convert Euro to US dollars
 function get_EUR_to_USD(region)
    if region =="GER"
      ret = 1.109729
@@ -22,7 +23,7 @@ function get_EUR_to_USD(region)
    return ret
 end
 
-
+# battery storage optimization problem
 function run_opt(el_price, weight=1, prnt=false)
   num_periods = size(el_price,2); # number of periods, 1day, one week, etc.
   num_hours = size(el_price,1); # hours per period (24 per day, 48 per 2days)
@@ -117,9 +118,7 @@ end # function
 
 # set working directory here
 close("all")
-#cd("C:\Users\Holger\Dropbox\ere-apc34\Research\data_electricity\California\Price modification")
 
-# import data
 
 #### DATA INPUT ######
 
@@ -128,6 +127,7 @@ region = "GER"   # "CA"   "GER"
 n_k=9
 n_init =1000
 
+# read in original data
 if region =="CA"
   region_str = ""
   region_data = normpath(joinpath(pwd(),"..","..","data","el_prices","ca_2015_orig.txt"))
@@ -135,11 +135,11 @@ else
   region_str = "GER_"
   region_data = normpath(joinpath(pwd(),"..","..","data","el_prices","GER_2015_elPrice.txt"))
 end
-
-# original data
 data_orig = Array(readtable(region_data, separator = '\t', header = false)) # * get_EUR_to_USD(region);
-#data_synth_markov = array(readtable("synth_markov_ca_2015_n10.txt", separator = '\t', header = false));
-# optimization on original data
+
+ 
+ 
+ # optimization on original data
 data_orig_daily = reshape(data_orig,24,365)
 #data_orig_weekly = reshape(data_orig[1:24*7*52],24*7,52);
 revenue_orig_daily = sum(run_opt(data_orig_daily));
