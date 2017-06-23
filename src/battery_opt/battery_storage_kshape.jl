@@ -175,6 +175,7 @@ kshape_centroids = Dict()
 kshape_labels = Dict()
 # kshape_dist_daily = Dict()
 kshape_dist = Dict()
+kshape_dist_all = Dict()
 kshape_iterations = Dict()
 ind_conv = Dict()
 num_conv = zeros(Int32,n_k) # number of converged values
@@ -185,7 +186,6 @@ for k=1:n_k
   kshape_iterations[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "iterations_kshape_" * string(k) * ".pkl")))
   ind_conv[k] = find(collect(kshape_iterations[k]) .< 19999)  # only converged values - collect() transforms tuple to array
   num_conv[k] = length(ind_conv[k])
-  println("kshape iterations:",k," ",kshape_iterations[k])
   kshape_iterations[k] = kshape_iterations[k][ind_conv[k]] #only converged values
   kshape_centroids_in = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results", region * "_centroids_kshape_" * string(k) * ".pkl")))
   #### back transform centroids from normalized data
@@ -194,23 +194,19 @@ for k=1:n_k
     kshape_centroids[k][:,:,i] = (kshape_centroids_in[ind_conv[k][i]].* hourly_sdv' + ones(k)*hourly_mean')
   end
   kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "labels_kshape_" * string(k) * ".pkl"))) 
-  kshape_dist[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "distance_kshape_" * string(k) * ".pkl")))[ind_conv[k]]
+  kshape_dist[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "distance_kshape_" * string(k) * ".pkl")))[ind_conv[k]] # only converged
+  kshape_dist_all[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "distance_kshape_" * string(k) * ".pkl")))
   # calculate weights
+  kshape_weights[k] = zeros(size(kshape_centroids[k][:,:,1])[1],num_conv[k]) # only converged
   for i=1:num_conv[k]
-    kshape_weights[k] = zeros(size(kshape_centroids[k][:,:,i])[1]) # only converged
     for j=1:length(kshape_labels[k][ind_conv[k][i]])
-        kshape_weights[k][kshape_labels[k][ind_conv[k][i]][j]+1] +=1
+        kshape_weights[k][kshape_labels[k][ind_conv[k][i]][j]+1,i] +=1
     end
-    kshape_weights[k] = kshape_weights[k]/length(kshape_labels[k][ind_conv[k][i]])
+    kshape_weights[k][:,i] = kshape_weights[k][:,i]/length(kshape_labels[k][ind_conv[k][i]])
   end
 
- # print stuff debugging
-  println("leng kshape dist",k," ",length(kshape_dist[k]) )
- #println("ind_conv:",k," ",ind_conv[k])
-  println("num_conv:",k," ",num_conv[k])
 
 end #k=1:n_k
-
 
 
 # optimization on original data
@@ -220,7 +216,7 @@ revenue_orig_daily = sum(run_opt(data_orig_daily));
 revenue_ksh = zeros(n_init,n_k)
 for k=1:n_k
   for i=1:num_conv[k]
-    revenue_ksh[i,k] = sum(run_opt(kshape_centroids[k][:,:,i]',kshape_weights[k],false));
+    revenue_ksh[i,k] = sum(run_opt(kshape_centroids[k][:,:,i]',kshape_weights[k][:,i],false));
   end
 end
 
@@ -233,6 +229,10 @@ for k=1:n_k
 end
 
 
+ ### print some convergence statistics ###
+for k=1:n_k
+  println("Number of converged cases at k=",k,": ",num_conv[k])
+end
 
 
  ###### Figures ########
