@@ -177,29 +177,40 @@ kshape_labels = Dict()
 kshape_dist = Dict()
 kshape_iterations = Dict()
 ind_conv = Dict()
+num_conv = zeros(Int32,n_k) # number of converged values
 kshape_weights = Dict()
+
 
 for k=1:n_k 
   kshape_iterations[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "iterations_kshape_" * string(k) * ".pkl")))
-  ind_conv[k] = find(collect(kshape_iterations[k]) .<= 20000)  # only converged values - collect() transforms tuple to array
+  ind_conv[k] = find(collect(kshape_iterations[k]) .< 19999)  # only converged values - collect() transforms tuple to array
+  num_conv[k] = length(ind_conv[k])
+  println("kshape iterations:",k," ",kshape_iterations[k])
+  kshape_iterations[k] = kshape_iterations[k][ind_conv[k]] #only converged values
   kshape_centroids_in = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results", region * "_centroids_kshape_" * string(k) * ".pkl")))
   #### back transform centroids from normalized data
-  kshape_centroids[k] = zeros(size(kshape_centroids_in[1])[1],size(kshape_centroids_in[1])[2],n_init)
-  for i=1:n_init
-    kshape_centroids[k][:,:,i] = (kshape_centroids_in[i].* hourly_sdv' + ones(k)*hourly_mean')
-    # \TODO include EURtoUSD here
-  end 
-  kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "labels_kshape_" * string(k) * ".pkl"))) 
-  kshape_dist[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "distance_kshape_" * string(k) * ".pkl"))) 
-  # calculate weights
-  for i=1:n_init
-    kshape_weights[k] = zeros(size(kshape_centroids[k][:,:,i])[1])
-    for j=1:length(kshape_labels[k][i])
-        kshape_weights[k][kshape_labels[k][i][j]+1] +=1
-    end
-    kshape_weights[k] = kshape_weights[k]/length(kshape_labels[k][i])
+  kshape_centroids[k] = zeros(size(kshape_centroids_in[1])[1],size(kshape_centroids_in[1])[2],num_conv[k]) # only converged values
+  for i=1:num_conv[k]
+    kshape_centroids[k][:,:,i] = (kshape_centroids_in[ind_conv[k][i]].* hourly_sdv' + ones(k)*hourly_mean')
   end
+  kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "labels_kshape_" * string(k) * ".pkl"))) 
+  kshape_dist[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "distance_kshape_" * string(k) * ".pkl")))[ind_conv[k]]
+  # calculate weights
+  for i=1:num_conv[k]
+    kshape_weights[k] = zeros(size(kshape_centroids[k][:,:,i])[1]) # only converged
+    for j=1:length(kshape_labels[k][ind_conv[k][i]])
+        kshape_weights[k][kshape_labels[k][ind_conv[k][i]][j]+1] +=1
+    end
+    kshape_weights[k] = kshape_weights[k]/length(kshape_labels[k][ind_conv[k][i]])
+  end
+
+ # print stuff debugging
+  println("leng kshape dist",k," ",length(kshape_dist[k]) )
+ #println("ind_conv:",k," ",ind_conv[k])
+  println("num_conv:",k," ",num_conv[k])
+
 end #k=1:n_k
+
 
 
 # optimization on original data
@@ -208,7 +219,7 @@ revenue_orig_daily = sum(run_opt(data_orig_daily));
 # optimization on kshape data
 revenue_ksh = zeros(n_init,n_k)
 for k=1:n_k
-  for i=1:n_init
+  for i=1:num_conv[k]
     revenue_ksh[i,k] = sum(run_opt(kshape_centroids[k][:,:,i]',kshape_weights[k],false));
   end
 end
