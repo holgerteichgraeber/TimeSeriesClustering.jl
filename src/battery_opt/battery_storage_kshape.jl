@@ -214,17 +214,26 @@ revenue_orig_daily = sum(run_opt(data_orig_daily));
 
 # optimization on kshape data
 revenue_ksh = zeros(n_init,n_k)
+revenue_ksh_plotting = []
 for k=1:n_k
   for i=1:num_conv[k]
     revenue_ksh[i,k] = sum(run_opt(kshape_centroids[k][:,:,i]',kshape_weights[k][:,i],false));
   end
+  if revenue_ksh_plotting ==[]
+    revenue_ksh_plotting = [revenue_ksh[1:num_conv[k],k]]
+  else
+    revenue_ksh_plotting = push!(revenue_ksh_plotting, revenue_ksh[1:num_conv[k],k])
+  end
 end
+println("rev ksh plot; ", revenue_ksh_plotting)
 
  # find best distance 
-ind_best_dist = zeros(Int32,n_k)
-rev_best_dist = zeros(n_k)
+ind_best_dist = zeros(Int32,n_k) #only converged 
+ind_best_dist_all = zeros(Int32,n_k) #includes non-converged 
+rev_best_dist = zeros(n_k) # only converged
 for k=1:n_k
   ind_best_dist[k] = findmin(kshape_dist[k])[2]
+  ind_best_dist_all[k] = findmin(kshape_dist_all[k])[2]
   rev_best_dist[k] = revenue_ksh[ind_best_dist[k],k]
 end
 
@@ -234,12 +243,19 @@ for k=1:n_k
   println("Number of converged cases at k=",k,": ",num_conv[k])
 end
 
+for k=1:n_k
+  println("k=",k,": ind best dist all: ",ind_best_dist_all[k]," , ind best dist converged only: ",ind_conv[k][ind_best_dist[k]])
+end
+
+for k=1:n_k
+  println(revenue_ksh[ind_best_dist[k],k])
+end
 
  ###### Figures ########
 
 # Boxplot revenue
 figure()
-boxplot(revenue_ksh/1e6)
+boxplot(revenue_ksh_plotting/1e6)
 hold
 plt.plot(1:n_k,rev_best_dist/1e6,color="blue",lw=2,label="best distance") 
 plt.plot(1:n_k,revenue_orig_daily/1e6*ones(n_k),label="365 days",color="c",lw=3)
