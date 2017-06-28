@@ -147,7 +147,7 @@ close("all")
 #### DATA INPUT ######
 
 # region:
-region = "GER"   # "CA"   "GER"
+region = "CA"   # "CA"   "GER"
 n_k=9
 n_init =1000
 
@@ -189,6 +189,7 @@ for k=1:n_k
   num_conv[k] = length(ind_conv[k])
   kshape_iterations[k] = kshape_iterations[k][ind_conv[k]] #only converged values
   kshape_centroids_in = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results", region * "_centroids_kshape_" * string(k) * ".pkl")))
+  println("size: ",length(kshape_centroids_in)," ",size(kshape_centroids_in[1]))
   #### back transform centroids from normalized data
   kshape_centroids[k] = zeros(size(kshape_centroids_in[1])[1],size(kshape_centroids_in[1])[2],num_conv[k]) # only converged values
   for i=1:num_conv[k]
