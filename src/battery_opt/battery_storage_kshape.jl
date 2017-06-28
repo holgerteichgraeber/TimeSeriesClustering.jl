@@ -89,6 +89,7 @@ function run_opt(el_price, weight=1, prnt=false)
       obj[i] = getobjectivevalue(m)
     else
       obj[i] = getobjectivevalue(m) * weight[i] * 365
+      println("w=",weight[i])
     end
     E_in_arr[:,i] = getvalue(E_in)'
     E_out_arr[:,i] = getvalue(E_out)
@@ -225,7 +226,7 @@ for k=1:n_k
     revenue_ksh_plotting = push!(revenue_ksh_plotting, revenue_ksh[1:num_conv[k],k])
   end
 end
-println("rev ksh plot; ", revenue_ksh_plotting)
+ #println("rev ksh plot; ", revenue_ksh_plotting)
 
  # find best distance 
 ind_best_dist = zeros(Int32,n_k) #only converged 
@@ -236,6 +237,59 @@ for k=1:n_k
   ind_best_dist_all[k] = findmin(kshape_dist_all[k])[2]
   rev_best_dist[k] = revenue_ksh[ind_best_dist[k],k]
 end
+
+ #### Some testing on best ####### \TODO delete later
+
+ # loaded best data (with best distance calculated in python) for comparison
+saved_data = []
+saved_weights = []
+revenue_saved = []
+for k=1:n_k
+  push!(saved_data,Array(readtable(normpath(joinpath(pwd(),"..","..","data","kshape_results",string(region_str, "Elec_Price_kmeans_","kshape","_","cluster", "_", k,".txt"))), separator = '\t', header = false))/get_EUR_to_USD(region));
+  push!(saved_weights,Array(readtable(normpath(joinpath(pwd(),"..","..","data","kshape_results",string(region_str, "Weights_kmeans_","kshape","_","cluster", "_",k,".txt"))), separator = '\t', header = false)))
+  println("pythonRev",k," ")
+  push!(revenue_saved,sum(run_opt(saved_data[k]',saved_weights[k],false)));
+end
+
+k_print =2
+
+println("weights py: ",saved_weights[k_print], " julia: ",kshape_weights[k_print][:,ind_best_dist[k_print]])
+
+d_clusters = []
+for k=1:n_k
+ push!(d_clusters, sum(abs(  kshape_centroids[k][:,:,ind_best_dist[k]]' -  saved_data[k]' ))) 
+ println("diff k= ",d_clusters[k])
+end
+
+
+for k=1:n_k
+  println("k=",k)
+  for n_p=1:size(saved_data[k])[1]
+    println("rep_day_no=",n_p)
+    for h=1:size(saved_data[k])[2]
+      println("h=",h," py: ", saved_data[k][n_p,h],"ju: ", kshape_centroids[k][n_p,h,ind_best_dist[k]])
+    end
+  end
+
+end
+
+
+figure()
+plt.plot(saved_data[k_print]',label="python")
+plt.legend(loc=2,fontsize=20)
+
+figure()
+plt.plot(kshape_centroids[k_print][:,:,ind_best_dist[k_print]]',label="julia") 
+plt.legend(loc=2,fontsize=20)
+
+figure()
+plt.plot(saved_data[k_print]',label="python")
+plt.plot(kshape_centroids[k_print][:,:,ind_best_dist[k_print]]',label="julia") 
+plt.legend(loc=2,fontsize=20)
+plt.show()
+
+
+ ###################
 
 
  ### print some convergence statistics ###
@@ -248,7 +302,7 @@ for k=1:n_k
 end
 
 for k=1:n_k
-  println(revenue_ksh[ind_best_dist[k],k])
+  println("best Julia rev: ",revenue_ksh[ind_best_dist[k],k]," rerun julia: ", sum(run_opt(kshape_centroids[k][:,:,ind_best_dist[k]]',kshape_weights[k][:,ind_best_dist[k]],false)) ,  " best python rev: ",revenue_saved[k] )
 end
 
  ###### Figures ########
@@ -258,6 +312,7 @@ figure()
 boxplot(revenue_ksh_plotting/1e6)
 hold
 plt.plot(1:n_k,rev_best_dist/1e6,color="blue",lw=2,label="best distance") 
+plt.plot(1:n_k,revenue_saved/1e6,color="red",lw=2,label="python")
 plt.plot(1:n_k,revenue_orig_daily/1e6*ones(n_k),label="365 days",color="c",lw=3)
 plt.xlabel("Number of clusters",fontsize=25)
 if region == "CA"
