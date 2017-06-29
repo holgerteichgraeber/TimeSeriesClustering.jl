@@ -15,6 +15,7 @@ import calendar
 import pandas as pd
 import pdb
 import pickle
+from copy import deepcopy
 
 sys.path.append('/data/cees/hteich/clustering/src/clust_algorithms')
 import kshape
@@ -165,10 +166,10 @@ def run_kmeans(el_resh, n_clusters, n_init ):  # el_resh is (days,24)
 def run_kshape(el_resh, n_clusters, n_init=1,max_iter=100,n_jobs=1,region=''):  # el_resh is (days,24)
 
     res = _kshape(el_resh, n_clusters, n_init=n_init,max_iter=max_iter, n_jobs=n_jobs)
-    k_shape_labels = res['labels']   #vector with kshape class for each datapoint
-    k_shape_cluster_centers = res['centroids']
-    tot_dist = res['distance']
-    dist_daily = res['daily_dist']
+    k_shape_labels = deepcopy(res['labels'])   #vector with kshape class for each datapoint
+    k_shape_cluster_centers = deepcopy(res['centroids'])
+    tot_dist = deepcopy(res['distance'])
+    dist_daily = deepcopy(res['daily_dist'])
     weights = np.zeros(n_clusters)
     SSE =0
     SSE_daily = np.zeros(k_shape_labels.size)
@@ -510,7 +511,7 @@ if __name__ == '__main__':
         #save closest 
         filename_ep = reg_str + 'Elec_Price_kmeans_kshape_closest_' + str(k) + '.txt'
         filename_wt = reg_str + 'Weights_kmeans_kshape_closest_' + str(k) + '.txt'
-        write_clusters_to_txt_battery_opt(daynum_to_hourlyelprice(cluster_closest_day_kshape[i-1], el_CA_2015_resh),wt_kshape[i-1], k,filename_ep,filename_wt)
+        #write_clusters_to_txt_battery_opt(daynum_to_hourlyelprice(cluster_closest_day_kshape[i-1], el_CA_2015_resh),wt_kshape[i-1], k,filename_ep,filename_wt)
     # \todo: Make class out of this - nice plotting of cluster and representation
     
     # Plot generation Presentation

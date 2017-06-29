@@ -147,7 +147,7 @@ close("all")
 #### DATA INPUT ######
 
 # region:
-region = "CA"   # "CA"   "GER"
+region = "GER"   # "CA"   "GER"
 n_k=9
 n_init =1000
 
@@ -170,6 +170,7 @@ for i=1:size(data_orig_daily)[1]
   hourly_mean[i] = mean(data_orig_daily[i,:])
   hourly_sdv[i] = std(data_orig_daily[i,:])
 end
+println("mean: ",hourly_mean, " sdv: ",hourly_sdv)
 
  # initialize dictionaries of the loaded data (key: number of clusters)
 kshape_centroids = Dict() 
@@ -256,6 +257,11 @@ k_print =2
 
 println("weights py: ",saved_weights[k_print], " julia: ",kshape_weights[k_print][:,ind_best_dist[k_print]])
 
+ #for i=1:n_init
+ # a = sum(abs(  kshape_centroids[k_print][:,:,ind_best_dist[k_print]]' -  kshape_centroids_in[k_print]' ))
+
+ #end
+
 d_clusters = []
 for k=1:n_k
  push!(d_clusters, sum(abs(  kshape_centroids[k][:,:,ind_best_dist[k]]' -  saved_data[k]' ))) 
@@ -275,6 +281,8 @@ for k=1:n_k
 end
 
 
+
+ 
 figure()
 plt.plot(saved_data[k_print]',label="python")
 plt.legend(loc=2,fontsize=20)
