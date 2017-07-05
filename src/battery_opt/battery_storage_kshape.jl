@@ -169,7 +169,6 @@ for i=1:size(data_orig_daily)[1]
   hourly_mean[i] = mean(data_orig_daily[i,:])
   hourly_sdv[i] = std(data_orig_daily[i,:])
 end
-println("mean: ",hourly_mean, " sdv: ",hourly_sdv)
 
  # initialize dictionaries of the loaded data (key: number of clusters)
 kshape_centroids = Dict() 
