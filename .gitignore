@@ -1,6 +1,5 @@
 *.pyc
 *.swp
 core* 
-*.pkl
-*Weights_kmeans*
-*Elec_Price_kmeans*
+*.pkl 
+kshape_results*/
