@@ -183,19 +183,19 @@ kshape_weights = Dict()
 
 
 for k=1:n_k 
-  kshape_iterations[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "iterations_kshape_" * string(k) * ".pkl")))
+  kshape_iterations[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results_itmax",region * "iterations_kshape_" * string(k) * ".pkl")))
   ind_conv[k] = find(collect(kshape_iterations[k]) .< 19999)  # only converged values - collect() transforms tuple to array
   num_conv[k] = length(ind_conv[k])
   kshape_iterations[k] = kshape_iterations[k][ind_conv[k]] #only converged values
-  kshape_centroids_in = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results", region * "_centroids_kshape_" * string(k) * ".pkl")))
+  kshape_centroids_in = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results_itmax", region * "_centroids_kshape_" * string(k) * ".pkl")))
   #### back transform centroids from normalized data
   kshape_centroids[k] = zeros(size(kshape_centroids_in[1])[1],size(kshape_centroids_in[1])[2],num_conv[k]) # only converged values
   for i=1:num_conv[k]
     kshape_centroids[k][:,:,i] = (kshape_centroids_in[ind_conv[k][i]].* hourly_sdv' + ones(k)*hourly_mean')
   end
-  kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "labels_kshape_" * string(k) * ".pkl"))) 
-  kshape_dist[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "distance_kshape_" * string(k) * ".pkl")))[ind_conv[k]] # only converged
-  kshape_dist_all[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "distance_kshape_" * string(k) * ".pkl")))
+  kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results_itmax",region * "labels_kshape_" * string(k) * ".pkl"))) 
+  kshape_dist[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results_itmax",region * "distance_kshape_" * string(k) * ".pkl")))[ind_conv[k]] # only converged
+  kshape_dist_all[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results_itmax",region * "distance_kshape_" * string(k) * ".pkl")))
   # calculate weights
   kshape_weights[k] = zeros(size(kshape_centroids[k][:,:,1])[1],num_conv[k]) # only converged
   for i=1:num_conv[k]
@@ -213,8 +213,8 @@ saved_data = []
 saved_weights = []
 revenue_saved = []
 for k=1:n_k
-  push!(saved_data,Array(readtable(normpath(joinpath(pwd(),"..","..","data","kshape_results",string(region_str, "Elec_Price_kmeans_","kshape","_","cluster", "_", k,".txt"))), separator = '\t', header = false))/get_EUR_to_USD(region));
-  push!(saved_weights,Array(readtable(normpath(joinpath(pwd(),"..","..","data","kshape_results",string(region_str, "Weights_kmeans_","kshape","_","cluster", "_",k,".txt"))), separator = '\t', header = false)))
+  push!(saved_data,Array(readtable(normpath(joinpath(pwd(),"..","..","data","kshape_results_itmax",string(region_str, "Elec_Price_kmeans_","kshape","_","cluster", "_", k,".txt"))), separator = '\t', header = false))/get_EUR_to_USD(region));
+  push!(saved_weights,Array(readtable(normpath(joinpath(pwd(),"..","..","data","kshape_results_itmax",string(region_str, "Weights_kmeans_","kshape","_","cluster", "_",k,".txt"))), separator = '\t', header = false)))
   println("pythonRev",k," ")
   push!(revenue_saved,sum(run_opt(saved_data[k]',saved_weights[k],false)));
 end
@@ -274,24 +274,13 @@ plt.title("k_shape "*string(n_init)*" initial runs" )
 plt.legend(loc=2,fontsize=20)
 plt.tight_layout()
 
-
+if is_linux()
+  plt.show()
+end
 
  # \TODO
   # boxplot of distances
 
  # distance vs. revenue (parity plot,one plot for each k)
 
-for k=1:n_k
-  figure()
-  plt.plot(kshape_dist[k], revenue_ksh_plotting[k],linestyle="None",marker=".")
-  plt.title(string("k=",k))
-  plt.xlabel("distance")
-  plt.ylabel("revenue")
-end
-
-
  # histogram of number of iterations (one for each k), or boxplots of number of iterations (all in one plot, k on x axis)
-
-if is_linux()
-  plt.show()
-end
