@@ -1,5 +1,0 @@
-# Notes on cluster submission
-
-do everything in relative paths (or merged full paths using pwd() in storage opt)
-do everything in full paths in kshape - then run from scratch and only copy the actual python scirpt in there
-need for virtual env? - seems like no
