@@ -70,6 +70,31 @@ end
 title('Test 2 ')
 plotfixer
 
+%% simple implementation of kmeans_dtw_dba:
+
+k=3;
+data= ca_data;
+data = reshape(data',24,365);
+
+% initial random assignment of days to cluster
+
+% assign sequences for each cluster
+
+% calculate average for each cluster
+
+% for number of iterations && ~converged
+    % calculate dtw distance of each day to each cluster average
+    % reassign days to cluster
+    % calcualte new average
+
+
+
+
+
+
+
+
+
 
 
 
