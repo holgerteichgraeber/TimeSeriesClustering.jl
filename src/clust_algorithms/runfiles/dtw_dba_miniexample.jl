@@ -1,15 +1,18 @@
 # imports
 using DataFrames
 using TimeWarp
-using TimeWarp.WarpPlots
-pyplot()
+#using TimeWarp.WarpPlots
+#pyplot()
  #gr()
+ using PyPlot
+ plt = PyPlot
 
- #x = [1,2,2,3,3,4]
- #y = [1,3,4,4,5,6]
- #z = [1,2,2,4]
- #avg,result = dba([x,y])
- #println(avg)
+# example not working, somehow input is not in correct format
+# x = [1,2,2,3,3,4]
+# y = [1,3,4]
+# z = [1,2,2,4]
+# avg,result = dba([x,y,z],ClassicDTW(),iterations=15)  # make sure to put in ClassicDTW()
+# println(avg)
 
 
  ######## DATA INPUT ##########
@@ -31,21 +34,38 @@ data_orig_daily = reshape(data_orig,24,365)
 
 println("data loaded")
 
-seq1 = Sequence(data_orig_daily[:,1])
-seq2 = Sequence(data_orig_daily[:,2])
-seq = Sequence(data_orig_daily[:,1:3])
+seq1 = data_orig_daily[:,1]
+seq2 = data_orig_daily[:,2]
+seq = data_orig_daily[:,1:365]  # do not load as sequence
 
 # test dtw
-D = dtw(seq1,seq2)
+D = dtw(seq1,seq2) # dtw can be fed with normal array/vector or Sequence
 println("D ",D)
-E = fastdtw(seq1,seq2,24)
+E = fastdtw(seq1,seq2,24) # fastdtw can only be fed with array/vector
 println("E ",E)
 
-#dtwplot(seq1,seq2)
+#dtwplot(Sequence(seq1),Sequence(seq2))  # dtwplot has to be fed with sequence, somehow does not work currently, shows empty plot
 #show()
- # test dba
-avg, result = dba(seq,ClassicDTW(),iterations=1)
-println(avg)
+
+#avg, result = dba(seq,ClassicDTW(),iterations=15) #always include DTWMethod. Put initial one in example or actual code
+#println(avg)
+
+##
+n_seq=10
+tic()
+mean_dtw,result = dba(seq[:,1:n_seq],ClassicDTW(),iterations=15,rtol=1e-5,show_progress=true)
+toc()
+
+mean_euc = mean(seq[:,1:n_seq],2)
+
+figure()
+plt.plot(seq[:,1:n_seq],color="0.75")
+plt.plot(mean_dtw,label="dtw",color="red")
+plt.plot(mean_euc,label="euclidean",color="blue")
+plt.legend()
+show()
+
+# normalized clustering
 
 
 
