@@ -24,7 +24,7 @@
 function average = DBA(sequences)
     average = repmat(sequences{medoidIndex(sequences)},1);
 	for i=1:15
-		average=DBA_one_iteration(average,sequences);
+		average=DBA_one_iteration(average,sequences)
 	end
 end
 
@@ -130,8 +130,9 @@ function average = DBA_one_iteration(averageS,sequences)
 
 	for t=1:size(averageS,2)
 	   averageS(t) = mean(tupleAssociation{t});
-	end
+    end
 	   
+    pathMatrix(1:24,1:24)
 	average = averageS;
 
 end

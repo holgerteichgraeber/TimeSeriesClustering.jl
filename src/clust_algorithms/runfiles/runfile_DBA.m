@@ -9,6 +9,14 @@ close all
 clear all
 clc
 
+%% test 0 - form julia imp
+x = {}
+x{3} = [];
+x{1} = [1,2,2,3,3,4];
+x{2} = [1,3,4];
+x{3} = [1,2,2,4];
+avg = DBA(x)
+
 %% Test 1 - Provided and adapted from original matlab file
 
 n_seq =5;
@@ -43,7 +51,7 @@ ca_data = load('ca_2015_orig.txt');
 ger_data = load('GER_2015_elPrice.txt');
 
 % INPUT
-data = ca_data;
+data = ger_data;
 ind = linspace(1,10,10); % indices of data considered
 
 data = reshape(data',24,365);
@@ -72,9 +80,9 @@ plotfixer
 
 %% simple implementation of kmeans_dtw_dba:
 
-k=3;
-data= ca_data;
-data = reshape(data',24,365);
+%k=3;
+%data= ger_data;
+%data = reshape(data',24,365);
 
 % initial random assignment of days to cluster
 
