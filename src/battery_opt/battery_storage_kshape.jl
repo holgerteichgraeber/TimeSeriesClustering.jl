@@ -144,11 +144,21 @@ close("all")
 
 
 #### DATA INPUT ######
+n_k=9
 
 # region:
 region = "GER"   # "CA"   "GER"
-n_k=9
+
+# results data:
+ # case options: .. .. .. 
 n_init =1000
+
+# optimization problem
+ # storage
+
+ # gas
+
+ # storage and gas
 
 # read in original data
 if region =="CA"
@@ -215,7 +225,6 @@ revenue_saved = []
 for k=1:n_k
   push!(saved_data,Array(readtable(normpath(joinpath(pwd(),"..","..","data","kshape_results",string(region_str, "Elec_Price_kmeans_","kshape","_","cluster", "_", k,".txt"))), separator = '\t', header = false))/get_EUR_to_USD(region));
   push!(saved_weights,Array(readtable(normpath(joinpath(pwd(),"..","..","data","kshape_results",string(region_str, "Weights_kmeans_","kshape","_","cluster", "_",k,".txt"))), separator = '\t', header = false)))
-  println("pythonRev",k," ")
   push!(revenue_saved,sum(run_opt(saved_data[k]',saved_weights[k],false)));
 end
 
@@ -226,24 +235,30 @@ revenue_orig_daily = sum(run_opt(data_orig_daily));
 revenue_ksh = zeros(n_init,n_k)
 revenue_ksh_plotting = []
 for k=1:n_k
-  for i=1:num_conv[k]
+  for i=1:num_conv[k] # try @parallel here? / need for shared array?
     revenue_ksh[i,k] = sum(run_opt(kshape_centroids[k][:,:,i]',kshape_weights[k][:,i],false));
   end
-  if revenue_ksh_plotting ==[]
-    revenue_ksh_plotting = [revenue_ksh[1:num_conv[k],k]]
-  else
-    revenue_ksh_plotting = push!(revenue_ksh_plotting, revenue_ksh[1:num_conv[k],k])
-  end
+  revenue_ksh_plotting = push!(revenue_ksh_plotting, revenue_ksh[1:num_conv[k],k])
 end
 
  # find best distance 
 ind_best_dist = zeros(Int32,n_k) #only converged 
+best_dist = zeros(n_k)
 ind_best_dist_all = zeros(Int32,n_k) #includes non-converged 
 rev_best_dist = zeros(n_k) # only converged
 for k=1:n_k
-  ind_best_dist[k] = findmin(kshape_dist[k])[2]
+  best_dist[k],ind_best_dist[k] = findmin(kshape_dist[k])
   ind_best_dist_all[k] = findmin(kshape_dist_all[k])[2]
   rev_best_dist[k] = revenue_ksh[ind_best_dist[k],k]
+end
+
+# reformat Dictionaries for plotting
+
+kshape_dist_plotting = []
+iterations_plotting =[]
+for k=1:n_k
+  kshape_dist_plotting = push!(kshape_dist_plotting, kshape_dist[k])
+  iterations_plotting = push!(iterations_plotting, kshape_iterations[k])
 end
 
  ### print some convergence statistics ###
@@ -278,9 +293,15 @@ plt.tight_layout()
 
  # \TODO
   # boxplot of distances
+figure()
+boxplot(kshape_dist_plotting)
+plt.plot(1:n_k,best_dist,color="blue",label="best distance")
+plt.legend()
+plt.title("kshape distances")
+plt.tight_layout()
 
- # distance vs. revenue (parity plot,one plot for each k)
-
+# distance vs. revenue (parity plot,one plot for each k)
+ #=
 for k=1:n_k
   figure()
   plt.plot(kshape_dist[k], revenue_ksh_plotting[k],linestyle="None",marker=".")
@@ -288,10 +309,37 @@ for k=1:n_k
   plt.xlabel("distance")
   plt.ylabel("revenue")
 end
-
+=#
 
  # histogram of number of iterations (one for each k), or boxplots of number of iterations (all in one plot, k on x axis)
+figure()
+boxplot(iterations_plotting)
+plt.title("kshape iterations")
+plt.tight_layout()
 
+# plot iterations vs. distance
+
+for k=1:n_k
+  figure()
+  plt.plot(kshape_iterations[k],kshape_dist[k],linestyle="None",marker=".")
+  plt.title(string("k=",k))
+  plt.xlabel("iterations")
+  plt.ylabel("distance")
+  plt.title(string("distance vs. iterations: k=",k))
+end
+
+ # plot iterations vs. revenue
+  
+for k=1:n_k
+  figure()
+  plt.plot(kshape_iterations[k],revenue_ksh_plotting[k],linestyle="None",marker=".")
+  plt.title(string("k=",k))
+  plt.xlabel("iterations")
+  plt.ylabel("revenue")
+  plt.title(string("revenue vs. iterations: k=",k))
+end
+
+  
 if is_linux()
   plt.show()
 end
