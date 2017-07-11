@@ -173,13 +173,23 @@ def _kshape_single(x, k, max_iter=10000, random_state=None):
     random_state = check_random_state(random_state)
     m = x.shape[0] # number of data points (365)
 
-    idx = random_state.randint(0, k, size=m)
+    empty_clust = True
+    while empty_clust:  # make sure no empty cluster is generated  
+        idx = random_state.randint(0, k, size=m)
+        if np.unique(idx).shape[0] == k:
+            empty_clust = False
     centroids = np.zeros((k, x.shape[1]))
     distances = np.empty((m, k))
 
     for _ in range(max_iter):
         # increase iterations with each k
         old_idx = idx
+        if np.unique(idx).shape[0] != k: # if one of the clusters is empty, start anew
+            empty_clust = True
+            while empty_clust:  # make sure no empty cluster is generated  
+                idx = random_state.randint(0, k, size=m)
+                if np.unique(idx).shape[0] == k:
+                    empty_clust = False
         for j in range(k):
             centroids[j] = _extract_shape(idx, x, j, centroids[j])
 
