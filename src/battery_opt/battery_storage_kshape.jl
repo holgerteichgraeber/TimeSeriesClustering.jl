@@ -124,7 +124,7 @@ function plot_clusters(k_plot,kshape_centroids,n_k,n_init)
       for i=1:n_init
         plot(kshape_centroids[k][:,:,i]',color="0.75")
       end
-      #data = Array(readtable(normpath(joinpath(pwd(),"..","..","data","kshape_results",string(region_str, "Elec_Price_kmeans_","kshape","_","cluster", "_", k,".txt"))), separator = '\t', header = false))/get_EUR_to_USD(region);
+      #data = Array(readtable(normpath(joinpath(pwd(),"..","..","data",data_folder,string(region_str, "Elec_Price_kmeans_","kshape","_","cluster", "_", k,".txt"))), separator = '\t', header = false))/get_EUR_to_USD(region);
       #plot(data',color="red")
       best = kshape_centroids[k][:,:,ind_best_dist[k]] 
       plot(best',color="blue")
@@ -144,21 +144,35 @@ close("all")
 
 
 #### DATA INPUT ######
+ # Input options:
+ # region: "GER", "CA"
+ # results_data:
+  # kshape_it1000_max20000
+  # kshape_it1000_max100
+  # kshape_it10000_max100
+ # opt_problem:
+  # storage
+  # gas
+  # storage and gas
+
+# number of clusters - should be 9
 n_k=9
 
 # region:
 region = "GER"   # "CA"   "GER"
+result_data = "kshape_it1000_max100"
+ # opt problem
 
-# results data:
- # case options: .. .. .. 
-n_init =1000
 
-# optimization problem
- # storage
+ ############################
+if result_data == "kshape_it1000_max20000"
+  n_init =1000
+  data_folder = "kshape_results"
+elseif result_data == "kshape_it1000_max100"
+  n_init =1000
+  data_folder = "kshape_results_itmax"
+end
 
- # gas
-
- # storage and gas
 
 # read in original data
 if region =="CA"
@@ -193,19 +207,19 @@ kshape_weights = Dict()
 
 
 for k=1:n_k 
-  kshape_iterations[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "iterations_kshape_" * string(k) * ".pkl")))
+  kshape_iterations[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data",data_folder,region * "iterations_kshape_" * string(k) * ".pkl")))
   ind_conv[k] = find(collect(kshape_iterations[k]) .< 19999)  # only converged values - collect() transforms tuple to array
   num_conv[k] = length(ind_conv[k])
   kshape_iterations[k] = kshape_iterations[k][ind_conv[k]] #only converged values
-  kshape_centroids_in = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results", region * "_centroids_kshape_" * string(k) * ".pkl")))
+  kshape_centroids_in = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data",data_folder, region * "_centroids_kshape_" * string(k) * ".pkl")))
   #### back transform centroids from normalized data
   kshape_centroids[k] = zeros(size(kshape_centroids_in[1])[1],size(kshape_centroids_in[1])[2],num_conv[k]) # only converged values
   for i=1:num_conv[k]
     kshape_centroids[k][:,:,i] = (kshape_centroids_in[ind_conv[k][i]].* hourly_sdv' + ones(k)*hourly_mean')
   end
-  kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "labels_kshape_" * string(k) * ".pkl"))) 
-  kshape_dist[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "distance_kshape_" * string(k) * ".pkl")))[ind_conv[k]] # only converged
-  kshape_dist_all[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data","kshape_results",region * "distance_kshape_" * string(k) * ".pkl")))
+  kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data",data_folder,region * "labels_kshape_" * string(k) * ".pkl"))) 
+  kshape_dist[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data",data_folder,region * "distance_kshape_" * string(k) * ".pkl")))[ind_conv[k]] # only converged
+  kshape_dist_all[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data",data_folder,region * "distance_kshape_" * string(k) * ".pkl")))
   # calculate weights
   kshape_weights[k] = zeros(size(kshape_centroids[k][:,:,1])[1],num_conv[k]) # only converged
   for i=1:num_conv[k]
@@ -223,8 +237,8 @@ saved_data = []
 saved_weights = []
 revenue_saved = []
 for k=1:n_k
-  push!(saved_data,Array(readtable(normpath(joinpath(pwd(),"..","..","data","kshape_results",string(region_str, "Elec_Price_kmeans_","kshape","_","cluster", "_", k,".txt"))), separator = '\t', header = false))/get_EUR_to_USD(region));
-  push!(saved_weights,Array(readtable(normpath(joinpath(pwd(),"..","..","data","kshape_results",string(region_str, "Weights_kmeans_","kshape","_","cluster", "_",k,".txt"))), separator = '\t', header = false)))
+  push!(saved_data,Array(readtable(normpath(joinpath(pwd(),"..","..","data",data_folder,string(region_str, "Elec_Price_kmeans_","kshape","_","cluster", "_", k,".txt"))), separator = '\t', header = false))/get_EUR_to_USD(region));
+  push!(saved_weights,Array(readtable(normpath(joinpath(pwd(),"..","..","data",data_folder,string(region_str, "Weights_kmeans_","kshape","_","cluster", "_",k,".txt"))), separator = '\t', header = false)))
   push!(revenue_saved,sum(run_opt(saved_data[k]',saved_weights[k],false)));
 end
 
