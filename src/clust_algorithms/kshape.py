@@ -138,7 +138,7 @@ def _kshape(x, k, n_init=1, max_iter=100, n_jobs = 1, random_state=None ):
     """
     #print "n jobs run in parallel: " + str(cpu_count() ) 
     random_state = check_random_state(random_state)
-    best_tot_dist,best_centroids,best_dist_daily,best_idx = None,None,None,None
+    best_tot_dist,best_centroids,best_idx = None,None,None
     
     if n_jobs ==1:
 
@@ -146,11 +146,10 @@ def _kshape(x, k, n_init=1, max_iter=100, n_jobs = 1, random_state=None ):
             # n_init is the number of random starting points
             # pdb.set_trace()
             
-            idx, centroids, dist_daily, tot_dist = _kshape_single(x, k, max_iter=max_iter, random_state= random_state) 
+            idx, centroids,tot_dist = _kshape_single(x, k, max_iter=max_iter, random_state= random_state) 
             if best_tot_dist is None or tot_dist < best_tot_dist:
                 best_idx = idx.copy()
                 best_centroids = centroids.copy()
-                best_dist_daily = dist_daily.copy()
                 best_tot_dist = tot_dist
     else: # n_jobs not =1 # if -1, all CPUs are used
         # parallelisation of kshape runs
@@ -159,14 +158,13 @@ def _kshape(x, k, n_init=1, max_iter=100, n_jobs = 1, random_state=None ):
             delayed(_kshape_single)(x,k,max_iter=max_iter, random_state=seed)
             for seed in seeds )
         # Get results with the lowest distances
-        idx, centroids, dist_daily, tot_dist, iterations = zip(*results)
+        idx, centroids,tot_dist, iterations = zip(*results)
         best = np.argmin(tot_dist) 
         best_idx = idx[best]
         best_centroids = centroids[best]
-        best_dist_daily = dist_daily[best]
         best_tot_dist = tot_dist[best]
     sys.stdout.write("Done: k="+str(k)+"\n")
-    return {'centroids':best_centroids, 'labels':best_idx, 'distance':best_tot_dist, 'daily_dist':best_dist_daily,'centroids_all':centroids,'labels_all':idx,'distance_all':tot_dist,'daily_dist_all':dist_daily,'iterations':iterations}
+    return {'centroids':best_centroids, 'labels':best_idx, 'distance':best_tot_dist,'centroids_all':centroids,'labels_all':idx,'distance_all':tot_dist,'iterations':iterations}
 
 def _kshape_single(x, k, max_iter=10000, random_state=None):
 
@@ -197,19 +195,22 @@ def _kshape_single(x, k, max_iter=10000, random_state=None):
             for j in range(k):
                 distances[i, j] = 1 - max(_ncc_c(x[i], centroids[j]))
         idx = distances.argmin(1)
+
+        sys.stdout.write(str(_)+"," )
+        sys.stdout.flush() # empty the buffer
         if np.array_equal(old_idx, idx):
-            sys.stdout.write( "iter: " +  str(_) + " k=" + str(k)+"\n")
+            sys.stdout.write( "\n iter: " +  str(_) + " k=" + str(k)+"\n")
             sys.stdout.flush() # empty the buffer
             iterations = _
             break
         elif _==(max_iter-1):
-            sys.stdout.write( "iter: " + str(max_iter*k) + " k=" + str(k)+"\n")
+            sys.stdout.write( "\n iter: " + str(max_iter*k) + " k=" + str(k)+"\n")
             sys.stdout.flush() # empty the buffer 
             iterations = _
     dist_daily = distances.min(1)
     tot_dist = np.sum(dist_daily) # total distance, for n_init>1
 
-    return idx, centroids, dist_daily, tot_dist, iterations
+    return idx, centroids, tot_dist, iterations
 
 
 def kshape(x, k):

@@ -169,7 +169,6 @@ def run_kshape(el_resh, n_clusters, n_init=1,max_iter=100,n_jobs=1,region=''):  
     k_shape_labels = deepcopy(res['labels'])   #vector with kshape class for each datapoint
     k_shape_cluster_centers = deepcopy(res['centroids'])
     tot_dist = deepcopy(res['distance'])
-    dist_daily = deepcopy(res['daily_dist'])
     weights = np.zeros(n_clusters)
     SSE =0
     SSE_daily = np.zeros(k_shape_labels.size)
@@ -182,16 +181,17 @@ def run_kshape(el_resh, n_clusters, n_init=1,max_iter=100,n_jobs=1,region=''):  
             SSE_daily[i] += (el_resh[i,j] - k_shape_cluster_centers[k_shape_labels[i],j])**2
             SSE += (el_resh[i,j] - k_shape_cluster_centers[k_shape_labels[i],j])**2
         #if SSE_daily[i] < SSE_closest_day[k_shape_labels[i]]: # calc closest day
-        if dist_daily[i] < dist_closest_day[k_shape_labels[i]]:
-            cluster_closest_day[k_shape_labels[i]] = i
-            SSE_closest_day[k_shape_labels[i]] = SSE_daily[i]
+        # disable closest day in kshape
+        #if dist_daily[i] < dist_closest_day[k_shape_labels[i]]:
+            #cluster_closest_day[k_shape_labels[i]] = i
+            #SSE_closest_day[k_shape_labels[i]] = SSE_daily[i]
             # add dist_closest_day here 
     weights = weights/k_shape_labels.size # calc weights
     # sort in descending order
     ind_w = np.argsort(weights)[::-1] # ::-1 reverse order - descending
     weights = np.sort(weights)[::-1]
     k_shape_cluster_centers = k_shape_cluster_centers[ind_w]
-    cluster_closest_day = cluster_closest_day[ind_w]
+    #cluster_closest_day = cluster_closest_day[ind_w]
     for i in range(k_shape_labels.size):
         k_shape_labels[i] = np.where(ind_w == k_shape_labels[i])[0][0]
     # save to pickle
