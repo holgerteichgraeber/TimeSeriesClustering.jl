@@ -9,24 +9,25 @@ plt = PyPlot
 close("all")
 
 #### DATA INPUT ######
- # Input options:
+# Input options:
  # region: "GER", "CA"
  # results_data:
   # kshape_it1000_max20000
   # kshape_it1000_max100
   # kshape_it10000_max100
  # opt_problem:
-  # storage
-  # gas
-  # storage and gas
-
+  # battery
+  # gas_turbine
+  
 # number of clusters - should be 9
 n_k=9
 
 # region:
 region = "GER"   # "CA"   "GER"
-result_data = "kshape_it1000_max100"
+result_data = "kshape_it1000_max20000"
  # opt problem
+problem_type = "gas_turbine"
+
 
 
  ############################
@@ -36,6 +37,8 @@ if result_data == "kshape_it1000_max20000"
 elseif result_data == "kshape_it1000_max100"
   n_init =1000
   data_folder = "kshape_results_itmax"
+else
+  error("result_data input - ",result_data," - does not exist") 
 end
 
 
@@ -104,18 +107,18 @@ revenue_saved = []
 for k=1:n_k
   push!(saved_data,Array(readtable(normpath(joinpath(pwd(),"..","..","data",data_folder,string(region_str, "Elec_Price_kmeans_","kshape","_","cluster", "_", k,".txt"))), separator = '\t', header = false))/get_EUR_to_USD(region));
   push!(saved_weights,Array(readtable(normpath(joinpath(pwd(),"..","..","data",data_folder,string(region_str, "Weights_kmeans_","kshape","_","cluster", "_",k,".txt"))), separator = '\t', header = false)))
-  push!(revenue_saved,sum(run_battery_opt(saved_data[k]',saved_weights[k],false)));
+  push!(revenue_saved,sum(run_opt(problem_type,saved_data[k]',saved_weights[k],region,false)));
 end
 
 # optimization on original data
-revenue_orig_daily = sum(run_battery_opt(data_orig_daily));
+revenue_orig_daily = sum(run_opt(problem_type,data_orig_daily,1,region,false));
 
 # optimization on kshape data
 revenue_ksh = zeros(n_init,n_k)
 revenue_ksh_plotting = []
 for k=1:n_k
   for i=1:num_conv[k] # try @parallel here? / need for shared array?
-    revenue_ksh[i,k] = sum(run_battery_opt(kshape_centroids[k][:,:,i]',kshape_weights[k][:,i],false));
+    revenue_ksh[i,k] = sum(run_opt(problem_type,kshape_centroids[k][:,:,i]',kshape_weights[k][:,i],region,false));
   end
   revenue_ksh_plotting = push!(revenue_ksh_plotting, revenue_ksh[1:num_conv[k],k])
 end
@@ -180,15 +183,13 @@ plt.title("kshape distances")
 plt.tight_layout()
 
 # distance vs. revenue (parity plot,one plot for each k)
- #=
 for k=1:n_k
   figure()
   plt.plot(kshape_dist[k], revenue_ksh_plotting[k],linestyle="None",marker=".")
-  plt.title(string("k=",k))
+  plt.title(string("rev vs distance k=",k))
   plt.xlabel("distance")
   plt.ylabel("revenue")
 end
-=#
 
  # histogram of number of iterations (one for each k), or boxplots of number of iterations (all in one plot, k on x axis)
 figure()

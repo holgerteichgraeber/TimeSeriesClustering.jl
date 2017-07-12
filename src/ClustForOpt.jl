@@ -9,8 +9,7 @@ module ClustForOpt
  
 using PyCall
 
-export run_battery_opt,
-       run_gas_opt,
+export run_opt,
        get_EUR_to_USD,
        plot_clusters,
        load_clusters
