@@ -30,6 +30,19 @@ def read_CA_el_data_CSV(path_to_data):
     obs = np.array(temp)
     return obs[1:].astype(np.float)  # start from second (1) because first is filename
 
+def normalize_by_hour_meansdv(price_dat_resh):
+    price_dat_norm = np.zeros(np.shape(price_dat_resh))
+    hourly_mean = np.zeros(np.shape(price_dat_resh)[1])
+    hourly_sdv = np.zeros(np.shape(price_dat_resh)[1])
+    for i in range(np.shape(price_dat_resh)[1]):
+        hourly_mean[i] = np.mean(price_dat_resh[:,i])
+        price_dat_norm[:,i] = price_dat_resh[:,i] - hourly_mean[i]
+        hourly_sdv[i] = np.std(price_dat_resh[:,i])
+        if hourly_sdv[i] ==0:
+            hourly_sdv[i] =1
+        price_dat_norm[:,i] = price_dat_norm[:,i]/hourly_sdv[i]
+    return price_dat_norm, hourly_mean, hourly_sdv
+
 ##################################################################
 ''' Main Function starts here '''
 ##################################################################
@@ -83,7 +96,33 @@ if __name__ == '__main__':
     plt.legend()
     f.show()
 
+    #############################
     # normalized clustering
+    el_CA_2015_norm_meansdv,mean_hourly,sdv_hourly= normalize_by_hour_meansdv(el_CA_2015_resh[0:max_seq,:])  # ):max_seq only goes to max_seq-1
+
+    el_price_list_norm = []
+    for i in range(max_seq):
+        el_price_list_norm.append(el_CA_2015_norm_meansdv[i,:].reshape(24,1))   # alternativiely, use np.atleast_2d
+
+    t1 = time.clock()
+    #pdb.set_trace()
+    dba_avg_norm = dba.compute_average(el_price_list_norm, nstarts=10,dba_length=24)
+    t2 = time.clock()
+
+    # retransform normalized clusters to actual prices
+    #pdb.set_trace()
+    dba_avg = np.multiply(np.transpose(dba_avg_norm),np.transpose(sdv_hourly))+np.dot(np.identity(np.shape(el_CA_2015_resh)[1]),np.transpose(mean_hourly))
+    print 'normalized DBA algorithm took', t2 - t1, 'seconds. \n'
+    print dba_avg, "\n"
+
+    f = plt.figure()
+    # transpose all lists and then transpose again for plotting
+    for i in range(max_seq):
+        plt.plot(np.transpose(np.multiply(np.transpose(el_price_list_norm[i]) ,np.transpose(sdv_hourly))+np.dot(np.identity(np.shape(el_CA_2015_resh)[1]),np.transpose(mean_hourly))),color="0.75")
+    plt.plot(np.transpose(dba_avg),color="red",label="dtw dba norm")
+    plt.plot(np.transpose(np.multiply(np.transpose(np.mean(el_price_list_norm,0)),np.transpose(sdv_hourly))+np.dot(np.identity(np.shape(el_CA_2015_resh)[1]),np.transpose(mean_hourly))),color="blue",label="euc")
+    plt.legend()
+    f.show()
 
 
     plt.show()
