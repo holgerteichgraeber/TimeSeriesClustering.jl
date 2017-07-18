@@ -1,4 +1,6 @@
 # imports
+push!(LOAD_PATH, normpath(joinpath(pwd(),"..",".."))) #adds the location of ClustForOpt to the LOAD_PATH
+using ClustForOpt
 using DataFrames
 using TimeWarp
 #using TimeWarp.WarpPlots
@@ -6,7 +8,7 @@ using TimeWarp
  #gr()
  using PyPlot
  plt = PyPlot
-
+plt.close()
 # example not working, somehow input is not in correct format
 # x = [1,2,2,3,3,4]
 # y = [1,3,4]
@@ -63,12 +65,25 @@ plt.plot(seq[:,1:n_seq],color="0.75")
 plt.plot(mean_dtw,label="dtw",color="red")
 plt.plot(mean_euc,label="euclidean",color="blue")
 plt.legend()
-show()
 
+##########################
 # normalized clustering
 
+seq_norm, hourly_mean, hourly_sdv = z_normalize(data_orig_daily[:,1:n_seq])
+tic()
+mean_dtw_norm,result_norm = dba(seq_norm[:,1:n_seq],ClassicDTW(),iterations=15,rtol=1e-5,show_progress=true)
+toc()
 
+mean_euc_norm = mean(seq_norm[:,1:n_seq],2)
 
-if is_linux()
-  show()
-end
+mean_dtw = undo_z_normalize(reshape(mean_dtw_norm,size(mean_dtw_norm)[1],1),hourly_mean,hourly_sdv)
+mean_euc = undo_z_normalize(mean_euc_norm,hourly_mean,hourly_sdv)
+
+figure()
+plt.plot(seq[:,1:n_seq],color="0.75")
+plt.plot(mean_dtw,label="dtw",color="red")
+plt.plot(mean_euc,label="euclidean",color="blue")
+plt.title("normalized")
+plt.legend()
+
+show()

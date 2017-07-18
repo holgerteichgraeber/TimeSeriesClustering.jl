@@ -19,7 +19,7 @@ function plot_clusters(k_plot,kshape_centroids,n_k,n_init)
 
   for k=1:n_k
 
-    # plot centroids for verification 
+    # plot centroids for verification
     if k==k_plot
       figure()
       for i=1:n_init
@@ -27,7 +27,7 @@ function plot_clusters(k_plot,kshape_centroids,n_k,n_init)
       end
       #data = Array(readtable(normpath(joinpath(pwd(),"..","..","data",data_folder,string(region_str, "Elec_Price_kmeans_","kshape","_","cluster", "_", k,".txt"))), separator = '\t', header = false))/get_EUR_to_USD(region);
       #plot(data',color="red")
-      best = kshape_centroids[k][:,:,ind_best_dist[k]] 
+      best = kshape_centroids[k][:,:,ind_best_dist[k]]
       plot(best',color="blue")
     end
   end
@@ -37,4 +37,30 @@ function plot_clusters(k_plot,kshape_centroids,n_k,n_init)
 end # plot_clusters()
 
 
+##
+# z-normalize data with mean and sdv by hour
+# data: input format: (1st dimension: 24 hours, 2nd dimension: # of days)
 
+function z_normalize(data)
+  hourly_mean = zeros(size(data)[1])
+  hourly_sdv = zeros(size(data)[1])
+  data_norm = zeros(size(data))
+  for i=1:size(data)[1]
+    hourly_mean[i] = mean(data[i,:])
+    hourly_sdv[i] = std(data[i,:])
+    isnan(hourly_sdv[i]) &&  (hourly_sdv[i] =1)
+    data_norm[i,:] = data[i,:] - hourly_mean[i]
+    data_norm[i,:] = data_norm[i,:]/hourly_sdv[i]
+  end
+  return data_norm, hourly_mean, hourly_sdv
+end # function z_normalize
+
+##
+# undo z-normalization data with mean and sdv by hour
+# normalized data: input format: (1st dimension: 24 hours, 2nd dimension: # of days)
+# hourly_mean ; 24 hour vector with hourly means
+# hourly_sdv; 24 hour vector with hourly standard deviations
+
+function undo_z_normalize(data_norm, hourly_mean, hourly_sdv)
+  data = data_norm .* hourly_sdv + hourly_mean * ones(size(data_norm)[2])'
+end

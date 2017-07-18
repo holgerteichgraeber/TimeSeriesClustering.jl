@@ -6,12 +6,14 @@
  #####################
 
 module ClustForOpt
- 
+
 using PyCall
 
 export run_opt,
        get_EUR_to_USD,
        plot_clusters,
+       z_normalize,
+       undo_z_normalize,
        load_clusters
 
 include("utils/optim_problems.jl")
