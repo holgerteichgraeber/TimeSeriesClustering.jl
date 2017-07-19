@@ -67,7 +67,7 @@ plt.plot(mean_euc,label="euclidean",color="blue")
 plt.legend()
 
 ##########################
-# normalized clustering
+# normalized clustering hourly
 
 seq_norm, hourly_mean, hourly_sdv = z_normalize(data_orig_daily[:,1:n_seq])
 tic()
@@ -85,5 +85,7 @@ plt.plot(mean_dtw,label="dtw",color="red")
 plt.plot(mean_euc,label="euclidean",color="blue")
 plt.title("normalized")
 plt.legend()
+
+# NEXT: INCLUDE WARPING WINDOW
 
 show()
