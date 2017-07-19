@@ -12,6 +12,7 @@ export run_opt,
        plot_clusters,
        z_normalize,
        undo_z_normalize,
+       sakoe_chiba_band
 
 include("utils/optim_problems.jl")
 include("utils/utils.jl")

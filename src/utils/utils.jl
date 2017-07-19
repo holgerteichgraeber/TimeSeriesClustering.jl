@@ -46,7 +46,7 @@ function z_normalize(data;hourly=true)
   hourly_mean = zeros(size(data)[1])
   hourly_sdv = zeros(size(data)[1])
   data_norm = zeros(size(data))
-  if hourly
+  if hourly # alternatively, use mean_and_std() and zscore() from StatsBase.jl
     for i=1:size(data)[1]
       hourly_mean[i] = mean(data[i,:])
       hourly_sdv[i] = std(data[i,:])
@@ -70,4 +70,19 @@ end # function z_normalize
 
 function undo_z_normalize(data_norm, hourly_mean, hourly_sdv)
   data = data_norm .* hourly_sdv + hourly_mean * ones(size(data_norm)[2])'
+end
+
+# calculates the minimum and maximum allowed indices for a lxl windowed matrix
+# for the sakoe chiba band (see Sakoe Chiba, 1978).
+# Input: radius r, such that |i(k)-j(k)| <= r
+# length l: dimension 2 of the matrix
+
+function sakoe_chiba_band(r::Int,l::Int)
+  i2min = Int[]
+  i2max = Int[]
+  for i=1:l
+    push!(i2min,max(1,i-r))
+    push!(i2max,min(l,i+r))
+  end
+  return i2min, i2max
 end

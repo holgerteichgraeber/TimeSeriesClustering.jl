@@ -69,7 +69,7 @@ plt.legend()
 ##########################
 # normalized clustering hourly
 
-seq_norm, hourly_mean, hourly_sdv = z_normalize(data_orig_daily[:,1:n_seq])
+seq_norm, hourly_mean, hourly_sdv = z_normalize(data_orig_daily[:,1:n_seq],hourly=true)
 tic()
 mean_dtw_norm,result_norm = dba(seq_norm[:,1:n_seq],ClassicDTW(),iterations=15,rtol=1e-5,show_progress=true)
 toc()
@@ -86,6 +86,31 @@ plt.plot(mean_euc,label="euclidean",color="blue")
 plt.title("normalized")
 plt.legend()
 
-# NEXT: INCLUDE WARPING WINDOW
+#######################
+# normalized and include warping window
+rad_sc = 2 # sakoe chiba band radius
+
+rmin,rmax = sakoe_chiba_band(rad_sc,24)
+
+seq_norm, hourly_mean, hourly_sdv = z_normalize(data_orig_daily[:,1:n_seq],hourly=true)
+tic()
+mean_dtw_norm,result_norm = dba(seq_norm[:,1:n_seq],ClassicDTW(),iterations=15,rtol=1e-5,show_progress=true,i2min=rmin,i2max=rmax)
+toc()
+
+mean_euc_norm = mean(seq_norm[:,1:n_seq],2)
+
+mean_dtw = undo_z_normalize(reshape(mean_dtw_norm,size(mean_dtw_norm)[1],1),hourly_mean,hourly_sdv)
+mean_euc = undo_z_normalize(mean_euc_norm,hourly_mean,hourly_sdv)
+
+figure()
+plt.plot(seq[:,1:n_seq],color="0.75")
+plt.plot(mean_dtw,label="dtw",color="red")
+plt.plot(mean_euc,label="euclidean",color="blue")
+plt.title("normalized")
+plt.legend()
+
+
+
+
 
 show()
