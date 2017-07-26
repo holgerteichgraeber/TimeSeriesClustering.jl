@@ -2,6 +2,11 @@
 push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 
+using PyCall
+util_path = normpath(joinpath(pwd(),"..","utils"))
+unshift!(PyVector(pyimport("sys")["path"]), util_path) # add util path to search path ### unshift!(PyVector(pyimport("sys")["path"]), "") # add current path to search path
+@pyimport load_clusters
+
 using PyPlot
 using DataFrames
 plt = PyPlot
@@ -18,7 +23,7 @@ close("all")
  # opt_problem:
   # battery
   # gas_turbine
-  
+
 # number of clusters - should be 9
 n_k=9
 
@@ -41,7 +46,7 @@ elseif result_data == "kshape_it10000_max100"
   n_init =10000
   data_folder = "kshape_results_itmax100_10000runs"
 else
-  error("result_data input - ",result_data," - does not exist") 
+  error("result_data input - ",result_data," - does not exist")
 end
 
 
@@ -53,10 +58,10 @@ else
   region_str = "GER_"
   region_data = normpath(joinpath(pwd(),"..","..","data","el_prices","GER_2015_elPrice.txt"))
 end
-data_orig = Array(readtable(region_data, separator = '\t', header = false)) 
+data_orig = Array(readtable(region_data, separator = '\t', header = false))
 data_orig_daily = reshape(data_orig,24,365)
- 
-# Load kshape clusters 
+
+# Load kshape clusters
 # calc hourly mean and sdv, Note: For GER, these are in EUR, since the original data is in EUR
 hourly_mean = zeros(size(data_orig_daily)[1])
 hourly_sdv = zeros(size(data_orig_daily)[1])
@@ -66,7 +71,7 @@ for i=1:size(data_orig_daily)[1]
 end
 
  # initialize dictionaries of the loaded data (key: number of clusters)
-kshape_centroids = Dict() 
+kshape_centroids = Dict()
 kshape_labels = Dict()
 # kshape_dist_daily = Dict()
 kshape_dist = Dict()
@@ -77,7 +82,7 @@ num_conv = zeros(Int32,n_k) # number of converged values
 kshape_weights = Dict()
 
 
-for k=1:n_k 
+for k=1:n_k
   kshape_iterations[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data",data_folder,region * "iterations_kshape_" * string(k) * ".pkl")))
   ind_conv[k] = find(collect(kshape_iterations[k]) .< 19999)  # only converged values - collect() transforms tuple to array
   num_conv[k] = length(ind_conv[k])
@@ -88,7 +93,7 @@ for k=1:n_k
   for i=1:num_conv[k]
     kshape_centroids[k][:,:,i] = (kshape_centroids_in[ind_conv[k][i]].* hourly_sdv' + ones(k)*hourly_mean')
   end
-  kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data",data_folder,region * "labels_kshape_" * string(k) * ".pkl"))) 
+  kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data",data_folder,region * "labels_kshape_" * string(k) * ".pkl")))
   kshape_dist[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data",data_folder,region * "distance_kshape_" * string(k) * ".pkl")))[ind_conv[k]] # only converged
   kshape_dist_all[k] = load_clusters.load_pickle(normpath(joinpath(pwd(),"..","..","data",data_folder,region * "distance_kshape_" * string(k) * ".pkl")))
   # calculate weights
@@ -126,10 +131,10 @@ for k=1:n_k
   revenue_ksh_plotting = push!(revenue_ksh_plotting, revenue_ksh[1:num_conv[k],k])
 end
 
- # find best distance 
-ind_best_dist = zeros(Int32,n_k) #only converged 
+ # find best distance
+ind_best_dist = zeros(Int32,n_k) #only converged
 best_dist = zeros(n_k)
-ind_best_dist_all = zeros(Int32,n_k) #includes non-converged 
+ind_best_dist_all = zeros(Int32,n_k) #includes non-converged
 rev_best_dist = zeros(n_k) # only converged
 for k=1:n_k
   best_dist[k],ind_best_dist[k] = findmin(kshape_dist[k])
@@ -158,7 +163,7 @@ end
 figure()
 boxplot(revenue_ksh_plotting/1e6)
 hold
-plt.plot(1:n_k,rev_best_dist/1e6,color="blue",lw=2,label="best distance") 
+plt.plot(1:n_k,rev_best_dist/1e6,color="blue",lw=2,label="best distance")
 plt.plot(1:n_k,revenue_saved/1e6,color="red",lw=2,label="python")
 plt.plot(1:n_k,revenue_orig_daily/1e6*ones(n_k),label="365 days",color="c",lw=3)
 plt.xlabel("Number of clusters",fontsize=25)
@@ -212,7 +217,7 @@ for k=1:n_k
 end
 
  # plot iterations vs. revenue
-  
+
 for k=1:n_k
   figure()
   plt.plot(kshape_iterations[k],revenue_ksh_plotting[k],linestyle="None",marker=".")
@@ -222,7 +227,7 @@ for k=1:n_k
   plt.title(string("revenue vs. iterations: k=",k))
 end
 
-  
+
 if is_linux()
   plt.show()
 end

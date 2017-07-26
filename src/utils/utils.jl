@@ -40,17 +40,24 @@ end # plot_clusters()
 ##
 # z-normalize data with mean and sdv by hour
 # data: input format: (1st dimension: 24 hours, 2nd dimension: # of days)
+# hourly: true means univariate scaling: each hour is scaled seperately. False means one mean and standard deviation for the full data set.
 
-function z_normalize(data)
+function z_normalize(data;hourly=true)
   hourly_mean = zeros(size(data)[1])
   hourly_sdv = zeros(size(data)[1])
   data_norm = zeros(size(data))
-  for i=1:size(data)[1]
-    hourly_mean[i] = mean(data[i,:])
-    hourly_sdv[i] = std(data[i,:])
-    isnan(hourly_sdv[i]) &&  (hourly_sdv[i] =1)
-    data_norm[i,:] = data[i,:] - hourly_mean[i]
-    data_norm[i,:] = data_norm[i,:]/hourly_sdv[i]
+  if hourly # alternatively, use mean_and_std() and zscore() from StatsBase.jl
+    for i=1:size(data)[1]
+      hourly_mean[i] = mean(data[i,:])
+      hourly_sdv[i] = std(data[i,:])
+      isnan(hourly_sdv[i]) &&  (hourly_sdv[i] =1)
+      data_norm[i,:] = data[i,:] - hourly_mean[i]
+      data_norm[i,:] = data_norm[i,:]/hourly_sdv[i]
+    end
+  else # hourly = false
+    hourly_mean = mean(data)*ones(size(data)[1])
+    hourly_sdv = std(data)*ones(size(data)[1])
+    data_norm = (data-hourly_mean[1])/hourly_sdv[1]
   end
   return data_norm, hourly_mean, hourly_sdv
 end # function z_normalize
@@ -63,4 +70,19 @@ end # function z_normalize
 
 function undo_z_normalize(data_norm, hourly_mean, hourly_sdv)
   data = data_norm .* hourly_sdv + hourly_mean * ones(size(data_norm)[2])'
+end
+
+# calculates the minimum and maximum allowed indices for a lxl windowed matrix
+# for the sakoe chiba band (see Sakoe Chiba, 1978).
+# Input: radius r, such that |i(k)-j(k)| <= r
+# length l: dimension 2 of the matrix
+
+function sakoe_chiba_band(r::Int,l::Int)
+  i2min = Int[]
+  i2max = Int[]
+  for i=1:l
+    push!(i2min,max(1,i-r))
+    push!(i2max,min(l,i+r))
+  end
+  return i2min, i2max
 end
