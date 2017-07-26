@@ -49,7 +49,7 @@ n_init=2
 
 seq_norm, hourly_mean, hourly_sdv = z_normalize(data_orig_daily[:,1:n_seq],hourly=true)
 tic()
-centers_norm, clustids, result_norm = dbaclust(seq_norm[:,1:n_seq],n_clust,n_init,ClassicDTW();iterations=4,inner_iterations=15,rtol=1e-5,store_trace=false)
+centers_norm, clustids, result_norm = dbaclust(seq_norm[:,1:n_seq],n_clust,n_init,ClassicDTW();iterations=4,inner_iterations=15,rtol=1e-5,show_progress=false,store_trace=false)
 toc()
 
 
