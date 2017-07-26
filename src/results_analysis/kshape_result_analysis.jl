@@ -23,8 +23,8 @@ close("all")
 n_k=9
 
 # region:
-region = "GER"   # "CA"   "GER"
-result_data = "kshape_it1000_max20000"
+region = "CA"   # "CA"   "GER"
+result_data = "kshape_it10000_max100"
  # opt problem
 problem_type = "gas_turbine"
 
@@ -37,6 +37,9 @@ if result_data == "kshape_it1000_max20000"
 elseif result_data == "kshape_it1000_max100"
   n_init =1000
   data_folder = "kshape_results_itmax"
+elseif result_data == "kshape_it10000_max100"
+  n_init =10000
+  data_folder = "kshape_results_itmax100_10000runs"
 else
   error("result_data input - ",result_data," - does not exist") 
 end
