@@ -7,9 +7,11 @@
 
 module ClustForOpt
 
+using DataFrames
 
 export run_opt,
        get_EUR_to_USD,
+       load_pricedata,
        plot_clusters,
        z_normalize,
        undo_z_normalize,

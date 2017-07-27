@@ -1,12 +1,9 @@
 # imports
 
-
 push!(LOAD_PATH, normpath(joinpath(pwd(),"..",".."))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
-using DataFrames
 using TimeWarp # has to be before ClustForOpt
-using Colors
- using PyPlot
+using PyPlot
  plt = PyPlot
 plt.close()
 # example not working, somehow input is not in correct format
@@ -16,7 +13,6 @@ plt.close()
 # avg,result = dba([x,y,z],ClassicDTW(),iterations=15)  # make sure to put in ClassicDTW()
 # println(avg)
 
-
  ######## DATA INPUT ##########
 
  # region
@@ -24,32 +20,27 @@ region = "GER"
 
 
 # read in original data
-if region =="CA"
-  region_str = ""
-  region_data = normpath(joinpath(pwd(),"..","..","..","data","el_prices","ca_2015_orig.txt"))
-else
-  region_str = "GER_"
-  region_data = normpath(joinpath(pwd(),"..","..","..","data","el_prices","GER_2015_elPrice.txt"))
-end
-data_orig = Array(readtable(region_data, separator = '\t', header = false))
-data_orig_daily = reshape(data_orig,24,365)
+data_orig_daily = load_pricedata(region)
 seq = data_orig_daily[:,1:365]  # do not load as sequence
 
 println("data loaded")
 
 ## Manual data input
 n_seq=365
-n_clust = 4
-n_init=2
+n_clust = 3
+n_init=50
 
 ##########################
 # normalized clustering hourly
 
-#init_centers = TimeWarp.dbaclust_initial_centers(data_orig_daily[:,1:n_seq], n_clust, ClassicDTW())
+# optional warping window
+rad_sc = 0 # sakoe chiba band radius
+rmin,rmax = sakoe_chiba_band(rad_sc,24)
+#rmin=[];rmax=[]
 
 seq_norm, hourly_mean, hourly_sdv = z_normalize(data_orig_daily[:,1:n_seq],hourly=true)
 tic()
-centers_norm, clustids, result_norm = dbaclust(seq_norm[:,1:n_seq],n_clust,n_init,ClassicDTW();iterations=4,inner_iterations=15,rtol=1e-5,show_progress=false,store_trace=false)
+centers_norm, clustids, result_norm = dbaclust(seq_norm[:,1:n_seq],n_clust,n_init,ClassicDTW();iterations=100,inner_iterations=15,rtol=1e-5,show_progress=false,store_trace=false,i2min=rmin,i2max=rmax)
 toc()
 
 

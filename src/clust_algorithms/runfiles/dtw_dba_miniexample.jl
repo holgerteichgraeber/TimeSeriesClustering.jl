@@ -1,11 +1,7 @@
 # imports
 push!(LOAD_PATH, normpath(joinpath(pwd(),"..",".."))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
-using DataFrames
 using TimeWarp
-#using TimeWarp.WarpPlots
-#pyplot()
- #gr()
  using PyPlot
  plt = PyPlot
 plt.close()
@@ -24,15 +20,7 @@ region = "GER"
 
 
 # read in original data
-if region =="CA"
-  region_str = ""
-  region_data = normpath(joinpath(pwd(),"..","..","..","data","el_prices","ca_2015_orig.txt"))
-else
-  region_str = "GER_"
-  region_data = normpath(joinpath(pwd(),"..","..","..","data","el_prices","GER_2015_elPrice.txt"))
-end
-data_orig = Array(readtable(region_data, separator = '\t', header = false))
-data_orig_daily = reshape(data_orig,24,365)
+data_orig_daily = load_pricedata(region)
 
 println("data loaded")
 
@@ -89,7 +77,6 @@ plt.legend()
 #######################
 # normalized and include warping window
 rad_sc = 2 # sakoe chiba band radius
-
 rmin,rmax = sakoe_chiba_band(rad_sc,24)
 
 seq_norm, hourly_mean, hourly_sdv = z_normalize(data_orig_daily[:,1:n_seq],hourly=true)
