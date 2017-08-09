@@ -7,7 +7,8 @@
 
 module ClustForOpt
 
-using DataFrames
+using Reexport
+@reexport using DataFrames
 
 export run_opt,
        get_EUR_to_USD,
