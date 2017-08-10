@@ -1,5 +1,6 @@
 # imports
 
+push!(LOAD_PATH, normpath(joinpath(pwd(),"..",".."))) #adds the location of ClustForOpt to the LOAD_PATH
 push!(LOAD_PATH, normpath(joinpath("/data/cees/hteich/clustering/src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using TimeWarp # has to be before ClustForOpt
@@ -19,8 +20,8 @@ seq = data_orig_daily[:,1:365]  # do not load as sequence
 println("data loaded")
 
 # number of clusters
-n_clust_min =3
-n_clust_max =3
+n_clust_min =1
+n_clust_max =9
 
 # initial points
 n_init = 50 # number of initial guesses for each dbaclust run
@@ -80,9 +81,9 @@ for n_clust=n_clust_min:n_clust_max
 
 
 
-      writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",1,"_cluster.txt")),DataFrame(centers'),separator='\t',header=false)
-      writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",1,"_clustids.txt")),DataFrame(id=clustids),separator='\t',header=false)
-      writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",1,"_cost.txt")),DataFrame(cost=result_norm.cost),separator='\t',header=false)
+      writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_cluster.txt")),DataFrame(centers'),separator='\t',header=false)
+      writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_clustids.txt")),DataFrame(id=clustids),separator='\t',header=false)
+      writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_cost.txt")),DataFrame(cost=result_norm.cost),separator='\t',header=false)
 
     end
   end
