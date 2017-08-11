@@ -1,56 +1,11 @@
-module Dbac_par
-  
-  using Reexport
+#import  
   push!(LOAD_PATH, normpath(joinpath(pwd(),"..",".."))) #adds the location of ClustForOpt to the LOAD_PATH
   push!(LOAD_PATH, normpath(joinpath("/data/cees/hteich/clustering/src"))) #adds the location of ClustForOpt to the LOAD_PATH
-  @reexport using ClustForOpt
-  @reexport using TimeWarp 
+  @everywhere using ClustForOpt
+  @everywhere using TimeWarp 
    #using PyPlot
    # plt = PyPlot
   
-  export dbac_input,dbac_par_sc
-
-  mutable struct dbac_input
-    seq::Array{Float64,2}
-    n_init::Int
-    iterations::Int
-    inner_iterations::Int
-  end
-
-   #  dbac_par_sc(n_clust,i,rad_sc,input_struct)
-
-   # Function that can be an input to pmap 
-
-   function dbac_par_sc(n_clust::Int,i::Int,rad_sc::Int,input_struct::dbac_input) # function to use with pmap to parallelize sc band calculation
-    
-    rmin,rmax=sakoe_chiba_band(rad_sc,24)
-    
-     ##########################
-    # normalized clustering hourly
-    seq_norm, hourly_mean, hourly_sdv = z_normalize(input_struct.seq,hourly=true)
-    tic()
-    centers_norm, clustids, result_norm = dbaclust(seq_norm,n_clust,input_struct.n_init,ClassicDTW();iterations=input_struct.iterations,inner_iterations=input_struct.inner_iterations,rtol=1e-5,show_progress=false,store_trace=false,i2min=rmin,i2max=rmax)
-    el_time = toq()
-    println("Elapsed time: ",el_time ," ; n_clust=",n_clust," rad_sc=",rad_sc," i=",i)
-    flush(STDOUT)
-
-    centers = undo_z_normalize(seq_to_array(centers_norm),hourly_mean,hourly_sdv)
-
-     # save results to txt
-
-
-
-    writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_cluster.txt")),DataFrame(centers'),separator='\t',header=false)
-    writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_clustids.txt")),DataFrame(id=clustids),separator='\t',header=false)
-    writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_cost.txt")),DataFrame(cost=result_norm.cost),separator='\t',header=false)
-
-
-  end
-
-end #Module dbac_paralel 
-
-
-@everywhere using Dbac_par
 
  ######## DATA INPUT ##########
 
@@ -108,7 +63,47 @@ df[:region]=region
 
 writetable(joinpath("outfiles",string("parameters.txt")),df)
 
+ # put mutable struct into a module, because mutable struct itself cannot be seen by all processors
+module dbac_struct
+  export dbac_input 
+  mutable struct dbac_input
+    seq::Array{Float64,2}
+    n_init::Int
+    iterations::Int
+    inner_iterations::Int
+  end
+end
+using dbac_struct
 
+ #  dbac_par_sc(n_clust,i,rad_sc,input_struct)
+
+ # Function that can be an input to pmap 
+
+ @everywhere function dbac_par_sc(n_clust::Int,i::Int,rad_sc::Int,seq::Array{Float64,2},n_init::Int,iterations::Int,inner_iterations::Int) # function to use with pmap to parallelize sc band calculation
+  
+  rmin,rmax=sakoe_chiba_band(rad_sc,24)
+  
+   ##########################
+  # normalized clustering hourly
+  seq_norm, hourly_mean, hourly_sdv = z_normalize(seq,hourly=true)
+  tic()
+  centers_norm, clustids, result_norm = dbaclust(seq_norm,n_clust,n_init,ClassicDTW();iterations=iterations,inner_iterations=inner_iterations,rtol=1e-5,show_progress=false,store_trace=false,i2min=rmin,i2max=rmax)
+  el_time = toq()
+  println("Elapsed time: ",el_time ," ; n_clust=",n_clust," rad_sc=",rad_sc," i=",i)
+  flush(STDOUT)
+
+  centers = undo_z_normalize(seq_to_array(centers_norm),hourly_mean,hourly_sdv)
+
+   # save results to txt
+
+
+
+  writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_cluster.txt")),DataFrame(centers'),separator='\t',header=false)
+  writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_clustids.txt")),DataFrame(id=clustids),separator='\t',header=false)
+  writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_cost.txt")),DataFrame(cost=result_norm.cost),separator='\t',header=false)
+
+
+end
 
 
 
@@ -117,11 +112,15 @@ base_struct = dbac_input(seq,n_init,iterations,inner_iterations)
 num_iter = length(n_clust_ar)*length(rad_sc_ar)*n_dbaclust
 
 base_struct_iter = [base_struct for i=1:num_iter]
+seq_iter = [seq for i=1:num_iter]
+n_init_iter = [n_init for i=1:num_iter]
+iterations_iter = [iterations for i=1:num_iter]
+inner_iterations_iter = [inner_iterations for i=1:num_iter]
 n_clust_iter = reshape(repmat(n_clust_ar,1,length(rad_sc_ar)*n_dbaclust)',:,1)
 i_iter = repmat(reshape(repmat(collect(1:n_dbaclust),1,length(rad_sc_ar))',:,1),length(n_clust_ar),1)
 rad_sc_iter = repmat(rad_sc_ar,length(n_clust_ar)*n_dbaclust,1)
 
-pmap(dbac_par_sc,n_clust_iter,i_iter,rad_sc_iter,base_struct_iter)
+pmap(dbac_par_sc,n_clust_iter,i_iter,rad_sc_iter,seq_iter,n_init_iter,iterations_iter,inner_iterations_iter)
 
 """
  # iterate through settings 
