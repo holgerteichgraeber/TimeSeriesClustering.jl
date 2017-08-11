@@ -63,17 +63,6 @@ df[:region]=region
 
 writetable(joinpath("outfiles",string("parameters.txt")),df)
 
- # put mutable struct into a module, because mutable struct itself cannot be seen by all processors
-module dbac_struct
-  export dbac_input 
-  mutable struct dbac_input
-    seq::Array{Float64,2}
-    n_init::Int
-    iterations::Int
-    inner_iterations::Int
-  end
-end
-using dbac_struct
 
  #  dbac_par_sc(n_clust,i,rad_sc,input_struct)
 
@@ -108,7 +97,6 @@ end
 
 
  # generate iterables for pmap
-base_struct = dbac_input(seq,n_init,iterations,inner_iterations)
 num_iter = length(n_clust_ar)*length(rad_sc_ar)*n_dbaclust
 
 base_struct_iter = [base_struct for i=1:num_iter]
