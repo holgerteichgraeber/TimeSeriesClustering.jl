@@ -68,12 +68,12 @@ for n_clust=n_clust_min:n_clust_max
 
        ##########################
       # normalized clustering hourly
-
       seq_norm, hourly_mean, hourly_sdv = z_normalize(seq,hourly=true)
       tic()
       centers_norm, clustids, result_norm = dbaclust(seq_norm,n_clust,n_init,ClassicDTW();iterations=iterations,inner_iterations=inner_iterations,rtol=1e-5,show_progress=false,store_trace=false,i2min=rmin,i2max=rmax)
-      toc()
-
+      el_time = toq()
+      println("Elapsed time: ",el_time ," ; n_clust=",n_clust," rad_sc=",rad_sc," i=",i)
+      flush(STDOUT)
 
       centers = undo_z_normalize(seq_to_array(centers_norm),hourly_mean,hourly_sdv)
 
