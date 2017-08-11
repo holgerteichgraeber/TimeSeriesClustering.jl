@@ -3,7 +3,7 @@
   push!(LOAD_PATH, normpath(joinpath("/data/cees/hteich/clustering/src"))) #adds the location of ClustForOpt to the LOAD_PATH
   @everywhere using ClustForOpt
   @everywhere using TimeWarp 
-   #using PyPlot
+ #using PyPlot
    # plt = PyPlot
   
 
@@ -99,7 +99,6 @@ end
  # generate iterables for pmap
 num_iter = length(n_clust_ar)*length(rad_sc_ar)*n_dbaclust
 
-base_struct_iter = [base_struct for i=1:num_iter]
 seq_iter = [seq for i=1:num_iter]
 n_init_iter = [n_init for i=1:num_iter]
 iterations_iter = [iterations for i=1:num_iter]
