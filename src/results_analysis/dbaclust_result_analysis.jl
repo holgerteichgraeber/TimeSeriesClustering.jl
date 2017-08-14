@@ -81,9 +81,12 @@ end
 revenue_orig_daily = sum(run_opt(problem_type,data_orig_daily,1,region,false));
 
  #### Figures #######
+plot_sc_ar = [0,1,2,3,4]  # [0,5,10,15,20,24]
 figure()
-plt.plot(n_clust_ar,revenue[:,1,1]/1e6,color="red",lw=2,label="skband=0")
+for j in plot_sc_ar
+  plt.plot(n_clust_ar,revenue[:,j+1,1]/1e6,lw=2,label=string("skband=",j))
+end
 plt.plot(n_clust_ar,revenue_orig_daily/1e6*ones(length(n_clust_ar)),label="365 days",color="c",lw=3)
-
+plt.legend()
 
 plt.show()
