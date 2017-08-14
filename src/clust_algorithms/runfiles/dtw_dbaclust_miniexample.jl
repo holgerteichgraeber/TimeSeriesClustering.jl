@@ -34,7 +34,7 @@ n_init=50
 # normalized clustering hourly
 
 # optional warping window
-rad_sc = 0 # sakoe chiba band radius
+rad_sc = 5 # sakoe chiba band radius
 rmin,rmax = sakoe_chiba_band(rad_sc,24)
 #rmin=[];rmax=[]
 
