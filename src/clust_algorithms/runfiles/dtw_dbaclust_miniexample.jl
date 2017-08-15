@@ -40,9 +40,10 @@ rmin,rmax = sakoe_chiba_band(rad_sc,24)
 
 seq_norm, hourly_mean, hourly_sdv = z_normalize(data_orig_daily[:,1:n_seq],hourly=true)
 tic()
-centers_norm, clustids, result_norm = dbaclust(seq_norm[:,1:n_seq],n_clust,n_init,ClassicDTW();iterations=100,inner_iterations=15,rtol=1e-5,show_progress=false,store_trace=false,i2min=rmin,i2max=rmax)
+results = dbaclust(seq_norm[:,1:n_seq],n_clust,n_init,ClassicDTW();iterations=100,inner_iterations=15,rtol=1e-5,show_progress=false,store_trace=false,i2min=rmin,i2max=rmax)
 toc()
-
+centers_norm = results.centers
+clustids = results.clustids
 
 centers = undo_z_normalize(seq_to_array(centers_norm),hourly_mean,hourly_sdv)
 
