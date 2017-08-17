@@ -39,7 +39,9 @@ problem_type = "battery"
  # initialize dictionaries of the loaded data (key: number of clusters)
 centers = Dict{Tuple{Int,Int,Int},Array}()
 clustids = Dict{Tuple{Int,Int,Int},Array}()
-cost = Dict{Tuple{Int,Int,Int},Float64}()
+cost = zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
+iter =  zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
+inner_iter =  zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
 weights = Dict{Tuple{Int,Int,Int},Array}()
 revenue = zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
 
@@ -57,8 +59,11 @@ for n_clust_it=1:length(n_clust_ar)
       # readdata
       centers[n_clust,rad_sc,i] = Array(readtable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_cluster.txt")),separator='\t',header=false))
       clustids[n_clust,rad_sc,i] = Array(readtable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_clustids.txt")),separator='\t',header=false))
-      cost[n_clust,rad_sc,i] = Array(readtable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_cost.txt")),separator='\t',header=false))[1]
+      cost[n_clust_it,rad_sc_it,i] = Array(readtable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_cost.txt")),separator='\t',header=false))[1]
 
+     iter[n_clust_it,rad_sc_it,i] = Array(readtable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_it.txt")),separator='\t',header=false))[1]
+      inner_iter[n_clust_it,rad_sc_it,i] = Array(readtable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_innerit.txt")),separator='\t',header=false))[1]
+      
       # calculate weights
       weights[n_clust,rad_sc,i] = zeros(n_clust) 
       for j=1:length(clustids[n_clust,rad_sc,i])
@@ -70,12 +75,16 @@ for n_clust_it=1:length(n_clust_ar)
       # run opt
       revenue[n_clust_it,rad_sc_it,i]=sum(run_opt(problem_type,(centers[n_clust,rad_sc,i])',weights[n_clust,rad_sc,i],region,false))
       
-      println("rev ",rad_sc," " , revenue[n_clust_it,rad_sc_it,i])
+      println("rev ","k=",n_clust," SC rad: ",rad_sc," " , revenue[n_clust_it,rad_sc_it,i])
 
 
     end
   end
 end
+
+ # TODO 
+ # Find best cost index - save
+
 
 # optimization on original data
 revenue_orig_daily = sum(run_opt(problem_type,data_orig_daily,1,region,false));
@@ -88,5 +97,26 @@ for j in plot_sc_ar
 end
 plt.plot(n_clust_ar,revenue_orig_daily/1e6*ones(length(n_clust_ar)),label="365 days",color="c",lw=3)
 plt.legend()
+
+ # function plot cost vs revenue  
+function plot_cost_rev(sc_ind)
+  figure()
+  for i=1:9
+    plt.plot(cost[i,sc_ind,:],revenue[i,sc_ind,:],".",label=string(i))
+  end
+  plt.legend()
+  plt.xlabel("cost")
+  plt.ylabel("revenue")
+end #function
+
+plot_cost_rev(1)
+
+ # plot iterations and inner iterations
+sc_ind=1
+figure()
+boxplot(inner_iter[:,sc_ind,:]')
+plt.title("iterations inner")
+
+
 
 plt.show()
