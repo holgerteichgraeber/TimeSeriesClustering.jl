@@ -84,6 +84,10 @@ end
 
  # TODO 
  # Find best cost index - save
+ind_mincost = findmin(cost,3)[2]  # along dimension 3
+ind_mincost = reshape(ind_mincost,size(ind_mincost,1),size(ind_mindcost,2))
+
+
 
 
 # optimization on original data
@@ -104,6 +108,7 @@ function plot_cost_rev(sc_ind)
   for i=1:9
     plt.plot(cost[i,sc_ind,:],revenue[i,sc_ind,:],".",label=string(i))
   end
+  plt.title(string("sc_ind=",sc_ind))
   plt.legend()
   plt.xlabel("cost")
   plt.ylabel("revenue")
@@ -116,6 +121,22 @@ sc_ind=1
 figure()
 boxplot(inner_iter[:,sc_ind,:]')
 plt.title("iterations inner")
+
+ # cumulative cost
+ # TODO - random indice generator for k - generate many sample paths in this way
+cum_cost=zeros(cost)
+for i=1:size(cost,1)
+  for j=1:size(cost,2)
+    for k=1:size(cost,3)
+      cum_cost[i,j,k]=minimum(cost[i,j,1:k])
+    end
+  end
+end
+figure()
+plt.plot(cum_cost[k_ind,sc_ind,:])  
+plt.title("best minimum cost to it")
+
+
 
 
 
