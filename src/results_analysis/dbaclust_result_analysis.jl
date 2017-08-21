@@ -1,7 +1,10 @@
-# imports
+## Before running this file, dbaclust_res_to_jld.jl has to be run once
+ 
+ # imports
 push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForOpt to the LOAD_PATH
 push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
 using ClustForOpt
+using JLD
 
 using PyPlot
 using DataFrames
@@ -36,56 +39,34 @@ seq = data_orig_daily[:,1:365]  # do not load as sequence
 problem_type = "battery"
 
 
+ # load saved JLD data
+saved_data_dict= load("outfiles/aggregated_results.jld")
+ #unpack saved JLD data
+ for (k,v) in saved_data_dict
+   @eval $(Symbol(k)) = $v
+ end
+
+ #set revenue to the chosen problem type
+revenue=revenue[problem_type] 
+
  # initialize dictionaries of the loaded data (key: number of clusters)
-centers = Dict{Tuple{Int,Int,Int},Array}()
-clustids = Dict{Tuple{Int,Int,Int},Array}()
-cost = zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
-iter =  zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
-inner_iter =  zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
-weights = Dict{Tuple{Int,Int,Int},Array}()
-revenue = zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
+ #centers = Dict{Tuple{Int,Int,Int},Array}()
+ #clustids = Dict{Tuple{Int,Int,Int},Array}()
+ #cost = zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
+ #iter =  zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
+ #inner_iter =  zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
+ #weights = Dict{Tuple{Int,Int,Int},Array}()
+ #revenue = zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
 
 
 
- # iterate through settings 
-  
-
-for n_clust_it=1:length(n_clust_ar)
-  n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts
-  for rad_sc_it=1:length(rad_sc_ar)
-    rad_sc = rad_sc_ar[rad_sc_it] # use for indexing Dicts
-    for i = 1:n_dbaclust
-      
-      # readdata
-      centers[n_clust,rad_sc,i] = Array(readtable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_cluster.txt")),separator='\t',header=false))
-      clustids[n_clust,rad_sc,i] = Array(readtable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_clustids.txt")),separator='\t',header=false))
-      cost[n_clust_it,rad_sc_it,i] = Array(readtable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_cost.txt")),separator='\t',header=false))[1]
-
-     iter[n_clust_it,rad_sc_it,i] = Array(readtable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_it.txt")),separator='\t',header=false))[1]
-      inner_iter[n_clust_it,rad_sc_it,i] = Array(readtable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_innerit.txt")),separator='\t',header=false))[1]
-      
-      # calculate weights
-      weights[n_clust,rad_sc,i] = zeros(n_clust) 
-      for j=1:length(clustids[n_clust,rad_sc,i])
-          weights[n_clust,rad_sc,i][clustids[n_clust,rad_sc,i][j]] +=1
-      end
-      weights[n_clust,rad_sc,i] =  weights[n_clust,rad_sc,i] /length(clustids[n_clust,rad_sc,i])
-
-      
-      # run opt
-      revenue[n_clust_it,rad_sc_it,i]=sum(run_opt(problem_type,(centers[n_clust,rad_sc,i])',weights[n_clust,rad_sc,i],region,false))
-      
-      println("rev ","k=",n_clust," SC rad: ",rad_sc," " , revenue[n_clust_it,rad_sc_it,i])
 
 
-    end
-  end
-end
 
  # TODO 
  # Find best cost index - save
 ind_mincost = findmin(cost,3)[2]  # along dimension 3
-ind_mincost = reshape(ind_mincost,size(ind_mincost,1),size(ind_mindcost,2))
+ind_mincost = reshape(ind_mincost,size(ind_mincost,1),size(ind_mincost,2))
 
 
 
