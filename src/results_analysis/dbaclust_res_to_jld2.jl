@@ -3,7 +3,8 @@
 push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForOpt to the LOAD_PATH
 push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
 using ClustForOpt
-using JLD
+using JLD2
+using FileIO
 
  # read parameters
 param=DataFrame()
@@ -50,6 +51,7 @@ for n_clust_it=1:length(n_clust_ar)
   n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts
   for rad_sc_it=1:length(rad_sc_ar)
     rad_sc = rad_sc_ar[rad_sc_it] # use for indexing Dicts
+    tic()
     for i = 1:n_dbaclust
       
       # readdata
@@ -74,7 +76,9 @@ for n_clust_it=1:length(n_clust_ar)
       end 
 
     end
+      toc()
       println("rev bat ","k=",n_clust," SC rad: ",rad_sc," " , revenue["battery"][n_clust_it,rad_sc_it,1])
+      flush(STDOUT)
   end
 end
 
@@ -89,7 +93,7 @@ save_dict = Dict("centers"=>centers,
                  "weights"=>weights,
                  "revenue"=>revenue )
                   
-save("outfiles/aggregated_results.jld",save_dict)
+save("outfiles/aggregated_results.jld2",save_dict)
 println("Dbaclust data revenue calculated + saved.")
 
 

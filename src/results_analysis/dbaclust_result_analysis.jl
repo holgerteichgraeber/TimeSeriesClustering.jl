@@ -4,7 +4,7 @@
 push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForOpt to the LOAD_PATH
 push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
 using ClustForOpt
-using JLD
+using JLD2 # Much faster than JLD (50s vs 20min)
 
 using PyPlot
 using DataFrames
@@ -40,7 +40,7 @@ problem_type = "battery"
 
 
  # load saved JLD data
-saved_data_dict= load("outfiles/aggregated_results.jld")
+saved_data_dict= load("outfiles/aggregated_results.jld2")
  #unpack saved JLD data
  for (k,v) in saved_data_dict
    @eval $(Symbol(k)) = $v
@@ -67,7 +67,12 @@ revenue=revenue[problem_type]
  # Find best cost index - save
 ind_mincost = findmin(cost,3)[2]  # along dimension 3
 ind_mincost = reshape(ind_mincost,size(ind_mincost,1),size(ind_mincost,2))
-
+revenue_best = zeros(size(revenue,1),size(revenue,2))
+for i=1:size(revenue,1)
+  for j=1:size(revenue,2)
+    revenue_best[i,j]=revenue[ind_mincost[i,j]] 
+  end
+end
 
 
 
@@ -78,7 +83,7 @@ revenue_orig_daily = sum(run_opt(problem_type,data_orig_daily,1,region,false));
 plot_sc_ar = [0,1,2,3,4]  # [0,5,10,15,20,24]
 figure()
 for j in plot_sc_ar
-  plt.plot(n_clust_ar,revenue[:,j+1,1]/1e6,lw=2,label=string("skband=",j))
+  plt.plot(n_clust_ar,revenue_best[:,j+1]/1e6,lw=2,label=string("skband=",j))
 end
 plt.plot(n_clust_ar,revenue_orig_daily/1e6*ones(length(n_clust_ar)),label="365 days",color="c",lw=3)
 plt.legend()
@@ -87,12 +92,12 @@ plt.legend()
 function plot_cost_rev(sc_ind)
   figure()
   for i=1:9
-    plt.plot(cost[i,sc_ind,:],revenue[i,sc_ind,:],".",label=string(i))
+    plt.plot(cost[i,sc_ind,:],revenue[i,sc_ind,:]/1e6,".",label=string("k=",i))
   end
-  plt.title(string("sc_ind=",sc_ind))
+  plt.title(string("Sakoe Chiba Band Width=",sc_ind-1))
   plt.legend()
   plt.xlabel("cost")
-  plt.ylabel("revenue")
+  plt.ylabel("revenue [mio EUR]")
 end #function
 
 plot_cost_rev(1)
@@ -105,20 +110,25 @@ plt.title("iterations inner")
 
  # cumulative cost
  # TODO - random indice generator for k - generate many sample paths in this way
-cum_cost=zeros(cost)
-for i=1:size(cost,1)
-  for j=1:size(cost,2)
+
+function plot_cum_cost(cost,k_ind,sc_width,n_perm)
+  cum_cost=zeros(size(cost,3),n_perm)
+  sc_ind=sc_width+1
+   #n_perm=20 # number of permutations
+  figure()
+  for i=1:n_perm
+    cost_perm = cost[k_ind,sc_ind,:][randperm(size(cost,3))]
     for k=1:size(cost,3)
-      cum_cost[i,j,k]=minimum(cost[i,j,1:k])
+      cum_cost[k,i]=minimum(cost_perm[1:k])
     end
+    plt.plot(cum_cost[:,i],color="grey",alpha=0.4)  
   end
-end
-figure()
-plt.plot(cum_cost[k_ind,sc_ind,:])  
-plt.title("best minimum cost to it")
+  plt.xlabel("No. of trials")
+  plt.ylabel("cost [clustering algorithm]")
+  plt.title(string("k=",k_ind,", SakoeChibaWidth=",sc_width,", No. of permutations:",n_perm))
+end # function
 
-
-
+plot_cum_cost(cost,2,0,20)
 
 
 plt.show()
