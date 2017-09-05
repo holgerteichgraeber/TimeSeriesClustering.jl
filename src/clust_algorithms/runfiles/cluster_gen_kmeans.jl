@@ -25,7 +25,7 @@ n_clust_min =1
 n_clust_max =9
 
 # initial points
-n_kmeans =100
+n_kmeans =10000
 
 
  # iterations
@@ -80,8 +80,8 @@ for n_clust_it=1:length(n_clust_ar)
         centers_ = undo_z_normalize(centers_norm,hourly_mean,hourly_sdv)          
         centers[n_clust,i]=centers_ #transpose to match optimization formulation 
         clustids[n_clust,i] = ones(Int,size(seq,2))
-        cost[n_clust,i] = sum(pairwise(SqEuclidean(),centers_norm,seq_norm)) #same as sum((seq_norm-repmat(mean(seq_norm,2),1,size(seq,2))).^2)
-        iter[n_clust,i] = 1
+        cost[n_clust_it,i] = sum(pairwise(SqEuclidean(),centers_norm,seq_norm)) #same as sum((seq_norm-repmat(mean(seq_norm,2),1,size(seq,2))).^2)
+        iter[n_clust_it,i] = 1
       else
         results = kmeans(seq_norm,n_clust;maxiter=iterations)
 
@@ -90,8 +90,8 @@ for n_clust_it=1:length(n_clust_ar)
         centers_ = undo_z_normalize(centers_norm,hourly_mean,hourly_sdv)    
         centers[n_clust,i]=centers_ 
         clustids[n_clust,i] = results.assignments
-        cost[n_clust,i] = results.totalcost
-        iter[n_clust,i] = results.iterations
+        cost[n_clust_it,i] = results.totalcost
+        iter[n_clust_it,i] = results.iterations
       end
        ##########################
       
@@ -121,7 +121,7 @@ save_dict = Dict("centers"=>centers,
                  "revenue"=>revenue )
                   
 save("outfiles/aggregated_results_kmeans.jld2",save_dict)
-println("Dbaclust data revenue calculated + saved.")
+println("kmeans data revenue calculated + saved.")
 
 
 
