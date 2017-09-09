@@ -16,11 +16,12 @@ export run_opt,
        plot_clusters,
        z_normalize,
        undo_z_normalize,
-       sakoe_chiba_band
+       sakoe_chiba_band,
+       kmedoids_exact
 
 include("utils/optim_problems.jl")
 include("utils/utils.jl")
-
+include("clust_algorithms/exact_kmedoids.jl")
 
 
 end # module ClustForOpt
