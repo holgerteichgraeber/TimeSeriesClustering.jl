@@ -58,8 +58,8 @@ status=solve(m)
 toc()
 
 println("status: ",status)
-y_opt=round(Integer,getvalue(y))
-z_opt=round(Integer,getvalue(z))
+y_opt=round.(Integer,getvalue(y))
+z_opt=round.(Integer,getvalue(z))
  #println("y ",y_opt, " z ",z_opt)
 # determine centers and cluster mappings
 id = zeros(Int,N_i)
