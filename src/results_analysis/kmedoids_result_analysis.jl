@@ -3,6 +3,7 @@ push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForO
 push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
 using ClustForOpt
 using JLD2 # Much faster than JLD (50s vs 20min)
+using FileIO
 
 using PyPlot
 using DataFrames
@@ -33,7 +34,7 @@ problem_type = "battery"
 
 dist_type = "SqEuclidean"   # "SqEuclidean"   "Cityblock"
 
- # load saved JLD data
+ # load saved JLD data - kmeans algorithm of kmedoids
 saved_data_dict= load(string("outfiles/aggregated_results_kmedoids_",dist_type,".jld2"))
  #unpack saved JLD data
  for (k,v) in saved_data_dict
@@ -42,6 +43,18 @@ saved_data_dict= load(string("outfiles/aggregated_results_kmedoids_",dist_type,"
 
  #set revenue to the chosen problem type
 revenue=revenue[problem_type] 
+
+
+ # load saved JLD data - exact algorithm of kmedoids
+saved_data_dict_exact= load(string("outfiles/aggregated_results_kmedoids_exact_",dist_type,".jld2"))
+ #unpack saved JLD data
+ for (k,v) in saved_data_dict_exact
+   @eval $(Symbol(string(k,"_exact"))) = $v
+ end
+
+ #set revenue to the chosen problem type
+revenue_exact=revenue_exact[problem_type] 
+
 
  # initialize dictionaries of the loaded data (key: number of clusters)
  #centers = Dict{Tuple{Int,Int,Int},Array}()
@@ -65,6 +78,13 @@ for i=1:size(revenue,1)
     revenue_best[i]=revenue[ind_mincost[i]] 
 end
 
+ # Find best cost index -exact - not necessary, but legacy code
+ind_mincost = findmin(cost_exact,2)[2]  # along dimension 2
+ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
+revenue_exact_best = zeros(size(revenue_exact,1))
+for i=1:size(revenue_exact,1)
+    revenue_exact_best[i]=revenue_exact[ind_mincost[i]] 
+end
 
 
 # optimization on original data
@@ -72,7 +92,8 @@ revenue_orig_daily = sum(run_opt(problem_type,data_orig_daily,1,region,false));
 
  #### Figures #######
 figure()
-plt.plot(n_clust_ar,revenue_best[:]/1e6,lw=2)
+plt.plot(n_clust_ar,revenue_best[:]/1e6,label="k-medoids greedy",color="b",lw=2)
+plt.plot(n_clust_ar,revenue_exact_best[:]/1e6,label="k-medoids exact",color="k",lw=2)
 plt.plot(n_clust_ar,revenue_orig_daily/1e6*ones(length(n_clust_ar)),label="365 days",color="c",lw=3)
 plt.legend()
 
@@ -81,6 +102,9 @@ function plot_cost_rev()
   figure()
   for i=1:length(n_clust_ar)
     plt.plot(cost[i,:],revenue[i,:]/1e6,".",label=string("k=",n_clust_ar[i]))
+  end
+  for i=1:length(n_clust_ar)
+    plt.plot(cost_exact[i,:],revenue_exact[i,:]/1e6,".",label=string("k=",n_clust_ar[i]," exact"),mec="k",mew=10,fillstyle="none") # mec="k"
   end
   plt.title(string("cost vs revenue"))
   plt.legend()
