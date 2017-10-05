@@ -3,6 +3,7 @@ push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForO
 push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
 using ClustForOpt
 using JLD2 # Much faster than JLD (50s vs 20min)
+using FileIO
 
 using PyPlot
 using DataFrames
