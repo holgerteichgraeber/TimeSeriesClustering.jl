@@ -261,19 +261,51 @@ plot_sc_ar =[1,2] # [0,1,2,3,4]  # [0,5,10,15,20,24]
 
  #### k-shape ###########
 
- # \TODO - convert data to JLD2 in similar format to the other ones
+ # read parameters
+param=DataFrame()
+try
+  param = readtable(joinpath("outfiles",string("parameters_kshape_",region,".txt")))
+catch
+  error("No input file parameters.txt exists in folder outfiles.")
+end
+
+n_clust_min=param[:n_clust_min][1]
+n_clust_max=param[:n_clust_max][1]
+n_kshape=param[:n_kshape][1]
+iterations=param[:iterations][1]
+region=param[:region][1]
+
+n_clust_ar = collect(n_clust_min:n_clust_max)
+
+ # load saved JLD data
+saved_data_dict= load(string("outfiles/aggregated_results_kshape_",region,".jld2"))
+ #unpack saved JLD data
+ for (k,v) in saved_data_dict
+   @eval $(Symbol(k)) = $v
+ end
+
+ #set revenue to the chosen problem type
+revenue["kshape"]=revenue[problem_type] 
+
+ # Find best cost index - save
+ind_mincost = findmin(cost,2)[2]  # along dimension 2
+ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
+revenue_best["kshape"] = zeros(size(revenue["kshape"],1))
+for i=1:size(revenue["kshape"],1)
+    revenue_best["kshape"][i]=revenue["kshape"][ind_mincost[i]] 
+end
 
 
  ####### Figures ##############
 figure()
-
+linestyle_ar = ["--",":"]
 plt.plot(n_clust_ar,revenue_best["kmeans"][:]/1e6,label="k-means",color="b",lw=2)
 plt.plot(n_clust_ar,revenue_best["kmedoids"][:]/1e6,label="k-medoids greedy",color="g",lw=2)
 plt.plot(n_clust_ar,revenue_best["kmedoids_exact"][:]/1e6,label="k-medoids exact",color="r",lw=2)
-plt.plot(n_clust_ar,revenue_best["hier_centroid"][:]/1e6,label="hierarchical centroid",color="m",lw=2)
-plt.plot(n_clust_ar,revenue_best["hier_medoid"][:]/1e6,label="hierarchical medoid",color="y",lw=2)
+plt.plot(n_clust_ar,revenue_best["hier_centroid"][:]/1e6,label="hierarchical centroid",color="m",lw=2,linestyle=linestyle_ar[1])
+plt.plot(n_clust_ar,revenue_best["hier_medoid"][:]/1e6,label="hierarchical medoid",color="m",lw=2,linestyle=linestyle_ar[2])
+plt.plot(n_clust_ar,revenue_best["kshape"][:]/1e6,label="k-shape",color="y",lw=2)
 plt.plot(n_clust_ar,revenue_best["cmeans"][:]/1e6,label="fuzzy c-means",color="k",lw=2)
-linestyle_ar = ["--",":"]
 ii=0
 for j in plot_sc_ar
   ii +=1
@@ -282,5 +314,5 @@ end
 plt.plot(n_clust_ar,revenue_orig_daily/1e6*ones(length(n_clust_ar)),label="365 days",color="c",lw=3)
 plt.legend()
 plt.xlabel("k")
-plt.ylabel("revenue [Mio EUR]")
+plt.ylabel("revenue [Mio EUR/USD]")
 plt.title(string(problem_type," ",region_))
