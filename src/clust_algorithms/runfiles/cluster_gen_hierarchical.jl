@@ -55,7 +55,7 @@ df[:region]=region
 
 n_clust_ar = collect(n_clust_min:n_clust_max)
 
-writetable(joinpath("outfiles",string("parameters.txt")),df)
+writetable(joinpath("outfiles",string("parameters_hier_",region,".txt")),df)
 
 # normalized clustering hourly
 seq_norm, hourly_mean, hourly_sdv = z_normalize(seq,hourly=true)
@@ -124,7 +124,7 @@ for centr = 1:length(centroid_descr)
                    "weights"=>weights,
                    "revenue"=>revenue )
                     
-  save(string("outfiles/aggregated_results_hier_",centroid_descr[centr],".jld2"),save_dict)
+  save(string("outfiles/aggregated_results_hier_",centroid_descr[centr],"_",region,".jld2"),save_dict)
   println("hier data revenue calculated + saved.")
 
 end # centr = 1:length(centroid_descr)

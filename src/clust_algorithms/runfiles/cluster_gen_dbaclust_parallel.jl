@@ -61,7 +61,7 @@ df[:iterations]=iterations
 df[:inner_iterations]=inner_iterations
 df[:region]=region
 
-writetable(joinpath("outfiles",string("parameters.txt")),df)
+writetable(joinpath("outfiles",string("parameters_dtw_",region,".txt")),df)
 
 
  #  dbac_par_sc(n_clust,i,rad_sc,input_struct)

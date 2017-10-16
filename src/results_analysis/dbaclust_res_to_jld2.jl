@@ -6,10 +6,11 @@ using ClustForOpt
 using JLD2
 using FileIO
 
+region_ = "CA"
  # read parameters
 param=DataFrame()
 try
-  param = readtable(joinpath("outfiles","parameters.txt"))
+  param = readtable(joinpath("outfiles",string("parameters_dtw_",region".txt")))
 catch
   error("No input file parameters.txt exists in folder outfiles.")
 end
@@ -23,6 +24,9 @@ rad_sc_max=param[:rad_sc_max][1]
 iterations=param[:iterations][1]
 inner_iterations=param[:inner_iterations][1]
 region=param[:region][1]
+if region != region_
+  error("wrong region")
+end
 
 n_clust_ar = collect(n_clust_min:n_clust_max)
 rad_sc_ar = collect(rad_sc_min:rad_sc_max)
@@ -93,7 +97,7 @@ save_dict = Dict("centers"=>centers,
                  "weights"=>weights,
                  "revenue"=>revenue )
                   
-save("outfiles/aggregated_results.jld2",save_dict)
+save(string("outfiles/aggregated_results_dtw_",region,".jld2"),save_dict)
 println("Dbaclust data revenue calculated + saved.")
 
 

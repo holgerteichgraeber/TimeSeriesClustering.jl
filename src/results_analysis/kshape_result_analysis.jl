@@ -31,7 +31,7 @@ n_k=9
 region = "CA"   # "CA"   "GER"
 result_data = "kshape_it10000_max100"
  # opt problem
-problem_type = "gas_turbine"
+problem_type = "battery"
 
 
 

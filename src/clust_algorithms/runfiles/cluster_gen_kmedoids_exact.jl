@@ -51,7 +51,7 @@ df[:region]=region
 
 n_clust_ar = collect(n_clust_min:n_clust_max)
 
-writetable(joinpath("outfiles",string("parameters.txt")),df)
+writetable(joinpath("outfiles",string("parameters_kmedoids_exact_",region,".txt")),df)
 
 # normalized clustering hourly
 seq_norm, hourly_mean, hourly_sdv = z_normalize(seq,hourly=true)
@@ -127,7 +127,7 @@ for dist = 1:length(distance_type_ar)
                    "weights"=>deepcopy(weights),
                    "revenue"=>deepcopy(revenue) )
                     
-  save(string("outfiles/aggregated_results_kmedoids_exact_",distance_descr[dist],".jld2"),save_dict)
+  save(string("outfiles/aggregated_results_kmedoids_exact_",distance_descr[dist],"_",region,".jld2"),save_dict)
   println("kmedoids exact ",distance_descr[dist] ," data revenue calculated + saved.")
 
 
