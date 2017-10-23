@@ -103,3 +103,39 @@ function sakoe_chiba_band(r::Int,l::Int)
   end
   return i2min, i2max
 end
+
+ ### Plotting results ####
+  """
+  plot_k_rev(range_k::Array,rev::Array{Dict,1},region::String)
+  The array rev contains Dicts with:  
+    key: name of feature
+    features:
+      name ( of method)
+      rev
+      color
+      linestyle
+      width
+
+  """
+function plot_k_rev(range_k::Array,methods::Array{Dict,1},region::String)
+  figure()
+  fsize_ref = 25
+  for m in methods
+    plot(range_k,m["rev"]/methods[end]["rev"][1],label=m["name"],color=m["color"],linestyle=m["linestyle"],lw=m["width"])
+  end
+  xlabel("Number of clusters",fontsize=fsize_ref)
+  ylabel("Objective function value",fontsize=fsize_ref)
+  legend(loc="lower right",fontsize=fsize_ref-5)
+  ax = axes()
+  ax[:tick_params]("both",labelsize=fsize_ref-1)
+  tight_layout()
+  ylim((0.5,1))
+end #plot_k_rev
+
+
+function plot_SSE_rev()
+
+
+
+end # plot_SSE_rev
+

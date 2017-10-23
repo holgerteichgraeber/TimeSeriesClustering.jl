@@ -297,6 +297,21 @@ end
 
 
  ####### Figures ##############
+clust_methods = Array{Dict,1}()
+push!(clust_methods,Dict("name"=>"k-means", "rev"=> revenue_best["kmeans"][:],"color"=>"b","linestyle"=>"-","width"=>2))
+push!(clust_methods,Dict("name"=>"k-medoids", "rev"=> revenue_best["kmedoids_exact"][:],"color"=>"g","linestyle"=>"-","width"=>2))
+push!(clust_methods,Dict("name"=>"DTW skband = 1", "rev"=> revenue_best["dtw"][:,2],"color"=>"k","linestyle"=>"--","width"=>2))
+push!(clust_methods,Dict("name"=>"DTW skband = 2", "rev"=> revenue_best["dtw"][:,3],"color"=>"k","linestyle"=>":","width"=>2))
+push!(clust_methods,Dict("name"=>"hierarchical centroid", "rev"=> revenue_best["hier_centroid"][:],"color"=>"m","linestyle"=>"-","width"=>2))
+push!(clust_methods,Dict("name"=>"hierarchical medoid", "rev"=> revenue_best["hier_medoid"][:],"color"=>"y","linestyle"=>"-","width"=>2))
+push!(clust_methods,Dict("name"=>"365 days", "rev"=> revenue_orig_daily*ones(length(n_clust_ar)),"color"=>"c","linestyle"=>"-","width"=>3))
+
+region_plot = region # not currently used; "norm"--> normalized data, no axis label
+
+plot_k_rev(n_clust_ar,clust_methods,region_plot)
+
+
+"""
 figure()
 linestyle_ar = ["--",":"]
 plt.plot(n_clust_ar,revenue_best["kmeans"][:]/1e6,label="k-means",color="b",lw=2)
@@ -316,3 +331,6 @@ plt.legend()
 plt.xlabel("k")
 plt.ylabel("revenue [Mio EUR/USD]")
 plt.title(string(problem_type," ",region_))
+"""
+
+

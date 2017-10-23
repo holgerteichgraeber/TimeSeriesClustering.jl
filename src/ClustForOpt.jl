@@ -8,6 +8,7 @@
 module ClustForOpt
 
 using Reexport
+using PyPlot
 @reexport using DataFrames
 
 export run_opt,
@@ -17,7 +18,8 @@ export run_opt,
        z_normalize,
        undo_z_normalize,
        sakoe_chiba_band,
-       kmedoids_exact
+       kmedoids_exact,
+       plot_k_rev
 
 include("utils/optim_problems.jl")
 include("utils/utils.jl")
