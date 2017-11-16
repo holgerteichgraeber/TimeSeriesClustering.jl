@@ -12,7 +12,7 @@ plt = PyPlot
  # read parameters
 param=DataFrame()
 try
-  param = readtable(joinpath("outfiles","parameters.txt"))
+  param = readtable(joinpath("outfiles",string("parameters_kmedoids_",region,".txt")))
 catch
   error("No input file parameters.txt exists in folder outfiles.")
 end
@@ -35,7 +35,7 @@ problem_type = "battery"
 dist_type = "SqEuclidean"   # "SqEuclidean"   "Cityblock"
 
  # load saved JLD data - kmeans algorithm of kmedoids
-saved_data_dict= load(string("outfiles/aggregated_results_kmedoids_",dist_type,".jld2"))
+saved_data_dict= load(string("outfiles/aggregated_results_kmedoids_",dist_type,"_",region,".jld2"))
  #unpack saved JLD data
  for (k,v) in saved_data_dict
    @eval $(Symbol(k)) = $v

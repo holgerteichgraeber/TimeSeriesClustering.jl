@@ -117,25 +117,49 @@ end
       width
 
   """
-function plot_k_rev(range_k::Array,methods::Array{Dict,1},region::String)
+function plot_k_rev(range_k::Array,methods::Array{Dict,1},descr::String)
   figure()
-  fsize_ref = 25
+  fsize_ref = 16
   for m in methods
-    plot(range_k,m["rev"]/methods[end]["rev"][1],label=m["name"],color=m["color"],linestyle=m["linestyle"],lw=m["width"])
+    plot(range_k,m["rev"]/methods[1]["rev"][1],label=m["name"],color=m["color"],linestyle=m["linestyle"],lw=m["width"])
   end
   xlabel("Number of clusters",fontsize=fsize_ref)
   ylabel("Objective function value",fontsize=fsize_ref)
-  legend(loc="lower right",fontsize=fsize_ref-5)
+  legend(loc="lower right",fontsize=fsize_ref-4,ncol=2)
   ax = axes()
   ax[:tick_params]("both",labelsize=fsize_ref-1)
+  xticks(range_k,range_k)
   tight_layout()
-  ylim((0.5,1))
+  ylim((0.5,1.05))
+  savefig(descr,format="png",dpi=300)
 end #plot_k_rev
 
 
-function plot_SSE_rev()
-
-
-
+function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Array{Dict,1},descr::String,rev_365::Float64;n_col::Int=2)
+  figure()
+  fsize_ref = 16
+  for i=1:length(range_k)
+    ii= length(range_k)-i+1
+    plot(cost_rev_clouds["cost"][ii,:],cost_rev_clouds["rev"][ii,:]/rev_365,".",label=string("k=",range_k[ii]))
+  end
+  for i=1:length(cost_rev_points)
+    for j=1:length(range_k)
+      if j==1
+        plot(cost_rev_points[i]["cost"][j,:],cost_rev_points[i]["rev"][j,:]/rev_365,mec=cost_rev_points[i]["mec"],marker=cost_rev_points[i]["marker"],mew=cost_rev_points[i]["mew"],markerfacecolor="none",linestyle="none",label=cost_rev_points[i]["label"])
+      else 
+        plot(cost_rev_points[i]["cost"][j,:],cost_rev_points[i]["rev"][j,:]/rev_365,mec=cost_rev_points[i]["mec"],marker=cost_rev_points[i]["marker"],mew=cost_rev_points[i]["mew"],markerfacecolor="none",linestyle="none",label=nothing)  # nothing instead of None # mew: markeredgewidth
+      end # if
+    end
+  end
+  plot(0.0,1.0,marker="*",ms=10,linestyle="none",color="c",label="Full representation")
+  legend(fontsize=fsize_ref-4,ncol=n_col)
+  xlabel("Clustering measure (SSE)",fontsize=fsize_ref)
+  ylabel("Objective function value",fontsize=fsize_ref)
+  ax = axes()
+  ax[:tick_params]("both",labelsize=fsize_ref-1)
+  tight_layout()
+  xlim((9500,-120))
+  ylim((0.5,1.05))
+  savefig(descr,format="png",dpi=300)
 end # plot_SSE_rev
 

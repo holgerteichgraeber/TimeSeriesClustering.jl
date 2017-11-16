@@ -19,7 +19,8 @@ export run_opt,
        undo_z_normalize,
        sakoe_chiba_band,
        kmedoids_exact,
-       plot_k_rev
+       plot_k_rev,
+       plot_SSE_rev
 
 include("utils/optim_problems.jl")
 include("utils/utils.jl")

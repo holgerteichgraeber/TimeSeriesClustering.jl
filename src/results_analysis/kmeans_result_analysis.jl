@@ -9,10 +9,12 @@ using PyPlot
 using DataFrames
 plt = PyPlot
 
+region = "GER" # GER,CA
+
  # read parameters
 param=DataFrame()
 try
-  param = readtable(joinpath("outfiles","parameters.txt"))
+  param = readtable(joinpath("outfiles",string(string("parameters_kmeans_",region,".txt"))))
 catch
   error("No input file parameters.txt exists in folder outfiles.")
 end
@@ -34,7 +36,7 @@ problem_type = "battery"
 
 
  # load saved JLD data
-saved_data_dict= load("outfiles/aggregated_results_kmeans.jld2")
+saved_data_dict= load(string("outfiles/aggregated_results_kmeans_",region,".jld2"))
  #unpack saved JLD data
  for (k,v) in saved_data_dict
    @eval $(Symbol(k)) = $v
