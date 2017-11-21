@@ -9,6 +9,8 @@ using PyPlot
 using DataFrames
 plt = PyPlot
 
+region = "GER" # GER CA
+
  # read parameters
 param=DataFrame()
 try
@@ -46,7 +48,7 @@ revenue=revenue[problem_type]
 
 
  # load saved JLD data - exact algorithm of kmedoids
-saved_data_dict_exact= load(string("outfiles/aggregated_results_kmedoids_exact_",dist_type,".jld2"))
+saved_data_dict_exact= load(string("outfiles/aggregated_results_kmedoids_exact_",dist_type,"_",region,".jld2"))
  #unpack saved JLD data
  for (k,v) in saved_data_dict_exact
    @eval $(Symbol(string(k,"_exact"))) = $v
@@ -74,16 +76,20 @@ revenue_exact=revenue_exact[problem_type]
 ind_mincost = findmin(cost,2)[2]  # along dimension 2
 ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
 revenue_best = zeros(size(revenue,1))
+cost_best = zeros(size(cost,1))
 for i=1:size(revenue,1)
     revenue_best[i]=revenue[ind_mincost[i]] 
+    cost_best[i]=cost[ind_mincost[i]] 
 end
 
  # Find best cost index -exact - not necessary, but legacy code
 ind_mincost = findmin(cost_exact,2)[2]  # along dimension 2
 ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
 revenue_exact_best = zeros(size(revenue_exact,1))
+cost_exact_best = zeros(size(cost_exact,1))
 for i=1:size(revenue_exact,1)
     revenue_exact_best[i]=revenue_exact[ind_mincost[i]] 
+    cost_exact_best[i]=cost_exact[ind_mincost[i]] 
 end
 
 
@@ -91,6 +97,30 @@ end
 revenue_orig_daily = sum(run_opt(problem_type,data_orig_daily,1,region,false));
 
  #### Figures #######
+
+
+clust_methods = Array{Dict,1}()
+
+ # revenue vs. k
+push!(clust_methods,Dict("name"=>"full representation", "rev"=> revenue_orig_daily*ones(length(n_clust_ar)),"color"=>"c","linestyle"=>"--","width"=>3))
+push!(clust_methods,Dict("name"=>"k-medoids", "rev"=> revenue_best[:],"color"=>"b","linestyle"=>"-","width"=>2))  
+plot_k_rev(n_clust_ar,clust_methods,string("plots/kmedoids_",region,".png"))
+
+
+ # revenue vs. SSE
+ # averaging
+cost_rev_clouds = Dict()
+cost_rev_points = Array{Dict,1}()
+descr=string("plots/cloud_kmedoids_",region,".png")
+
+cost_rev_clouds["cost"]=cost
+cost_rev_clouds["rev"] = revenue
+
+push!(cost_rev_points,Dict("label"=>"kmedoids best","cost"=>cost_best,"rev"=>revenue_best,"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
+
+plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily)
+
+
 figure()
 plt.plot(n_clust_ar,revenue_best[:]/1e6,label="k-medoids greedy",color="b",lw=2)
 plt.plot(n_clust_ar,revenue_exact_best[:]/1e6,label="k-medoids exact",color="k",lw=2)

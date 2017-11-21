@@ -63,8 +63,10 @@ revenue=revenue[problem_type]
 ind_mincost = findmin(cost,2)[2]  # along dimension 2
 ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
 revenue_best = zeros(size(revenue,1))
+cost_best = zeros(size(cost,1))
 for i=1:size(revenue,1)
     revenue_best[i]=revenue[ind_mincost[i]] 
+    cost_best[i]=cost[ind_mincost[i]] 
 end
 
 
@@ -73,6 +75,31 @@ end
 revenue_orig_daily = sum(run_opt(problem_type,data_orig_daily,1,region,false));
 
  #### Figures #######
+
+clust_methods = Array{Dict,1}()
+
+ # revenue vs. k
+push!(clust_methods,Dict("name"=>"full representation", "rev"=> revenue_orig_daily*ones(length(n_clust_ar)),"color"=>"c","linestyle"=>"--","width"=>3))
+push!(clust_methods,Dict("name"=>"k-means", "rev"=> revenue_best[:],"color"=>"b","linestyle"=>"-","width"=>2))  
+plot_k_rev(n_clust_ar,clust_methods,string("plots/kmeans_",region,".png"))
+
+ # revenue vs. SSE
+ # averaging
+cost_rev_clouds = Dict()
+cost_rev_points = Array{Dict,1}()
+descr=string("plots/cloud_kmeans_",region,".png")
+
+cost_rev_clouds["cost"]=cost
+cost_rev_clouds["rev"] = revenue
+
+push!(cost_rev_points,Dict("label"=>"kmeans best","cost"=>cost_best,"rev"=>revenue_best,"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
+
+plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily)
+
+
+
+
+
 figure()
 plt.plot(n_clust_ar,revenue_best[:]/1e6,lw=2)
 plt.plot(n_clust_ar,revenue_orig_daily/1e6*ones(length(n_clust_ar)),label="365 days",color="c",lw=3)
