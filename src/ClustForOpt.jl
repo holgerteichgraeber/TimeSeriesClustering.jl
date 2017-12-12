@@ -20,7 +20,9 @@ export run_opt,
        sakoe_chiba_band,
        kmedoids_exact,
        plot_k_rev,
-       plot_SSE_rev
+       plot_SSE_rev,
+       sort_centers,
+       plot_clusters2
 
 include("utils/optim_problems.jl")
 include("utils/utils.jl")

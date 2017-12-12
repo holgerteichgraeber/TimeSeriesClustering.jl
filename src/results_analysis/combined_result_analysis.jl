@@ -261,9 +261,11 @@ cost_dict["dtw"] = cost
 ind_mincost = findmin(cost,3)[2]  # along dimension 3
 ind_mincost = reshape(ind_mincost,size(ind_mincost,1),size(ind_mincost,2))
 revenue_best["dtw"] = zeros(size(revenue_dict["dtw"],1),size(revenue_dict["dtw"],2))
+cost_best["dtw"] = zeros(size(cost_dict["dtw"],1),size(cost_dict["dtw"],2))
 for i=1:size(revenue_dict["dtw"],1)
   for j=1:size(revenue_dict["dtw"],2)
     revenue_best["dtw"][i,j]=revenue_dict["dtw"][ind_mincost[i,j]] 
+    cost_best["dtw"][i,j]=cost_dict["dtw"][ind_mincost[i,j]] 
   end
 end
 
@@ -361,6 +363,50 @@ push!(cost_rev_points,Dict("label"=>"k-medoids exact","cost"=>cost_dict["kmedoid
 push!(cost_rev_points,Dict("label"=>"Hierarchical medoid","cost"=>cost_dict["hier_medoid"],"rev"=>revenue_dict["hier_medoid"],"mec"=>"k","mew"=>3.0,"marker"=>"x" ))
 
 plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily;n_col=3)
+ 
+ 
+ 
+ #DTW skband=1
+bw=1 #bandwidht
+cost_rev_clouds = Dict()
+cost_rev_points = Array{Dict,1}()
+descr=string("plots/cloud_dtw_bandwidth_",bw,"_",problem_type,"_",region,".png")
+
+cost_rev_clouds["cost"]=Array(cost_dict["dtw"][:,bw+1,:])
+cost_rev_clouds["rev"] = Array(revenue_dict["dtw"][:,bw+1,:])
+
+push!(cost_rev_points,Dict("label"=>"DTW best","cost"=>cost_best["dtw"][:,bw+1],"rev"=>revenue_best["dtw"][:,bw+1],"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
+
+plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily;n_col=3)
+
+ #DTW skband=2
+
+bw=2 #bandwidht
+cost_rev_clouds = Dict()
+cost_rev_points = Array{Dict,1}()
+descr=string("plots/cloud_dtw_bandwidth_",bw,"_",problem_type,"_",region,".png")
+
+cost_rev_clouds["cost"]=Array(cost_dict["dtw"][:,bw+1,:])
+cost_rev_clouds["rev"] = Array(revenue_dict["dtw"][:,bw+1,:])
+
+push!(cost_rev_points,Dict("label"=>"DTW best","cost"=>cost_best["dtw"][:,bw+1],"rev"=>revenue_best["dtw"][:,bw+1],"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
+
+plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily;n_col=3)
+
+ #DTW skband=3
+
+bw=3 #bandwidht
+cost_rev_clouds = Dict()
+cost_rev_points = Array{Dict,1}()
+descr=string("plots/cloud_dtw_bandwidth_",bw,"_",problem_type,"_",region,".png")
+
+cost_rev_clouds["cost"]=Array(cost_dict["dtw"][:,bw+1,:])
+cost_rev_clouds["rev"] = Array(revenue_dict["dtw"][:,bw+1,:])
+
+push!(cost_rev_points,Dict("label"=>"DTW best","cost"=>cost_best["dtw"][:,bw+1],"rev"=>revenue_best["dtw"][:,bw+1],"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
+
+plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily;n_col=3)
+
   
 """
 figure()

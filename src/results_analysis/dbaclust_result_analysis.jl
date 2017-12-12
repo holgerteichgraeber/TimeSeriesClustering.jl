@@ -5,15 +5,19 @@ push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForO
 push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
 using ClustForOpt
 using JLD2 # Much faster than JLD (50s vs 20min)
+using FileIO
 
 using PyPlot
 using DataFrames
 plt = PyPlot
 
+ # region
+region_ = "GER"
+ 
  # read parameters
 param=DataFrame()
 try
-  param = readtable(joinpath("outfiles","parameters.txt"))
+  param = readtable(joinpath("outfiles",string("parameters_dtw_",region_,".txt")))
 catch
   error("No input file parameters.txt exists in folder outfiles.")
 end
@@ -40,7 +44,7 @@ problem_type = "battery"
 
 
  # load saved JLD data
-saved_data_dict= load("outfiles/aggregated_results.jld2")
+saved_data_dict= load(string("outfiles/aggregated_results_dtw_",region,".jld2"))
  #unpack saved JLD data
  for (k,v) in saved_data_dict
    @eval $(Symbol(k)) = $v
@@ -107,6 +111,12 @@ sc_ind=1
 figure()
 boxplot(inner_iter[:,sc_ind,:]')
 plt.title("iterations inner")
+
+println("Inner Iterations: Convergence skband=",sc_ind)
+for i=1:9
+  println("Not converged: k=",i," :",count(inner_iter[i,sc_ind,:].==30)/count(inner_iter[i,sc_ind,:].<30)) 
+end
+
 
  # cumulative cost
  # TODO - random indice generator for k - generate many sample paths in this way

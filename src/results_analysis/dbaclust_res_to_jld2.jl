@@ -6,11 +6,11 @@ using ClustForOpt
 using JLD2
 using FileIO
 
-region_ = "CA"
+region_ = "GER"
  # read parameters
 param=DataFrame()
 try
-  param = readtable(joinpath("outfiles",string("parameters_dtw_",region".txt")))
+  param = readtable(joinpath("outfiles",string("parameters_dtw_",region_,".txt")))
 catch
   error("No input file parameters.txt exists in folder outfiles.")
 end

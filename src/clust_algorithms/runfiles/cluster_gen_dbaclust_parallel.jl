@@ -24,8 +24,8 @@ n_clust_min =3
 n_clust_max =3
 
 # initial points
-n_init = 50 # number of initial guesses for each dbaclust run
-n_dbaclust =1 # number of dbaclust runs (each with n_init)
+n_init = 1 # number of initial guesses for each dbaclust run # should be set to 1 for most experiments
+n_dbaclust =1000 # number of dbaclust runs (each with n_init)
 
 # warping window (sakoe chiba band radius)
 rad_sc_min=0
@@ -74,7 +74,7 @@ writetable(joinpath("outfiles",string("parameters_dtw_",region,".txt")),df)
 
    ##########################
   # normalized clustering hourly
-  seq_norm, hourly_mean, hourly_sdv = z_normalize(seq,hourly=true)
+  seq_norm, hourly_mean, hourly_sdv = z_normalize(seq;hourly=true)
   tic()
   results = dbaclust(seq_norm,n_clust,n_init,ClassicDTW();iterations=iterations,inner_iterations=inner_iterations,rtol=1e-5,show_progress=false,store_trace=false,i2min=rmin,i2max=rmax)
   el_time = toq()
