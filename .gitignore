@@ -1,4 +1,6 @@
 *.pyc
 *.swp
 *core*
-*.asv 
+*.asv
+*.swn
+*.swo
