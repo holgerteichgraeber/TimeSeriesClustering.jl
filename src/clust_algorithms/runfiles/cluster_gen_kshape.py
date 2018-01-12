@@ -163,9 +163,9 @@ def run_kmeans(el_resh, n_clusters, n_init ):  # el_resh is (days,24)
     return {'centers':k_means_cluster_centers, 'weights':weights ,'SSE':SSE, 'labels':k_means_labels, 'closest_day': cluster_closest_day }
 
 
-def run_kshape(el_resh, n_clusters, n_init=1,max_iter=100,n_jobs=1,region=''):  # el_resh is (days,24)
+def run_kshape(el_resh, n_clusters, n_init=1,max_iter=100,n_jobs=1,region='',normalize=True):  # el_resh is (days,24)
 
-    res = _kshape(el_resh, n_clusters, n_init=n_init,max_iter=max_iter, n_jobs=n_jobs)
+    res = _kshape(el_resh, n_clusters, n_init=n_init,max_iter=max_iter, n_jobs=n_jobs,normalize=normalize)
     k_shape_labels = deepcopy(res['labels'])   #vector with kshape class for each datapoint
     k_shape_cluster_centers = deepcopy(res['centroids'])
     tot_dist = deepcopy(res['distance'])
@@ -198,7 +198,6 @@ def run_kshape(el_resh, n_clusters, n_init=1,max_iter=100,n_jobs=1,region=''):  
     pickle.dump(res['centroids_all'],open('outfiles/pickle_save/'+ region +'_centroids_kshape_'+str(n_clusters)+'.pkl',"wb"))
     pickle.dump(res['labels_all'],open('outfiles/pickle_save/'+ region +'labels_kshape_'+str(n_clusters)+'.pkl',"wb"))
     pickle.dump(res['distance_all'],open('outfiles/pickle_save/'+ region +'distance_kshape_'+str(n_clusters)+'.pkl',"wb"))
-    pickle.dump(res['daily_dist_all'],open('outfiles/pickle_save/'+ region +'daily_dist_kshape_'+str(n_clusters)+'.pkl',"wb"))
     pickle.dump(res['iterations'],open('outfiles/pickle_save/'+ region +'iterations_kshape_'+str(n_clusters)+'.pkl',"wb"))
 
 
@@ -492,7 +491,7 @@ if __name__ == '__main__':
     for k in n_k:
         i = i+1
         tic = time()
-        res = run_kshape(el_CA_2015_norm_meansdv, k,n_init=n_rand_km, max_iter=max_iter, n_jobs=n_jobs,region=region)
+        res = run_kshape(el_CA_2015_norm_meansdv, k,n_init=n_rand_km, max_iter=max_iter, n_jobs=n_jobs,region=region,normalize=True)
         toc = time()
         sys.stdout.write("k=" + str(k) + " took " + str(toc - tic) + " s  \n" ) # on cluster, print seems to be omitted in out
         
