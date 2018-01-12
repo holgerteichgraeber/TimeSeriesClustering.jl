@@ -96,22 +96,22 @@ ind_conv = Dict()
 num_conv = zeros(Int32,n_k) # number of converged values
 kshape_weights = Dict()
 
-path_clust = "/data/cees/hteich/clustering"
+path_scratch = normpath(joinpath(pwd(),outfiles,pickle_save ))
 
 for k=1:n_k
-  kshape_iterations[k] = load_clusters.load_pickle(normpath(joinpath(path_clust,"data",data_folder,region * "iterations_kshape_" * string(k) * ".pkl")))
+  kshape_iterations[k] = load_clusters.load_pickle(normpath(joinpath(path_scratch,region * "iterations_kshape_" * string(k) * ".pkl")))
   ind_conv[k] = find(collect(kshape_iterations[k]) .< 19999)  # only converged values - collect() transforms tuple to array
   num_conv[k] = length(ind_conv[k])
   kshape_iterations[k] = kshape_iterations[k][ind_conv[k]] #only converged values
-  kshape_centroids_in = load_clusters.load_pickle(normpath(joinpath(path_clust,"data",data_folder, region * "_centroids_kshape_" * string(k) * ".pkl")))
+  kshape_centroids_in = load_clusters.load_pickle(normpath(joinpath(path_scratch, region * "_centroids_kshape_" * string(k) * ".pkl")))
   #### back transform centroids from normalized data
   kshape_centroids[k] = zeros(size(kshape_centroids_in[1])[1],size(kshape_centroids_in[1])[2],num_conv[k]) # only converged values
   for i=1:num_conv[k]
     kshape_centroids[k][:,:,i] = (kshape_centroids_in[ind_conv[k][i]].* hourly_sdv' + ones(k)*hourly_mean')
   end
-  kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(path_clust,"data",data_folder,region * "labels_kshape_" * string(k) * ".pkl")))
-  kshape_dist[k] = load_clusters.load_pickle(normpath(joinpath(path_clust,"data",data_folder,region * "distance_kshape_" * string(k) * ".pkl")))[ind_conv[k]] # only converged
-  kshape_dist_all[k] = load_clusters.load_pickle(normpath(joinpath(path_clust,"data",data_folder,region * "distance_kshape_" * string(k) * ".pkl")))
+  kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(path_scratch,region * "labels_kshape_" * string(k) * ".pkl")))
+  kshape_dist[k] = load_clusters.load_pickle(normpath(joinpath(path_scratch,region * "distance_kshape_" * string(k) * ".pkl")))[ind_conv[k]] # only converged
+  kshape_dist_all[k] = load_clusters.load_pickle(normpath(joinpath(path_scratch,region * "distance_kshape_" * string(k) * ".pkl")))
   # calculate weights
   kshape_weights[k] = zeros(size(kshape_centroids[k][:,:,1])[1],num_conv[k]) # only converged
   for i=1:num_conv[k]
