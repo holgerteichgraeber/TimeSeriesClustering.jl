@@ -86,7 +86,7 @@ def _sbd(x, y):
     return dist, yshift
 
 
-def _extract_shape(idx, x, j, cur_center):
+def _extract_shape(idx, x, j, cur_center, normalize=True):
     """
     >>> _extract_shape(np.array([0,1,2]), np.array([[1,2,3], [4,5,6]]), 1, np.array([0,3,4]))
     array([-1.,  0.,  1.])
@@ -110,26 +110,32 @@ def _extract_shape(idx, x, j, cur_center):
     if len(a) == 0:
         return np.zeros((1, x.shape[1]))
     columns = a.shape[1]
-    y = zscore(a, axis=1, ddof=1)
-    s = np.dot(y.transpose(), y)
+    if normalize:
+        y = zscore(a, axis=1, ddof=1)
+        s = np.dot(y.transpose(), y)
 
-    p = np.empty((columns, columns))
-    p.fill(1.0/columns)
-    p = np.eye(columns) - p
+        p = np.empty((columns, columns))
+        p.fill(1.0/columns)
+        p = np.eye(columns) - p
 
-    m = np.dot(np.dot(p, s), p)
-    _, vec = eigh(m)
+        m = np.dot(np.dot(p, s), p)
+        _, vec = eigh(m)
+    else:  
+        s = np.dot(a.transpose(), a)
+        m = s  
+        _, vec = eigh(m)
+   
     centroid = vec[:, -1]
     finddistance1 = math.sqrt(((a[0] - centroid) ** 2).sum())
     finddistance2 = math.sqrt(((a[0] + centroid) ** 2).sum())
 
     if finddistance1 >= finddistance2:
         centroid *= -1
+ 
+    return zscore(centroid, ddof=1) if normalize else centroid
 
-    return zscore(centroid, ddof=1)
 
-
-def _kshape(x, k, n_init=1, max_iter=100, n_jobs = 1, random_state=None ):
+def _kshape(x, k, n_init=1, max_iter=100, n_jobs = 1, random_state=None,normalize=True ):
     """
     >>> from numpy.random import seed; seed(0)
     >>> _kshape(np.array([[1,2,3,4], [0,1,2,3], [-1,1,-1,1], [1,2,2,3]]), 2)
@@ -146,7 +152,7 @@ def _kshape(x, k, n_init=1, max_iter=100, n_jobs = 1, random_state=None ):
             # n_init is the number of random starting points
             # pdb.set_trace()
             
-            idx, centroids,tot_dist = _kshape_single(x, k, max_iter=max_iter, random_state= random_state) 
+            idx, centroids,tot_dist = _kshape_single(x, k, max_iter=max_iter, random_state= random_state,normalize=normalize) 
             if best_tot_dist is None or tot_dist < best_tot_dist:
                 best_idx = idx.copy()
                 best_centroids = centroids.copy()
@@ -155,7 +161,7 @@ def _kshape(x, k, n_init=1, max_iter=100, n_jobs = 1, random_state=None ):
         # parallelisation of kshape runs
         seeds = random_state.randint(np.iinfo(np.int32).max,size=n_init)
         results = Parallel(n_jobs=n_jobs, verbose=0)(
-            delayed(_kshape_single)(x,k,max_iter=max_iter, random_state=seed)
+            delayed(_kshape_single)(x,k,max_iter=max_iter, random_state=seed, normalize=normalize)
             for seed in seeds )
         # Get results with the lowest distances
         idx, centroids,tot_dist, iterations = zip(*results)
@@ -166,7 +172,7 @@ def _kshape(x, k, n_init=1, max_iter=100, n_jobs = 1, random_state=None ):
     sys.stdout.write("Done: k="+str(k)+"\n")
     return {'centroids':best_centroids, 'labels':best_idx, 'distance':best_tot_dist,'centroids_all':centroids,'labels_all':idx,'distance_all':tot_dist,'iterations':iterations}
 
-def _kshape_single(x, k, max_iter=10000, random_state=None):
+def _kshape_single(x, k, max_iter=10000, random_state=None,normalize=True):
 
     random_state = check_random_state(random_state)
     m = x.shape[0] # number of data points (365)
@@ -189,7 +195,7 @@ def _kshape_single(x, k, max_iter=10000, random_state=None):
                 if np.unique(idx).shape[0] == k:
                     empty_clust = False
         for j in range(k):
-            centroids[j] = _extract_shape(idx, x, j, centroids[j])
+            centroids[j] = _extract_shape(idx, x, j, centroids[j],normalize=normalize)
 
         for i in range(m):
             for j in range(k):
