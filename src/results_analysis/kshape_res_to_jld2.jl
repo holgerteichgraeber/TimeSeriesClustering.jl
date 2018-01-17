@@ -10,7 +10,7 @@ unshift!(PyVector(pyimport("sys")["path"]), util_path) # add util path to search
 @pyimport load_clusters
 
 
-region = "CA"   # "CA"   "GER"
+region = "GER"   # "CA"   "GER"
 
 #### DATA INPUT ######
 # Input options:
@@ -32,29 +32,14 @@ n_clust_max = n_k
 
 result_data = "kshape_it1000_max100"
 
- ############################
-if result_data == "kshape_it1000_max20000"
-  n_kshape =1000
-  iterations=20000
-  data_folder = "kshape_results"
-elseif result_data == "kshape_it1000_max100"
-  n_kshape =1000
-  iterations=100
-  data_folder = "kshape_results_itmax"
-elseif result_data == "kshape_it10000_max100"
-  n_kshape =10000
-  iterations=100
-  data_folder = "kshape_results_itmax100_10000runs"
-else
-  error("result_data input - ",result_data," - does not exist")
-end
+n_kshape =10
+iterations=200
 
 # create directory where data is saved
 try
   mkdir("outfiles")
 catch
-  rm("outfiles",recursive=true)
-  mkdir("outfiles")
+  # do nothing
 end
 
 # save settings in txt file
@@ -78,14 +63,15 @@ seq = data_orig_daily[:,1:365]  # do not load as sequence
 problem_type_ar = ["battery", "gas_turbine"]
 
 # calc hourly mean and sdv, Note: For GER, these are in EUR, since the original data is in EUR
-hourly_mean = zeros(size(data_orig_daily)[1])
-hourly_sdv = zeros(size(data_orig_daily)[1])
-for i=1:size(data_orig_daily)[1]
-  hourly_mean[i] = mean(data_orig_daily[i,:])
-  hourly_sdv[i] = std(data_orig_daily[i,:])
-end
+ # sequence based normalization
+seq_norm, hourly_mean, hourly_sdv = z_normalize(seq;sequence=true)
 
  # initialize dictionaries of the loaded data (key: number of clusters)
+ # for debugging - DELETE LATER
+kshape_centroids_in=[]
+kshape_centroids_all=[]
+
+
 kshape_centroids = Dict()
 kshape_labels = Dict()
 # kshape_dist_daily = Dict()
@@ -96,27 +82,32 @@ ind_conv = Dict()
 num_conv = zeros(Int32,n_k) # number of converged values
 kshape_weights = Dict()
 
-path_scratch = normpath(joinpath(pwd(),outfiles,pickle_save ))
+path_scratch = normpath(joinpath(pwd(),"outfiles","pickle_save" ))
 
 for k=1:n_k
   kshape_iterations[k] = load_clusters.load_pickle(normpath(joinpath(path_scratch,region * "iterations_kshape_" * string(k) * ".pkl")))
+  kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(path_scratch,region * "labels_kshape_" * string(k) * ".pkl"))) .+1  # python to julia indexing
   ind_conv[k] = find(collect(kshape_iterations[k]) .< 19999)  # only converged values - collect() transforms tuple to array
   num_conv[k] = length(ind_conv[k])
   kshape_iterations[k] = kshape_iterations[k][ind_conv[k]] #only converged values
   kshape_centroids_in = load_clusters.load_pickle(normpath(joinpath(path_scratch, region * "_centroids_kshape_" * string(k) * ".pkl")))
+  # transpose centroids in order to bring them to the same format as dtw, kmeans, etc. 
+  kshape_centroids_all=[]
+  for i=1:length(kshape_centroids_in)
+    push!(kshape_centroids_all,kshape_centroids_in[i]')
+  end  ## TODO TEST
   #### back transform centroids from normalized data
-  kshape_centroids[k] = zeros(size(kshape_centroids_in[1])[1],size(kshape_centroids_in[1])[2],num_conv[k]) # only converged values
+  kshape_centroids[k] = zeros(size(kshape_centroids_all[1])[1],size(kshape_centroids_all[1])[2],num_conv[k]) # only converged values
   for i=1:num_conv[k]
-    kshape_centroids[k][:,:,i] = (kshape_centroids_in[ind_conv[k][i]].* hourly_sdv' + ones(k)*hourly_mean')
+    kshape_centroids[k][:,:,i] = undo_z_normalize(kshape_centroids_all[ind_conv[k][i]],hourly_mean,hourly_sdv; idx=kshape_labels[k][i])
   end
-  kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(path_scratch,region * "labels_kshape_" * string(k) * ".pkl")))
   kshape_dist[k] = load_clusters.load_pickle(normpath(joinpath(path_scratch,region * "distance_kshape_" * string(k) * ".pkl")))[ind_conv[k]] # only converged
   kshape_dist_all[k] = load_clusters.load_pickle(normpath(joinpath(path_scratch,region * "distance_kshape_" * string(k) * ".pkl")))
   # calculate weights
   kshape_weights[k] = zeros(size(kshape_centroids[k][:,:,1])[1],num_conv[k]) # only converged
   for i=1:num_conv[k]
     for j=1:length(kshape_labels[k][ind_conv[k][i]])
-        kshape_weights[k][kshape_labels[k][ind_conv[k][i]][j]+1,i] +=1
+        kshape_weights[k][kshape_labels[k][ind_conv[k][i]][j],i] +=1
     end
     kshape_weights[k][:,i] = kshape_weights[k][:,i]/length(kshape_labels[k][ind_conv[k][i]])
   end
@@ -143,7 +134,7 @@ end #k=1:n_k
     n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts
       for i = 1:n_kshape
 
-          centers[n_clust,i]= kshape_centroids[n_clust_it][:,:,i]'
+          centers[n_clust,i]= kshape_centroids[n_clust_it][:,:,i]
           clustids[n_clust,i] = kshape_labels[n_clust_it][i] 
           cost[n_clust_it,i] = kshape_dist[n_clust_it][i]
           iter[n_clust_it,i] = kshape_iterations[n_clust_it][i]

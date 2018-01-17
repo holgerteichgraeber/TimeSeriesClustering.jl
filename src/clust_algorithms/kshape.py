@@ -202,15 +202,14 @@ def _kshape_single(x, k, max_iter=10000, random_state=None,normalize=True):
                 distances[i, j] = 1 - max(_ncc_c(x[i], centroids[j]))
         idx = distances.argmin(1)
 
-        sys.stdout.write(str(_)+"," )
         sys.stdout.flush() # empty the buffer
         if np.array_equal(old_idx, idx):
-            sys.stdout.write( "\n iter: " +  str(_) + " k=" + str(k)+"\n")
+            sys.stdout.write( "iter: " +  str(_) + " k=" + str(k)+"\n")
             sys.stdout.flush() # empty the buffer
             iterations = _
             break
         elif _==(max_iter-1):
-            sys.stdout.write( "\n iter: " + str(max_iter*k) + " k=" + str(k)+"\n")
+            sys.stdout.write( "iter: " + str(_) + " k=" + str(k)+"\n")
             sys.stdout.flush() # empty the buffer 
             iterations = _
     dist_daily = distances.min(1)

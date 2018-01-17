@@ -115,6 +115,19 @@ def normalize_by_hour_meansdv(price_dat_resh):
         price_dat_norm[:,i] = price_dat_norm[:,i]/hourly_sdv[i]
     return price_dat_norm, hourly_mean, hourly_sdv
 
+def normalize_by_seq_meansdv(price_dat_resh):
+    price_dat_norm = np.zeros(np.shape(price_dat_resh))
+    seq_mean = np.zeros(np.shape(price_dat_resh)[0])
+    seq_sdv = np.zeros(np.shape(price_dat_resh)[0])
+    for i in range(np.shape(price_dat_resh)[0]):
+        seq_mean[i] = np.mean(price_dat_resh[i,:])
+        price_dat_norm[i,:] = price_dat_resh[i,:] - seq_mean[i]
+        seq_sdv[i] = np.std(price_dat_resh[i,:],ddof=1)
+        if seq_sdv[i] ==0:
+            seq_sdv[i] =1
+        price_dat_norm[i,:] = price_dat_norm[i,:]/seq_sdv[i]
+    return price_dat_norm, seq_mean, seq_sdv
+
 def merge_norm_data(data1,data2,data3):
     return 0
 
@@ -426,17 +439,17 @@ if __name__ == '__main__':
             sys.exit("Region not defined: " + sys.argv[2])
 
     plt.close("all")
-    tic = time()
+    tic_begin = time()
 
 
     ### SETTINGS ###
-    n_rand_km = 1000#  random starting points for kmeans
+    n_rand_km = 1#  random starting points for kmeans
     min_k =1
     max_k=min_k+9
     n_k = np.arange(min_k,max_k)
     showfigs = False  
     n_jobs = -1  #1 default, -1 as many cores as available
-    max_iter = 20000
+    max_iter = 200
     plots = False
     ##############
 
@@ -447,7 +460,6 @@ if __name__ == '__main__':
         reg_str = "" # prefix for datanaming later
     elif region == "GER":
         el_CA_2015 = read_CA_el_data_CSV('/data/cees/hteich/clustering/data/el_prices/GER_2015_elPrice.csv')
-        el_CA_2015 = conv_EUR_to_USD(el_CA_2015)
         reg_str = "GER_"
     # Plot 12 month CA electricity price data
     # el_CA_2015_montly = plot_monthly_price(el_CA_2015)
@@ -455,8 +467,8 @@ if __name__ == '__main__':
     el_CA_2015_resh = np.reshape(el_CA_2015, (el_CA_2015.size/24, 24))
     el_CA_2015_norm,max_hourly = normalize_by_hour_01(el_CA_2015_resh)
     el_CA_2015_normtot,max_el = normalize_01(el_CA_2015_resh)
-    el_CA_2015_norm_meansdv,mean_hourly,sdv_hourly= normalize_by_hour_meansdv(el_CA_2015_resh)
-
+    el_CA_2015_norm_meansdv_hourly,mean_hourly,sdv_hourly= normalize_by_hour_meansdv(el_CA_2015_resh)
+    el_CA_2015_norm_meansdv,mean_seq,sdv_seq= normalize_by_seq_meansdv(el_CA_2015_resh)
     #pdb.set_trace()
 
     '''
@@ -513,6 +525,12 @@ if __name__ == '__main__':
         #write_clusters_to_txt_battery_opt(daynum_to_hourlyelprice(cluster_closest_day_kshape[i-1], el_CA_2015_resh),wt_kshape[i-1], k,filename_ep,filename_wt)
     # \todo: Make class out of this - nice plotting of cluster and representation
     
+    # time print
+    toc_end = time()
+    sys.stdout.write("total kshape clustering took: " + str(toc_end - tic_begin) + " s  \n" ) # on cluster, print seems to be omitted in out
+    
+
+
     # Plot generation Presentation
     if plots:
         k=5
