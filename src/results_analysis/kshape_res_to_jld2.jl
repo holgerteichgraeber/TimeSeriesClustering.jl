@@ -87,7 +87,7 @@ path_scratch = normpath(joinpath(pwd(),"outfiles","pickle_save" ))
 for k=1:n_k
   kshape_iterations[k] = load_clusters.load_pickle(normpath(joinpath(path_scratch,region * "iterations_kshape_" * string(k) * ".pkl")))
   kshape_labels[k] = load_clusters.load_pickle(normpath(joinpath(path_scratch,region * "labels_kshape_" * string(k) * ".pkl"))) .+1  # python to julia indexing
-  ind_conv[k] = find(collect(kshape_iterations[k]) .< 19999)  # only converged values - collect() transforms tuple to array
+  ind_conv[k] = find(collect(kshape_iterations[k]) .< iterations-1)  # only converged values - collect() transforms tuple to array
   num_conv[k] = length(ind_conv[k])
   kshape_iterations[k] = kshape_iterations[k][ind_conv[k]] #only converged values
   kshape_centroids_in = load_clusters.load_pickle(normpath(joinpath(path_scratch, region * "_centroids_kshape_" * string(k) * ".pkl")))
@@ -126,14 +126,13 @@ end #k=1:n_k
   weights = Dict{Tuple{Int,Int},Array}()
   revenue = Dict{String,Array}() 
   for i=1:length(problem_type_ar)
-    revenue[problem_type_ar[i]] = zeros(length(n_clust_ar),n_kshape)
+    revenue[problem_type_ar[i]] = zeros(length(n_clust_ar),length(n_clust_ar))
   end
 
    # iterate through settings
   for n_clust_it=1:length(n_clust_ar)
     n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts
-      for i = 1:n_kshape
-
+      for i = 1:num_conv[n_clust_it]
           centers[n_clust,i]= kshape_centroids[n_clust_it][:,:,i]
           clustids[n_clust,i] = kshape_labels[n_clust_it][i] 
           cost[n_clust_it,i] = kshape_dist[n_clust_it][i]
