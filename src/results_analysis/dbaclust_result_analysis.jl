@@ -112,11 +112,17 @@ figure()
 boxplot(inner_iter[:,sc_ind,:]')
 plt.title("iterations inner")
 
+function print_conv(sc_ind)
 println("Inner Iterations: Convergence skband=",sc_ind)
-for i=1:9
-  println("Not converged: k=",i," :",count(inner_iter[i,sc_ind,:].==30)/count(inner_iter[i,sc_ind,:].<30)) 
+  for i=1:9
+    println("Not converged: k=",i," :",count(inner_iter[i,sc_ind,:].==inner_iterations)/count(inner_iter[i,sc_ind,:].<=inner_iterations)) 
+  end
+println("Iterations: Convergence skband=",sc_ind)
+  for i=1:9
+    println("Not converged: k=",i," :",count(iter[i,sc_ind,:].==iterations)/count(iter[i,sc_ind,:].<=iterations)) 
+  end
 end
-
+print_conv(sc_ind)
 
  # cumulative cost
  # TODO - random indice generator for k - generate many sample paths in this way
