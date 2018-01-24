@@ -99,12 +99,12 @@ for k=1:n_k
   #### back transform centroids from normalized data
   kshape_centroids[k] = zeros(size(kshape_centroids_all[1])[1],size(kshape_centroids_all[1])[2],num_conv[k]) # only converged values
   for i=1:num_conv[k]
-    kshape_centroids[k][:,:,i] = undo_z_normalize(kshape_centroids_all[ind_conv[k][i]],hourly_mean,hourly_sdv; idx=kshape_labels[k][i])
+    kshape_centroids[k][:,:,i] = undo_z_normalize(kshape_centroids_all[ind_conv[k][i]],hourly_mean,hourly_sdv; idx=kshape_labels[k][ind_conv[k][i]])
   end
   kshape_dist[k] = load_clusters.load_pickle(normpath(joinpath(path_scratch,region * "distance_kshape_" * string(k) * ".pkl")))[ind_conv[k]] # only converged
   kshape_dist_all[k] = load_clusters.load_pickle(normpath(joinpath(path_scratch,region * "distance_kshape_" * string(k) * ".pkl")))
   # calculate weights
-  kshape_weights[k] = zeros(size(kshape_centroids[k][:,:,1])[1],num_conv[k]) # only converged
+  kshape_weights[k] = zeros(k,num_conv[k]) # only converged
   for i=1:num_conv[k]
     for j=1:length(kshape_labels[k][ind_conv[k][i]])
         kshape_weights[k][kshape_labels[k][ind_conv[k][i]][j],i] +=1
