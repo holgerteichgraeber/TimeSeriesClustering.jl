@@ -48,10 +48,10 @@ revenue=revenue[problem_type]
  # initialize dictionaries of the loaded data (key: number of clusters)
  #centers = Dict{Tuple{Int,Int,Int},Array}()
  #clustids = Dict{Tuple{Int,Int,Int},Array}()
- #cost = zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
- #iter =  zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
+ #  cost = Dict{Int,Array}()
+ # iter =  Dict{Int,Array}()
  #weights = Dict{Tuple{Int,Int,Int},Array}()
- #revenue = zeros(length(n_clust_ar),length(rad_sc_ar),n_dbaclust)
+ #revenue = Dict{String,Dict}() 
 
 
 
@@ -60,13 +60,15 @@ revenue=revenue[problem_type]
 
  # TODO 
  # Find best cost index - save
-ind_mincost = findmin(cost,2)[2]  # along dimension 2
-ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
-revenue_best = zeros(size(revenue,1))
-cost_best = zeros(size(cost,1))
-for i=1:size(revenue,1)
-    revenue_best[i]=revenue[ind_mincost[i]] 
-    cost_best[i]=cost[ind_mincost[i]] 
+ind_mincost = zeros(Int,size(n_clust_ar,1))
+for i=1:size(n_clust_ar,1)
+  ind_mincost[i] = findmin(cost[i])[2] 
+end
+revenue_best = zeros(size(n_clust_ar,1))
+cost_best = zeros(size(n_clust_ar,1))
+for i=1:size(n_clust_ar,1)
+    revenue_best[i]=revenue[i][ind_mincost[i]] 
+    cost_best[i]=cost[i][ind_mincost[i]] 
 end
 
 
@@ -91,8 +93,8 @@ cost_rev_clouds = Dict()
 cost_rev_points = Array{Dict,1}()
 descr=string("plots/cloud_kshape_",region,".png")
 
-cost_rev_clouds["cost"]=cost
-cost_rev_clouds["rev"] = revenue
+cost_rev_clouds["cost"]=[cost[i] for i in 1:size(n_clust_ar,1)]
+cost_rev_clouds["rev"] = [revenue[i] for i in 1:size(n_clust_ar,1)]
 
 push!(cost_rev_points,Dict("label"=>"k-shape best","cost"=>cost_best,"rev"=>revenue_best,"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
 

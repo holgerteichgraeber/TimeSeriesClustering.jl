@@ -205,7 +205,11 @@ function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Arra
   fsize_ref = 16
   for i=1:length(range_k)
     ii= length(range_k)-i+1
-    plot(cost_rev_clouds["cost"][ii,:],cost_rev_clouds["rev"][ii,:]/rev_365,".",label=string("k=",range_k[ii]),alpha=0.2)
+    if typeof(cost_rev_clouds["rev"]) == Array{Array{Float64,1},1} # exceptional case for kshape
+      plot(cost_rev_clouds["cost"][ii],cost_rev_clouds["rev"][ii]/rev_365,".",label=string("k=",range_k[ii]),alpha=0.2)
+    else # normal case 
+      plot(cost_rev_clouds["cost"][ii,:],cost_rev_clouds["rev"][ii,:]/rev_365,".",label=string("k=",range_k[ii]),alpha=0.2)
+    end
   end
   for i=1:length(cost_rev_points)
     for j=1:length(range_k)

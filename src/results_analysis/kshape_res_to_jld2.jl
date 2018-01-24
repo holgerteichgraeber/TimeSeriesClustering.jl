@@ -119,28 +119,39 @@ end #k=1:n_k
 
 
    # initialize dictionaries of the loaded data (key: number of clusters)
+  ########
+ ###### 
+ ###
+  # TODO: eliminate n_kshape, substitue num_conv -> make cost and iter Dicts as well  - there must be zeros in revenue (now solved) and in cost -> which leads to the 0/0 pair in the plot
   centers = Dict{Tuple{Int,Int},Array}()
   clustids = Dict{Tuple{Int,Int},Array}()
-  cost = zeros(length(n_clust_ar),n_kshape)
-  iter =  zeros(length(n_clust_ar),n_kshape)
+  cost = Dict{Int,Array}()
+  iter =  Dict{Int,Array}()
   weights = Dict{Tuple{Int,Int},Array}()
-  revenue = Dict{String,Array}() 
+  revenue = Dict{String,Dict}() 
   for i=1:length(problem_type_ar)
-    revenue[problem_type_ar[i]] = zeros(length(n_clust_ar),length(n_clust_ar))
+    revenue[problem_type_ar[i]] = Dict{Int,Array}() # could do this one as well: []
+# zeros(length(n_clust_ar),n_kshape)
   end
 
    # iterate through settings
   for n_clust_it=1:length(n_clust_ar)
     n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts
+      cost[n_clust] = zeros(Float64,num_conv[n_clust_it])
+      iter[n_clust] = zeros(Int,num_conv[n_clust_it])
+      # initialize revenue array within dict
+      for ii=1:length(problem_type_ar)
+        revenue[problem_type_ar[ii]][n_clust] = zeros(Float64,num_conv[n_clust_it])
+      end
       for i = 1:num_conv[n_clust_it]
           centers[n_clust,i]= kshape_centroids[n_clust_it][:,:,i]
           clustids[n_clust,i] = kshape_labels[n_clust_it][i] 
-          cost[n_clust_it,i] = kshape_dist[n_clust_it][i]
-          iter[n_clust_it,i] = kshape_iterations[n_clust_it][i]
+          cost[n_clust][i] = kshape_dist[n_clust_it][i]
+          iter[n_clust][i] = kshape_iterations[n_clust_it][i]
           weights[n_clust,i] =  kshape_weights[n_clust_it][:,i]   # weights 
         # run opt
         for ii=1:length(problem_type_ar)
-          revenue[problem_type_ar[ii]][n_clust_it,i]=sum(run_opt(problem_type_ar[ii],(centers[n_clust,i]),weights[n_clust,i],region,false))
+          revenue[problem_type_ar[ii]][n_clust][i]=sum(run_opt(problem_type_ar[ii],(centers[n_clust,i]),weights[n_clust,i],region,false))
         end 
      
       end
