@@ -261,11 +261,9 @@ cost_dict["dtw"] = cost
 ind_mincost = findmin(cost,3)[2]  # along dimension 3
 ind_mincost = reshape(ind_mincost,size(ind_mincost,1),size(ind_mincost,2))
 revenue_best["dtw"] = zeros(size(revenue_dict["dtw"],1),size(revenue_dict["dtw"],2))
-cost_best["dtw"] = zeros(size(cost_dict["dtw"],1),size(cost_dict["dtw"],2))
 for i=1:size(revenue_dict["dtw"],1)
   for j=1:size(revenue_dict["dtw"],2)
     revenue_best["dtw"][i,j]=revenue_dict["dtw"][ind_mincost[i,j]] 
-    cost_best["dtw"][i,j]=cost_dict["dtw"][ind_mincost[i,j]] 
   end
 end
 
@@ -298,16 +296,27 @@ saved_data_dict= load(string("outfiles/aggregated_results_kshape_",region,".jld2
  end
 
  #set revenue to the chosen problem type
-revenue_dict["kshape"]=revenue[problem_type] 
-cost_dict["kshape"] = cost
+revenue_dict["kshape"]=[revenue[problem_type][i] for i in 1:size(n_clust_ar,1)]
+cost_dict["kshape"] = [cost[i] for i in 1:size(n_clust_ar,1)]
 
  # Find best cost index - save
-ind_mincost = findmin(cost,2)[2]  # along dimension 2
-ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
-revenue_best["kshape"] = zeros(size(revenue_dict["kshape"],1))
-for i=1:size(revenue_dict["kshape"],1)
-    revenue_best["kshape"][i]=revenue_dict["kshape"][ind_mincost[i]] 
+ind_mincost = zeros(Int,size(n_clust_ar,1))
+for i=1:size(n_clust_ar,1)
+  ind_mincost[i] = findmin(cost[i])[2] 
 end
+revenue_best["kshape"] = zeros(size(n_clust_ar,1))
+cost_best["kshape"] = zeros(size(n_clust_ar,1))
+for i=1:size(n_clust_ar,1)
+    revenue_best["kshape"][i]=revenue[problem_type][i][ind_mincost[i]] 
+    cost_best["kshape"][i]=cost[i][ind_mincost[i]] 
+end
+
+ #  ind_mincost = findmin(cost,2)[2]  # along dimension 2
+ #ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
+ #revenue_best["kshape"] = zeros(size(revenue_dict["kshape"],1))
+ #for i=1:size(revenue_dict["kshape"],1)
+ #    revenue_best["kshape"][i]=revenue_dict["kshape"][ind_mincost[i]] 
+ #end
 
 
  ####### Figures ##############
@@ -315,20 +324,28 @@ end
  # revenue vs. k
 clust_methods = Array{Dict,1}()
 
+# traditional
 push!(clust_methods,Dict("name"=>"full representation", "rev"=> revenue_orig_daily*ones(length(n_clust_ar)),"color"=>"c","linestyle"=>"--","width"=>3))
 plot_k_rev(n_clust_ar,clust_methods,string("plots/fulldata_",region,".png"))
 push!(clust_methods,Dict("name"=>"k-means", "rev"=> revenue_best["kmeans"][:],"color"=>"b","linestyle"=>"-","width"=>2))
 plot_k_rev(n_clust_ar,clust_methods,string("plots/kmeans_",region,".png"))
 push!(clust_methods,Dict("name"=>"k-medoids", "rev"=> revenue_best["kmedoids_exact"][:],"color"=>"g","linestyle"=>"-","width"=>2))
 plot_k_rev(n_clust_ar,clust_methods,string("plots/kmedoids_",region,".png"))
-push!(clust_methods,Dict("name"=>"DTW skband = 1", "rev"=> revenue_best["dtw"][:,2],"color"=>"k","linestyle"=>"--","width"=>2))
-plot_k_rev(n_clust_ar,clust_methods,string("plots/dtw1_",region,".png"))
-push!(clust_methods,Dict("name"=>"DTW skband = 2", "rev"=> revenue_best["dtw"][:,3],"color"=>"k","linestyle"=>":","width"=>2))
-plot_k_rev(n_clust_ar,clust_methods,string("plots/dtw2_",region,".png"))
 push!(clust_methods,Dict("name"=>"hierarchical centroid", "rev"=> revenue_best["hier_centroid"][:],"color"=>"m","linestyle"=>"-","width"=>2))
 plot_k_rev(n_clust_ar,clust_methods,string("plots/hiercen_",region,".png"))
 push!(clust_methods,Dict("name"=>"hierarchical medoid", "rev"=> revenue_best["hier_medoid"][:],"color"=>"y","linestyle"=>"-","width"=>2))
 plot_k_rev(n_clust_ar,clust_methods,string("plots/hiermed_",region,".png"))
+
+ #shape based
+clust_methods = Array{Dict,1}()
+push!(clust_methods,Dict("name"=>"full representation", "rev"=> revenue_orig_daily*ones(length(n_clust_ar)),"color"=>"c","linestyle"=>"--","width"=>3))
+push!(clust_methods,Dict("name"=>"k-shape", "rev"=> revenue_best["kshape"][:],"color"=>"b","linestyle"=>"-","width"=>2))
+push!(clust_methods,Dict("name"=>"DTW skband = 0", "rev"=> revenue_best["dtw"][:,1],"color"=>"k","linestyle"=>"-","width"=>2))
+push!(clust_methods,Dict("name"=>"DTW skband = 1", "rev"=> revenue_best["dtw"][:,2],"color"=>"k","linestyle"=>"--","width"=>2))
+push!(clust_methods,Dict("name"=>"DTW skband = 2", "rev"=> revenue_best["dtw"][:,3],"color"=>"k","linestyle"=>":","width"=>2))
+plot_k_rev(n_clust_ar,clust_methods,string("plots/shape_",region,".png"))
+
+
 
  # revenue vs. SSE
  # averaging
@@ -360,53 +377,9 @@ cost_rev_clouds["rev"] = revenue_dict["kmedoids"]
 push!(cost_rev_points,Dict("label"=>"k-medoids exact","cost"=>cost_dict["kmedoids_exact"],"rev"=>revenue_dict["kmedoids_exact"],"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
 
  # hier medoid
-push!(cost_rev_points,Dict("label"=>"Hierarchical medoid","cost"=>cost_dict["hier_medoid"],"rev"=>revenue_dict["hier_medoid"],"mec"=>"k","mew"=>3.0,"marker"=>"x" ))
+ push!(cost_rev_points,Dict("label"=>"Hierarchical medoid","cost"=>cost_dict["hier_medoid"],"rev"=>revenue_dict["hier_medoid"],"mec"=>"k","mew"=>3.0,"marker"=>"x" ))
 
 plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily;n_col=3)
- 
- 
- 
- #DTW skband=1
-bw=1 #bandwidht
-cost_rev_clouds = Dict()
-cost_rev_points = Array{Dict,1}()
-descr=string("plots/cloud_dtw_bandwidth_",bw,"_",problem_type,"_",region,".png")
-
-cost_rev_clouds["cost"]=Array(cost_dict["dtw"][:,bw+1,:])
-cost_rev_clouds["rev"] = Array(revenue_dict["dtw"][:,bw+1,:])
-
-push!(cost_rev_points,Dict("label"=>"DTW best","cost"=>cost_best["dtw"][:,bw+1],"rev"=>revenue_best["dtw"][:,bw+1],"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
-
-plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily;n_col=3)
-
- #DTW skband=2
-
-bw=2 #bandwidht
-cost_rev_clouds = Dict()
-cost_rev_points = Array{Dict,1}()
-descr=string("plots/cloud_dtw_bandwidth_",bw,"_",problem_type,"_",region,".png")
-
-cost_rev_clouds["cost"]=Array(cost_dict["dtw"][:,bw+1,:])
-cost_rev_clouds["rev"] = Array(revenue_dict["dtw"][:,bw+1,:])
-
-push!(cost_rev_points,Dict("label"=>"DTW best","cost"=>cost_best["dtw"][:,bw+1],"rev"=>revenue_best["dtw"][:,bw+1],"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
-
-plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily;n_col=3)
-
- #DTW skband=3
-
-bw=3 #bandwidht
-cost_rev_clouds = Dict()
-cost_rev_points = Array{Dict,1}()
-descr=string("plots/cloud_dtw_bandwidth_",bw,"_",problem_type,"_",region,".png")
-
-cost_rev_clouds["cost"]=Array(cost_dict["dtw"][:,bw+1,:])
-cost_rev_clouds["rev"] = Array(revenue_dict["dtw"][:,bw+1,:])
-
-push!(cost_rev_points,Dict("label"=>"DTW best","cost"=>cost_best["dtw"][:,bw+1],"rev"=>revenue_best["dtw"][:,bw+1],"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
-
-plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily;n_col=3)
-
   
 """
 figure()
