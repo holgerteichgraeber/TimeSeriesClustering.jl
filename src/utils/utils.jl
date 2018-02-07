@@ -55,7 +55,7 @@ end # plot_clusters()
 
 
   """
-  function plot_clusters2()
+function plot_clusters2(centers::Array,weights::Array;sorting::Bool=true,descr::String="")
   centers: hours x days e.g.[24x9] 
 
   """
@@ -195,7 +195,7 @@ function plot_k_rev(range_k::Array,methods::Array{Dict,1},descr::String; save::B
   ax[:tick_params]("both",labelsize=fsize_ref-1)
   xticks(range_k,range_k)
   tight_layout()
-  ylim((0.5,1.05)) # 1.05
+  ylim((0.0,1.05)) # 1.05
   save && savefig(descr,format="png",dpi=300)
 end #plot_k_rev
 
