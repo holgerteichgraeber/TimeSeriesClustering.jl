@@ -20,6 +20,7 @@ export run_opt,
        sakoe_chiba_band,
        kmedoids_exact,
        plot_k_rev,
+       plot_k_rev_subplot,
        plot_SSE_rev,
        sort_centers,
        plot_clusters2

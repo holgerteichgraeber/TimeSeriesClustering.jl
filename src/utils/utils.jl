@@ -199,6 +199,36 @@ function plot_k_rev(range_k::Array,methods::Array{Dict,1},descr::String; save::B
   save && savefig(descr,format="png",dpi=300)
 end #plot_k_rev
 
+"""
+plot within subfigure
+  plot_k_rev(range_k::Array,rev::Array{Dict,1},region::String)
+  The array rev contains Dicts with:  
+    key: name of feature
+    features:
+      name ( of method)
+      rev
+      color
+      linestyle
+      width
+"""
+function plot_k_rev_subplot(range_k::Array,methods::Array{Dict,1},descr::String, axis::Any; save::Bool=true)
+  fsize_ref = 16
+  for m in methods
+    axis["plot"](range_k,m["rev"]/methods[1]["rev"][1],label=m["name"],color=m["color"],linestyle=m["linestyle"],lw=m["width"])
+  end
+  axis["legend"](loc="lower right")
+ #=
+  xlabel("Number of clusters",fontsize=fsize_ref)
+  ylabel("Objective function value",fontsize=fsize_ref)
+  legend(loc="lower right",fontsize=fsize_ref-4,ncol=2)
+  ax = axes()
+  ax[:tick_params]("both",labelsize=fsize_ref-1)
+  xticks(range_k,range_k)
+  tight_layout()
+  ylim((0.0,1.05)) # 1.05
+  save && savefig(descr,format="png",dpi=300)
+  =#
+end #plot_k_rev
 
 function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Array{Dict,1},descr::String,rev_365::Float64;n_col::Int=2, save::Bool=true)
   figure()
