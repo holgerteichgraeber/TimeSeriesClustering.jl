@@ -13,6 +13,12 @@ regions = ["GER","CA"]
 problem_types = ["battery","gas_turbine"]
 plot_types = ["trad_cen","trad_med","shape"]
 
+ # settings for example figures
+example_figs_region="GER"
+example_figs_n_clust = 3
+e_f_centers = Dict{String,Array{Float64,2}}()
+e_f_weights = Dict{String,Array{Float64,1}}()
+ 
  # initialize variables before the loop
 clust_methods = Dict{String,Array{Dict,1}}()
 n_clust_ar =[] 
@@ -75,6 +81,11 @@ for region_ in regions
         cost_best["kmeans"][i]=cost_dict["kmeans"][ind_mincost[i]] 
     end
 
+    if region == example_figs_region 
+      e_f_centers["kmeans"]=centers[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
+      e_f_weights["kmeans"]=weights[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
+    end
+
      ##### k-medoids #######
 
 
@@ -115,7 +126,13 @@ for region_ in regions
         revenue_best["kmedoids"][i]=revenue_dict["kmedoids"][ind_mincost[i]] 
     end
 
-     # load saved JLD data - exact algorithm of kmedoids
+ # for ecample plots
+    if region == example_figs_region 
+      e_f_centers["kmedoids"]=centers[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
+      e_f_weights["kmedoids"]=weights[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
+    end
+    
+    # load saved JLD data - exact algorithm of kmedoids
     saved_data_dict= load(string("outfiles/aggregated_results_kmedoids_exact_",dist_type,"_",region_,".jld2"))
      #unpack saved JLD data
      for (k,v) in saved_data_dict
@@ -190,7 +207,8 @@ for region_ in regions
     for i=1:size(revenue_dict["hier_medoid"],1)
         revenue_best["hier_medoid"][i]=revenue_dict["hier_medoid"][ind_mincost[i]] 
     end
-
+     
+ #=
      #### fuzzy c-means ###########
 
      # read parameters
@@ -227,7 +245,7 @@ for region_ in regions
     for i=1:size(revenue_dict["cmeans"],1)
         revenue_best["cmeans"][i]=revenue_dict["cmeans"][ind_mincost[i]] 
     end
-
+    =#
 
      ##### Dynamic Time Warping #####
      #window =1, window =2
@@ -320,10 +338,61 @@ for region_ in regions
         revenue_best["kshape"][i]=revenue[problem_type][i][ind_mincost[i]] 
         cost_best["kshape"][i]=cost[i][ind_mincost[i]] 
     end
-
+    
+     # example figures
+    if region == example_figs_region 
+      e_f_centers["kshape"]=centers[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
+      e_f_weights["kshape"]=weights[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
+    end
 
      ####### Figures ##############
+   
+    if region == example_figs_region && problem_type=="battery" # problem type doesnt matter
+      plot_clusters2(e_f_centers["kmeans"],e_f_weights["kmeans"];descr="kmeans")
+      plot_clusters2(e_f_centers["kmedoids"],e_f_weights["kmedoids"];descr="kmedoids")
+      plot_clusters2(e_f_centers["kshape"],e_f_weights["kshape"];descr="kshape")
+    end
+break
+break
 
+
+    # rev vs SSE plots 
+    if region == "GER" && problem_type=="battery"
+
+      cost_rev_clouds = Dict()
+      cost_rev_points = Array{Dict,1}()
+      descr=string("plots/cloud_kmeans_",region,".png")
+
+      cost_rev_clouds["cost"]=cost_dict["kmeans"]
+      cost_rev_clouds["rev"] = revenue_dict["kmeans"]
+
+       #push!(cost_rev_points,Dict("label"=>"Hierarchical centroid","cost"=>cost_dict["hier_centroid"],"rev"=>revenue_dict["hier_centroid"],"mec"=>"k","mew"=>2.0,"marker"=>"." ))
+       # \TODO   --> add best kmeans
+      push!(cost_rev_points,Dict("label"=>"kmeans best","cost"=>cost_best["kmeans"],"rev"=>revenue_best["kmeans"],"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
+
+      plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily)
+       
+
+      # Medoid
+       # k-medoids
+      cost_rev_clouds = Dict()
+      cost_rev_points = Array{Dict,1}()
+      descr=string("plots/cloud_kmedoids_",region,".png")
+
+      cost_rev_clouds["cost"]=cost_dict["kmedoids"]
+      cost_rev_clouds["rev"] = revenue_dict["kmedoids"]
+
+       # k-medoids exact
+      push!(cost_rev_points,Dict("label"=>"k-medoids exact","cost"=>cost_dict["kmedoids_exact"],"rev"=>revenue_dict["kmedoids_exact"],"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
+
+       # hier medoid
+      push!(cost_rev_points,Dict("label"=>"Hierarchical medoid","cost"=>cost_dict["hier_medoid"],"rev"=>revenue_dict["hier_medoid"],"mec"=>"k","mew"=>3.0,"marker"=>"x" ))
+
+      plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily;n_col=3)
+    end
+
+
+    ####### save relevant plot information rev vs. k
     for plot_type in plot_types
       plot_descr = "$region\_$problem_type\_$plot_type"
 
@@ -345,7 +414,6 @@ for region_ in regions
       end #plot_type
     end # plot_type in plot_types
 
- # todo: add fuzzy-c means
  # todo: possibly add clouds here as well
 
  # end pre-sort of data
@@ -386,33 +454,10 @@ ax_array[1,2]["set_title"]("Battery\nCA")
 ax_array[1,3]["set_title"]("Gas turbine\nGER")
 ax_array[1,4]["set_title"]("Gas turbine\nCA")
 
+savefig("rev_vs_k.svg",format="svg")
+
 
  #=
- # revenue vs. k
-clust_methods = Array{Dict,1}()
-
-push!(clust_methods,Dict("name"=>"full representation", "rev"=> revenue_orig_daily*ones(length(n_clust_ar)),"color"=>"c","linestyle"=>"--","width"=>3))
-plot_k_rev(n_clust_ar,clust_methods,string("plots/fulldata_",region,".png"))
-push!(clust_methods,Dict("name"=>"k-means", "rev"=> revenue_best["kmeans"][:],"color"=>"b","linestyle"=>"-","width"=>2))
-plot_k_rev(n_clust_ar,clust_methods,string("plots/kmeans_",region,".png"))
-push!(clust_methods,Dict("name"=>"k-medoids", "rev"=> revenue_best["kmedoids_exact"][:],"color"=>"g","linestyle"=>"-","width"=>2))
-plot_k_rev(n_clust_ar,clust_methods,string("plots/kmedoids_",region,".png"))
-push!(clust_methods,Dict("name"=>"DTW skband = 1", "rev"=> revenue_best["dtw"][:,2],"color"=>"k","linestyle"=>"--","width"=>2))
-plot_k_rev(n_clust_ar,clust_methods,string("plots/dtw1_",region,".png"))
-push!(clust_methods,Dict("name"=>"DTW skband = 2", "rev"=> revenue_best["dtw"][:,3],"color"=>"k","linestyle"=>":","width"=>2))
-plot_k_rev(n_clust_ar,clust_methods,string("plots/dtw2_",region,".png"))
-push!(clust_methods,Dict("name"=>"hierarchical centroid", "rev"=> revenue_best["hier_centroid"][:],"color"=>"m","linestyle"=>"-","width"=>2))
-plot_k_rev(n_clust_ar,clust_methods,string("plots/hiercen_",region,".png"))
-push!(clust_methods,Dict("name"=>"hierarchical medoid", "rev"=> revenue_best["hier_medoid"][:],"color"=>"y","linestyle"=>"-","width"=>2))
-plot_k_rev(n_clust_ar,clust_methods,string("plots/hiermed_",region,".png"))
-
-
-
-
-
-
-
-
 
  # revenue vs. SSE
  # averaging
