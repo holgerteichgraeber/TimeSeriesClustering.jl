@@ -65,7 +65,7 @@ function plot_clusters2(centers::Array,weights::Array,region::String;sorting::Bo
    end 
    figure()
    for i=1:size(centers,2) # number of clusters
-     plot(centers[:,i],label=string("w=",round(weights[i]*100,2),"\%") )
+     plot(centers[:,i],color=cols[i],label=string("w=",round(weights[i]*100,2),"\%") )
    end
    ylim(-20,60)
    xlabel("hour")
@@ -74,7 +74,7 @@ function plot_clusters2(centers::Array,weights::Array,region::String;sorting::Bo
    elseif region == "CA"
      ylabel("USD/MWh")
    else
-     error("region not defined")
+     error("region not defined: $region")
    end
    title(descr)
    legend()
@@ -242,9 +242,9 @@ function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Arra
   for i=1:length(range_k)
     ii= length(range_k)-i+1
     if typeof(cost_rev_clouds["rev"]) == Array{Array{Float64,1},1} # exceptional case for kshape
-      plot(cost_rev_clouds["cost"][ii],cost_rev_clouds["rev"][ii]/rev_365,".",label=string("k=",range_k[ii]),alpha=0.2)
+      plot(cost_rev_clouds["cost"][ii],cost_rev_clouds["rev"][ii]/rev_365,".",label=string("k=",range_k[ii]),color=cols[i],alpha=0.2)
     else # normal case 
-      plot(cost_rev_clouds["cost"][ii,:],cost_rev_clouds["rev"][ii,:]/rev_365,".",label=string("k=",range_k[ii]),alpha=0.2)
+      plot(cost_rev_clouds["cost"][ii,:],cost_rev_clouds["rev"][ii,:]/rev_365,".",label=string("k=",range_k[ii]),color=cols[i],alpha=0.2)
     end
   end
   for i=1:length(cost_rev_points)
@@ -256,7 +256,7 @@ function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Arra
       end # if
     end
   end
-  plot(0.0,1.0,marker="*",ms=10,linestyle="none",color="c",label="Full representation")
+  plot(0.0,1.0,marker="*",ms=10,linestyle="none",color="k",label="Full representation")
   legend(fontsize=fsize_ref-4,ncol=n_col)
   xlabel("Clustering measure (SSE)",fontsize=fsize_ref)
   ylabel("Objective function value",fontsize=fsize_ref)
