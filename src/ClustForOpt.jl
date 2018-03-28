@@ -25,7 +25,6 @@ export run_opt,
        plot_k_rev_subplot,
        plot_SSE_rev,
        sort_centers,
-       plot_clusters2,
        cols,
        col
 

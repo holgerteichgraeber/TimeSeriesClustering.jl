@@ -30,36 +30,13 @@ function load_pricedata(region::String)
   return data_orig_daily
 end #load_pricedata
 
-# plot cluster centroids for verification
- # \TODO add more comments or delete this function
-function plot_clusters(k_plot,kshape_centroids,n_k,n_init)
-
-  for k=1:n_k
-
-    # plot centroids for verification
-    if k==k_plot
-      figure()
-      for i=1:n_init
-        plot(kshape_centroids[k][:,:,i]',color="0.75")
-      end
-      #data = Array(readtable(normpath(joinpath(pwd(),"..","..","data",data_folder,string(region_str, "Elec_Price_kmeans_","kshape","_","cluster", "_", k,".txt"))), separator = '\t', header = false))/get_EUR_to_USD(region);
-      #plot(data',color="red")
-      best = kshape_centroids[k][:,:,ind_best_dist[k]]
-      plot(best',color="blue")
-    end
-  end
-  if is_linux()
-    plt.show()
-  end
-end # plot_clusters()
-
 
   """
-function plot_clusters2(centers::Array,weights::Array,region::String;sorting::Bool=true,descr::String="")
+function plot_clusters(centers::Array,weights::Array,region::String;sorting::Bool=true,descr::String="")
   centers: hours x days e.g.[24x9] 
 
   """
-function plot_clusters2(centers::Array,weights::Array,region::String;sorting::Bool=true,descr::String="")
+function plot_clusters(centers::Array,weights::Array;region::String="GER",sorting::Bool=true,descr::String="")
    if sorting
      centers,weights = sort_centers(centers,weights) 
    end 

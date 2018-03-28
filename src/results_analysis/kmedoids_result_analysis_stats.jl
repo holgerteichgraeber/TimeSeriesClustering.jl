@@ -136,9 +136,9 @@ i_costmin = findmin(cost[kk,:])[2]
 i_revmax = findmax(revenue[kk,:])[2]
 i_revmin = findmin(revenue[kk,:])[2]
 
-plot_clusters2(centers[kk,i_costmin],weights[kk,i_costmin]; descr="CostMin")
-plot_clusters2(centers[kk,i_revmin],weights[kk,i_revmin]; descr="RevMin")
-plot_clusters2(centers[kk,i_revmax],weights[kk,i_revmax]; descr="RevMax")
+plot_clusters(centers[kk,i_costmin],weights[kk,i_costmin]; descr="CostMin")
+plot_clusters(centers[kk,i_revmin],weights[kk,i_revmin]; descr="RevMin")
+plot_clusters(centers[kk,i_revmax],weights[kk,i_revmax]; descr="RevMax")
 
  #### Figures #######
 

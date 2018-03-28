@@ -355,15 +355,19 @@ for region_ in regions
    
  # plot clusters - possibly as heat map
 
+    fig,ax_array = plt.subplots(2,1,sharex=true)#figsize=()
+    for i=1:example_figs_n_clust
+      ax_array[1,1]["plot"]()
     
+    end
     
     if region == example_figs_region && problem_type=="battery" # problem type doesnt matter
-      plot_clusters2(e_f_centers["kmeans"],e_f_weights["kmeans"],region;descr="kmeans")
-      plot_clusters2(e_f_centers["kmedoids"],e_f_weights["kmedoids"],region;descr="kmedoids")
-      plot_clusters2(e_f_centers["kshape"],e_f_weights["kshape"],region;descr="kshape")
-      plot_clusters2(e_f_centers["dtw0"],e_f_weights["dtw0"],region;descr="dtw 0")
-      plot_clusters2(e_f_centers["dtw1"],e_f_weights["dtw1"],region;descr="dtw 1")
-      plot_clusters2(e_f_centers["dtw2"],e_f_weights["dtw2"],region;descr="dtw 2")
+      plot_clusters(e_f_centers["kmeans"],e_f_weights["kmeans"];region=region,descr="kmeans")
+      plot_clusters(e_f_centers["kmedoids"],e_f_weights["kmedoids"];region=region,descr="kmedoids")
+      plot_clusters(e_f_centers["kshape"],e_f_weights["kshape"];region=region,descr="kshape")
+      plot_clusters(e_f_centers["dtw0"],e_f_weights["dtw0"];region=region,descr="dtw 0")
+      plot_clusters(e_f_centers["dtw1"],e_f_weights["dtw1"];region=region,descr="dtw 1")
+      plot_clusters(e_f_centers["dtw2"],e_f_weights["dtw2"];region=region,descr="dtw 2")
     end
  break
  break
