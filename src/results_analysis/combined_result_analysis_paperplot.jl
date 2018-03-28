@@ -62,17 +62,18 @@ for region_ in regions
 
      # load saved JLD data
     saved_data_dict= load(string("outfiles/aggregated_results_kmeans_",region_,".jld2"))
-     #unpack saved JLD data
+    #unpack saved JLD data
+    # string _ is added because calling weights later gives weird error where weights from StatsBase is called. 
      for (k,v) in saved_data_dict
-       @eval $(Symbol(k)) = $v
+       @eval $(Symbol(string(k,"_"))) = $v
      end
 
      #set revenue to the chosen problem type
-    revenue_dict["kmeans"] =revenue[problem_type] 
-    cost_dict["kmeans"] = cost
+    revenue_dict["kmeans"] =revenue_[problem_type] 
+    cost_dict["kmeans"] = cost_
 
      # Find best cost index - save
-    ind_mincost = findmin(cost,2)[2]  # along dimension 2
+    ind_mincost = findmin(cost_,2)[2]  # along dimension 2
     ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
     revenue_best["kmeans"] = zeros(size(revenue_dict["kmeans"],1))
     cost_best["kmeans"] = zeros(size(cost_dict["kmeans"],1))
@@ -82,8 +83,8 @@ for region_ in regions
     end
 
     if region == example_figs_region 
-      e_f_centers["kmeans"]=centers[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
-      e_f_weights["kmeans"]=weights[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
+      e_f_centers["kmeans"]=centers_[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
+      e_f_weights["kmeans"]=weights_[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
     end
 
      ##### k-medoids #######
@@ -111,15 +112,15 @@ for region_ in regions
     saved_data_dict= load(string("outfiles/aggregated_results_kmedoids_",dist_type,"_",region_,".jld2"))
      #unpack saved JLD data
      for (k,v) in saved_data_dict
-       @eval $(Symbol(k)) = $v
+       @eval $(Symbol(string(k,"_"))) = $v
      end
 
      #set revenue to the chosen problem type
-    revenue_dict["kmedoids"]=revenue[problem_type] 
-    cost_dict["kmedoids"] = cost
+    revenue_dict["kmedoids"]=revenue_[problem_type] 
+    cost_dict["kmedoids"] = cost_
 
      # Find best cost index - save
-    ind_mincost = findmin(cost,2)[2]  # along dimension 2
+    ind_mincost = findmin(cost_,2)[2]  # along dimension 2
     ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
     revenue_best["kmedoids"] = zeros(size(revenue_dict["kmedoids"],1))
     for i=1:size(revenue_dict["kmedoids"],1)
@@ -128,23 +129,23 @@ for region_ in regions
 
  # for ecample plots
     if region == example_figs_region 
-      e_f_centers["kmedoids"]=centers[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
-      e_f_weights["kmedoids"]=weights[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
+      e_f_centers["kmedoids"]=centers_[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
+      e_f_weights["kmedoids"]=weights_[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
     end
     
     # load saved JLD data - exact algorithm of kmedoids
     saved_data_dict= load(string("outfiles/aggregated_results_kmedoids_exact_",dist_type,"_",region_,".jld2"))
      #unpack saved JLD data
      for (k,v) in saved_data_dict
-       @eval $(Symbol(k)) = $v
+       @eval $(Symbol(string(k,"_"))) = $v
      end
 
      #set revenue to the chosen problem type
-    revenue_dict["kmedoids_exact"]=revenue[problem_type] 
-    cost_dict["kmedoids_exact"] = cost
+    revenue_dict["kmedoids_exact"]=revenue_[problem_type] 
+    cost_dict["kmedoids_exact"] = cost_
 
      # Find best cost index -exact - not necessary, but legacy code
-    ind_mincost = findmin(cost,2)[2]  # along dimension 2
+    ind_mincost = findmin(cost_,2)[2]  # along dimension 2
     ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
     revenue_best["kmedoids_exact"] = zeros(size(revenue_dict["kmedoids_exact"],1))
     for i=1:size(revenue_dict["kmedoids_exact"],1)
@@ -198,7 +199,7 @@ for region_ in regions
 
      #set revenue to the chosen problem type
     revenue_dict["hier_medoid"]=revenue_medoid[problem_type] 
-    cost_dict["hier_medoid"] = cost
+    cost_dict["hier_medoid"] = cost_medoid
 
      # Find best cost index - save
     ind_mincost = findmin(cost_medoid,2)[2]  # along dimension 2
@@ -276,15 +277,15 @@ for region_ in regions
     saved_data_dict= load(string("outfiles/aggregated_results_dtw_",region_,".jld2"))
      #unpack saved JLD data
      for (k,v) in saved_data_dict
-       @eval $(Symbol(k)) = $v
+       @eval $(Symbol(string(k,"_"))) = $v
      end
 
      #set revenue to the chosen problem type
-    revenue_dict["dtw"]=revenue[problem_type] 
-    cost_dict["dtw"] = cost
+    revenue_dict["dtw"]=revenue_[problem_type] 
+    cost_dict["dtw"] = cost_
 
      # Find best cost index - save
-    ind_mincost = findmin(cost,3)[2]  # along dimension 3
+    ind_mincost = findmin(cost_,3)[2]  # along dimension 3
     ind_mincost = reshape(ind_mincost,size(ind_mincost,1),size(ind_mincost,2))
     revenue_best["dtw"] = zeros(size(revenue_dict["dtw"],1),size(revenue_dict["dtw"],2))
     cost_best["dtw"] = zeros(size(cost_dict["dtw"],1),size(cost_dict["dtw"],2))
@@ -320,40 +321,40 @@ for region_ in regions
     saved_data_dict= load(string("outfiles/aggregated_results_kshape_",region,".jld2"))
      #unpack saved JLD data
      for (k,v) in saved_data_dict
-       @eval $(Symbol(k)) = $v
+       @eval $(Symbol(string(k,"_"))) = $v
      end
 
      #set revenue to the chosen problem type
-    revenue_dict["kshape"]=[revenue[problem_type][i] for i in 1:size(n_clust_ar,1)]
-    cost_dict["kshape"] = [cost[i] for i in 1:size(n_clust_ar,1)]
+    revenue_dict["kshape"]=[revenue_[problem_type][i] for i in 1:size(n_clust_ar,1)]
+    cost_dict["kshape"] = [cost_[i] for i in 1:size(n_clust_ar,1)]
 
      # Find best cost index - save
     ind_mincost = zeros(Int,size(n_clust_ar,1))
     for i=1:size(n_clust_ar,1)
-      ind_mincost[i] = findmin(cost[i])[2] 
+      ind_mincost[i] = findmin(cost_[i])[2] 
     end
     revenue_best["kshape"] = zeros(size(n_clust_ar,1))
     cost_best["kshape"] = zeros(size(n_clust_ar,1))
     for i=1:size(n_clust_ar,1)
-        revenue_best["kshape"][i]=revenue[problem_type][i][ind_mincost[i]] 
-        cost_best["kshape"][i]=cost[i][ind_mincost[i]] 
+        revenue_best["kshape"][i]=revenue_[problem_type][i][ind_mincost[i]] 
+        cost_best["kshape"][i]=cost_[i][ind_mincost[i]] 
     end
     
      # example figures
     if region == example_figs_region 
-      e_f_centers["kshape"]=centers[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
-      e_f_weights["kshape"]=weights[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
+      e_f_centers["kshape"]=centers_[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
+      e_f_weights["kshape"]=weights_[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
     end
 
      ####### Figures ##############
    
     if region == example_figs_region && problem_type=="battery" # problem type doesnt matter
-      plot_clusters2(e_f_centers["kmeans"],e_f_weights["kmeans"];descr="kmeans")
-      plot_clusters2(e_f_centers["kmedoids"],e_f_weights["kmedoids"];descr="kmedoids")
-      plot_clusters2(e_f_centers["kshape"],e_f_weights["kshape"];descr="kshape")
+      plot_clusters2(e_f_centers["kmeans"],e_f_weights["kmeans"],region;descr="kmeans")
+      plot_clusters2(e_f_centers["kmedoids"],e_f_weights["kmedoids"],region;descr="kmedoids")
+      plot_clusters2(e_f_centers["kshape"],e_f_weights["kshape"],region;descr="kshape")
     end
-break
-break
+ #break
+ #break
 
 
     # rev vs SSE plots 

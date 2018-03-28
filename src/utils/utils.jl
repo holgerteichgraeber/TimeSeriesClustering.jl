@@ -55,11 +55,11 @@ end # plot_clusters()
 
 
   """
-function plot_clusters2(centers::Array,weights::Array;sorting::Bool=true,descr::String="")
+function plot_clusters2(centers::Array,weights::Array,region::String;sorting::Bool=true,descr::String="")
   centers: hours x days e.g.[24x9] 
 
   """
-function plot_clusters2(centers::Array,weights::Array;sorting::Bool=true,descr::String="")
+function plot_clusters2(centers::Array,weights::Array,region::String;sorting::Bool=true,descr::String="")
    if sorting
      centers,weights = sort_centers(centers,weights) 
    end 
@@ -69,7 +69,13 @@ function plot_clusters2(centers::Array,weights::Array;sorting::Bool=true,descr::
    end
    ylim(-20,60)
    xlabel("hour")
-   ylabel("EUR/MWh")
+   if region == "GER"
+     ylabel("EUR/MWh")
+   elseif region == "CA"
+     ylabel("USD/MWh")
+   else
+     error("region not defined")
+   end
    title(descr)
    legend()
 end #function
