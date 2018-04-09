@@ -30,6 +30,15 @@ function load_pricedata(region::String)
   return data_orig_daily
 end #load_pricedata
 
+function subplot_clusters(centers::Array,weights::Array,axis::Any;region::String="GER",sorting::Bool=true,descr::String="",linestyle="-")
+   if sorting
+     centers,weights = sort_centers(centers,weights) 
+   end 
+   for i=1:size(centers,2) # number of clusters
+     axis["plot"](centers[:,i],color=cols[i],label=string(descr,": ","w=",round(weights[i]*100,2),"\%"),linestyle=linestyle )
+   end
+   ylim(-20,60)
+end #function
 
   """
 function plot_clusters(centers::Array,weights::Array,region::String;sorting::Bool=true,descr::String="")
@@ -199,7 +208,7 @@ function plot_k_rev_subplot(range_k::Array,methods::Array{Dict,1},descr::String,
   for m in methods
     axis["plot"](range_k,m["rev"]/methods[1]["rev"][1],label=m["name"],color=m["color"],linestyle=m["linestyle"],lw=m["width"])
   end
- #axis["legend"](loc="lower right")
+ axis["legend"](loc="lower right")
  #=
   xlabel("Number of clusters",fontsize=fsize_ref)
   ylabel("Objective function value",fontsize=fsize_ref)

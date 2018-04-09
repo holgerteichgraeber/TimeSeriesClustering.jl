@@ -355,13 +355,23 @@ for region_ in regions
    
  # plot clusters - possibly as heat map
 
-    fig,ax_array = plt.subplots(2,1,sharex=true)#figsize=()
-    for i=1:example_figs_n_clust
-      ax_array[1,1]["plot"]()
     
-    end
+    if region == example_figs_region 
+      
+      fig,ax_array = plt.subplots(2,1,sharex=true)#figsize=()
+      subplot_clusters(e_f_centers["kmeans"],e_f_weights["kmeans"],ax_array[1,1];region=region,descr="kmeans")
+      subplot_clusters(e_f_centers["kmedoids"],e_f_weights["kmedoids"],ax_array[1,1];region=region,descr="kmedoids",linestyle="--")
+      ax_array[1,1]["legend"]()  
+      ax_array[1,1]["set"](ylabel="EUR/MWh")
+      # TODO also plot hierarchical just to check 
+      subplot_clusters(e_f_centers["kshape"],e_f_weights["kshape"],ax_array[2,1];region=region,descr="kshape")
+      subplot_clusters(e_f_centers["dtw1"],e_f_weights["dtw1"],ax_array[2,1];region=region,descr="dtw 1",linestyle="--")
+      ax_array[2,1]["legend"]()  
+      ax_array[2,1]["set"](ylabel="EUR/MWh")
+      fig["subplots_adjust"](hspace=0.1)
+      savefig("plots/example_clusters_$region.eps",format="eps")
+      
     
-    if region == example_figs_region && problem_type=="battery" # problem type doesnt matter
       plot_clusters(e_f_centers["kmeans"],e_f_weights["kmeans"];region=region,descr="kmeans")
       plot_clusters(e_f_centers["kmedoids"],e_f_weights["kmedoids"];region=region,descr="kmedoids")
       plot_clusters(e_f_centers["kshape"],e_f_weights["kshape"];region=region,descr="kshape")
@@ -369,12 +379,11 @@ for region_ in regions
       plot_clusters(e_f_centers["dtw1"],e_f_weights["dtw1"];region=region,descr="dtw 1")
       plot_clusters(e_f_centers["dtw2"],e_f_weights["dtw2"];region=region,descr="dtw 2")
     end
- break
- break
-
+ #break
+ #break
 
     # rev vs SSE plots 
-    if region == "GER" && problem_type=="battery"
+    if region == example_figs_region && problem_type=="battery"
 
       cost_rev_clouds = Dict()
       cost_rev_points = Array{Dict,1}()
@@ -452,6 +461,8 @@ for plot_type in plot_types
     for region in regions
       n_col+=1
       plot_descr = "$region\_$problem_type\_$plot_type"
+      # legend placement: 
+      #https://stackoverflow.com/questions/4700614/how-to-put-the-legend-out-of-the-plot
       plot_k_rev_subplot(n_clust_ar,clust_methods[plot_descr],plot_descr,ax_array[n_row,n_col];save=false)
     end
   end
@@ -471,7 +482,7 @@ ax_array[1,2]["set_title"]("Battery\nCA")
 ax_array[1,3]["set_title"]("Gas turbine\nGER")
 ax_array[1,4]["set_title"]("Gas turbine\nCA")
 
-savefig("rev_vs_k.svg",format="svg")
+savefig("plots/rev_vs_k.eps",format="eps")
 
 
  #=
