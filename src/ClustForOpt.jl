@@ -31,6 +31,7 @@ export run_opt,
 include(joinpath("utils",".juliarc.jl"))
 include(joinpath("utils","optim_problems.jl"))
 include(joinpath("utils","utils.jl"))
+include(joinpath("utils","utils_plots.jl"))
 include(joinpath("clust_algorithms","exact_kmedoids.jl"))
 
 end # module ClustForOpt
