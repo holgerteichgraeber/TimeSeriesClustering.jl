@@ -1,7 +1,4 @@
-# imports
-
-push!(LOAD_PATH, normpath(joinpath(pwd(),"..",".."))) #adds the location of ClustForOpt to the LOAD_PATH
-push!(LOAD_PATH, normpath(joinpath("/data/cees/hteich/clustering/src"))) #adds the location of ClustForOpt to the LOAD_PATH
+push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using Distances
 using Clustering
@@ -120,7 +117,7 @@ save_dict = Dict("centers"=>centers,
                  "weights"=>weights,
                  "revenue"=>revenue )
                   
-save(string("outfiles/aggregated_results_kmeans_",region,".jld2"),save_dict)
+save(string(joinpath("outfiles","aggregated_results_kmeans_"),region,".jld2"),save_dict)
 println("kmeans data revenue calculated + saved.")
 
 

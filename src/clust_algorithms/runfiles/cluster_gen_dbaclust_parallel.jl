@@ -1,10 +1,6 @@
-#import
-  push!(LOAD_PATH, normpath(joinpath(pwd(),"..",".."))) #adds the location of ClustForOpt to the LOAD_PATH
-  push!(LOAD_PATH, normpath(joinpath("/data/cees/hteich/clustering/src"))) #adds the location of ClustForOpt to the LOAD_PATH
+push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
   @everywhere using ClustForOpt
   @everywhere using TimeWarp
- #using PyPlot
-   # plt = PyPlot
 
 
  ######## DATA INPUT ##########
@@ -112,34 +108,3 @@ rad_sc_iter = repmat(rad_sc_ar,length(n_clust_ar)*n_dbaclust,1)
 
 pmap(dbac_par_sc,n_clust_iter,i_iter,rad_sc_iter,seq_iter,n_init_iter,iterations_iter,inner_iterations_iter)
 
-"""
- # iterate through settings
-for n_clust=n_clust_min:n_clust_max
-  for rad_sc=rad_sc_min:rad_sc_max
-    for i = 1:n_dbaclust
-
-      rmin,rmax = sakoe_chiba_band(rad_sc,24)
-
-       ##########################
-      # normalized clustering hourly
-      seq_norm, hourly_mean, hourly_sdv = z_normalize(seq,hourly=true)
-      tic()
-      centers_norm, clustids, result_norm = dbaclust(seq_norm,n_clust,n_init,ClassicDTW();iterations=iterations,inner_iterations=inner_iterations,rtol=1e-5,show_progress=false,store_trace=false,i2min=rmin,i2max=rmax)
-      el_time = toq()
-      println("Elapsed time: ",el_time ," ; n_clust=",n_clust," rad_sc=",rad_sc," i=",i)
-      flush(STDOUT)
-
-      centers = undo_z_normalize(seq_to_array(centers_norm),hourly_mean,hourly_sdv)
-
-       # save results to txt
-
-
-
-      writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_cluster.txt")),DataFrame(centers'),separator='\t',header=false)
-      writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_clustids.txt")),DataFrame(id=clustids),separator='\t',header=false)
-      writetable(joinpath("outfiles",string("dbaclust_k_",n_clust,"_scband_",rad_sc,"_ninit_",n_init,"_it_",iterations,"_innerit_",inner_iterations,"_",i,"_cost.txt")),DataFrame(cost=result_norm.cost),separator='\t',header=false)
-
-    end
-  end
-end
-"""

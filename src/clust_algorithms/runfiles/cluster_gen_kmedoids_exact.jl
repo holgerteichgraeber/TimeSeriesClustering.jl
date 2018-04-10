@@ -1,7 +1,4 @@
-# imports
-
-push!(LOAD_PATH, normpath(joinpath(pwd(),"..",".."))) #adds the location of ClustForOpt to the LOAD_PATH
-push!(LOAD_PATH, normpath(joinpath("/data/cees/hteich/clustering/src"))) #adds the location of ClustForOpt to the LOAD_PATH
+push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using Distances
 using Clustering
@@ -127,7 +124,7 @@ for dist = 1:length(distance_type_ar)
                    "weights"=>deepcopy(weights),
                    "revenue"=>deepcopy(revenue) )
                     
-  save(string("outfiles/aggregated_results_kmedoids_exact_",distance_descr[dist],"_",region,".jld2"),save_dict)
+  save(string(joinpath("outfiles","aggregated_results_kmedoids_exact_"),distance_descr[dist],"_",region,".jld2"),save_dict)
   println("kmedoids exact ",distance_descr[dist] ," data revenue calculated + saved.")
 
 

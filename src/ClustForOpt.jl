@@ -4,7 +4,6 @@
  # ClustForOpt
  # Analyzing clustering techniques as input for energy systems optimization
  #
- # A .juliarc.jl file is provided in ./utils/ . It should be loaded with julia prior to using the plotting capabilities of this package
  #####################
 
 module ClustForOpt
@@ -29,9 +28,9 @@ export run_opt,
        cols,
        col
 
-include("utils/.juliarc.jl")
-include("utils/optim_problems.jl")
-include("utils/utils.jl")
-include("clust_algorithms/exact_kmedoids.jl")
+include(joinpath("utils",".juliarc.jl"))
+include(joinpath("utils","optim_problems.jl"))
+include(joinpath("utils","utils.jl"))
+include(joinpath("clust_algorithms","exact_kmedoids.jl"))
 
 end # module ClustForOpt

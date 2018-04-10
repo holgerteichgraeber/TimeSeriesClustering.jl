@@ -1,6 +1,4 @@
- # imports
-push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForOpt to the LOAD_PATH
-push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
+push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using JLD2 # Much faster than JLD (50s vs 20min)
 using FileIO

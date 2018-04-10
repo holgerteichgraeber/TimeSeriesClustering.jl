@@ -1,6 +1,7 @@
 #!/data/cees/hteich/libraries/miniconda/bin/ python
 # coding: utf-8
 # THIS FILE SHOULD BE INDEPENDENT OF ITS LOCATION --> Only full path references
+# This file currently only works on LINUX based systems
 
 from time import time
 import os,sys

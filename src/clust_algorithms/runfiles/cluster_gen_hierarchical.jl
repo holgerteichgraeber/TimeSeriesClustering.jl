@@ -1,5 +1,4 @@
-push!(LOAD_PATH, normpath(joinpath(pwd(),"..",".."))) #adds the location of ClustForOpt to the LOAD_PATH
-push!(LOAD_PATH, normpath(joinpath("/data/cees/hteich/clustering/src"))) #adds the location of ClustForOpt to the LOAD_PATH
+push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using Distances
 using Clustering
@@ -7,7 +6,7 @@ using JLD2
 using FileIO
 
 using PyCall
-util_path = normpath(joinpath("/data","cees","hteich","clustering","src","clust_algorithms"))
+util_path = normpath(joinpath(CLUST_FOR_OPT,"src","clust_algorithms"))
 unshift!(PyVector(pyimport("sys")["path"]), util_path) # add util path to search path ### unshift!(PyVector(pyimport("sys")["path"]), "") # add current path to search path
 @pyimport hierarchical
 
@@ -124,7 +123,7 @@ for centr = 1:length(centroid_descr)
                    "weights"=>weights,
                    "revenue"=>revenue )
                     
-  save(string("outfiles/aggregated_results_hier_",centroid_descr[centr],"_",region,".jld2"),save_dict)
+  save(string(joinpath("outfiles","aggregated_results_hier_"),centroid_descr[centr],"_",region,".jld2"),save_dict)
   println("hier data revenue calculated + saved.")
 
 end # centr = 1:length(centroid_descr)
