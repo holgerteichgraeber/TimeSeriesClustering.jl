@@ -1,6 +1,6 @@
  # imports
-push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForOpt to the LOAD_PATH
-push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
+CLUST_FOR_OPT=ENV["CLUST_FOR_OPT"]
+push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using JLD2 # Much faster than JLD (50s vs 20min)
 using FileIO
@@ -34,7 +34,7 @@ problem_type = "battery"
 
 
  # load saved JLD data
-saved_data_dict= load("outfiles/aggregated_results_cmeans_fuzzy_2.0.jld2")
+saved_data_dict= load(joinpath("outfiles","aggregated_results_cmeans_fuzzy_2.0.jld2"))
  #unpack saved JLD data
  for (k,v) in saved_data_dict
    @eval $(Symbol(k)) = $v

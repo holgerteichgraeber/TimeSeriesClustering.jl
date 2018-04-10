@@ -1,6 +1,5 @@
- # imports
-push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForOpt to the LOAD_PATH
-push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
+CLUST_FOR_OPT=ENV["CLUST_FOR_OPT"]
+push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using JLD2 # Much faster than JLD (50s vs 20min)
 using FileIO
@@ -38,7 +37,7 @@ problem_type = "battery"
 
 
  # load saved JLD data
-saved_data_dict= load(string("outfiles/aggregated_results_kmeans_",region,".jld2"))
+saved_data_dict= load(string(joinpath("outfiles","aggregated_results_kmeans_"),region,".jld2"))
  #unpack saved JLD data
  for (k,v) in saved_data_dict
    @eval $(Symbol(k)) = $v
@@ -137,7 +136,7 @@ push!(clust_methods,Dict("name"=>"k-means", "rev"=> revenue_best[:],"color"=>"b"
  # averaging
 cost_rev_clouds = Dict()
 cost_rev_points = Array{Dict,1}()
-descr=string("plots/cloud_kmeans_",region,".png")
+descr=string(joinpath("plots","cloud_kmeans_"),region,".png")
 
 cost_rev_clouds["cost"]=cost
 cost_rev_clouds["rev"] = revenue

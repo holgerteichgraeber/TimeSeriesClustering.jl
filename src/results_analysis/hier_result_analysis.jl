@@ -1,6 +1,5 @@
- # imports
-push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForOpt to the LOAD_PATH
-push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
+CLUST_FOR_OPT=ENV["CLUST_FOR_OPT"]
+push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using JLD2 # Much faster than JLD (50s vs 20min)
 using FileIO
@@ -34,7 +33,7 @@ problem_type = "battery"
 
 
  # load saved JLD data
-saved_data_dict= load("outfiles/aggregated_results_hier_centroid.jld2")
+saved_data_dict= load(joinpath("outfiles","aggregated_results_hier_centroid.jld2"))
  #unpack saved JLD data
  for (k,v) in saved_data_dict
    @eval $(Symbol(string(k,"_centroid"))) = $v
@@ -44,7 +43,7 @@ saved_data_dict= load("outfiles/aggregated_results_hier_centroid.jld2")
 revenue_centroid=revenue_centroid[problem_type] 
 
  # load saved JLD data
-saved_data_dict= load("outfiles/aggregated_results_hier_medoid.jld2")
+saved_data_dict= load(joinpath("outfiles","aggregated_results_hier_medoid.jld2"))
  #unpack saved JLD data
  for (k,v) in saved_data_dict
    @eval $(Symbol(string(k,"_medoid"))) = $v
@@ -96,38 +95,5 @@ end #function
 
  #plot_cost_rev()
 
-"""
- # plot iterations and iterations
-figure()
-boxplot(iter[:,:]')
-plt.title("iterations")
-
- # cumulative cost
- # TODO - random indice generator for k - generate many sample paths in this way
-
-function plot_cum_cost(cost,k_ind,n_perm)
-  cum_cost=zeros(size(cost,2),n_perm)
-   #n_perm=20 # number of permutations
-  figure()
-  for i=1:n_perm
-    cost_perm = cost[k_ind,:][randperm(size(cost,2))]
-    for k=1:size(cost,2)
-      cum_cost[k,i]=minimum(cost_perm[1:k])
-    end
-    plt.plot(cum_cost[:,i],color="grey",alpha=0.4)  
-  end
-  plt.xlabel("No. of trials")
-  plt.ylabel("cost [clustering algorithm]")
-  plt.title(string("k=",k_ind,", No. of permutations:",n_perm))
-end # function
-
-plot_cum_cost(cost,2,20)
-
-figure()
-boxplot(revenue')
-plot(collect(1:length(n_clust_ar)),revenue_best,label="best cost")
-plt.legend()
-plt.ylabel("revenue")
-"""
 
 plt.show()

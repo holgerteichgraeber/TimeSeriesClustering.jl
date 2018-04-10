@@ -1,7 +1,5 @@
-
-# imports
-push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForOpt to the LOAD_PATH
-push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
+CLUST_FOR_OPT=ENV["CLUST_FOR_OPT"]
+push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using JLD2
 using FileIO
@@ -97,7 +95,7 @@ save_dict = Dict("centers"=>centers,
                  "weights"=>weights,
                  "revenue"=>revenue )
                   
-save(string("outfiles/aggregated_results_dtw_",region,".jld2"),save_dict)
+save(string(joinpath("outfiles","aggregated_results_dtw_"),region,".jld2"),save_dict)
 println("Dbaclust data revenue calculated + saved.")
 
 

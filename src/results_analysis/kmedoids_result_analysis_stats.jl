@@ -1,6 +1,5 @@
- # imports
-push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForOpt to the LOAD_PATH
-push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
+CLUST_FOR_OPT=ENV["CLUST_FOR_OPT"]
+push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using JLD2 # Much faster than JLD (50s vs 20min)
 using FileIO
@@ -39,7 +38,7 @@ problem_type = "battery"
 dist_type = "SqEuclidean"   # "SqEuclidean"   "Cityblock"
 
  # load saved JLD data - kmeans algorithm of kmedoids
-saved_data_dict= load(string("outfiles/aggregated_results_kmedoids_",dist_type,"_",region,".jld2"))
+saved_data_dict= load(string(joinpath("outfiles","aggregated_results_kmedoids_"),dist_type,"_",region,".jld2"))
  #unpack saved JLD data
  for (k,v) in saved_data_dict
    @eval $(Symbol(k)) = $v
@@ -50,7 +49,7 @@ revenue=revenue[problem_type]
 
 
  # load saved JLD data - exact algorithm of kmedoids
-saved_data_dict_exact= load(string("outfiles/aggregated_results_kmedoids_exact_",dist_type,"_",region,".jld2"))
+saved_data_dict_exact= load(string(joinpath("outfiles","aggregated_results_kmedoids_exact_"),dist_type,"_",region,".jld2"))
  #unpack saved JLD data
  for (k,v) in saved_data_dict_exact
    @eval $(Symbol(string(k,"_exact"))) = $v
@@ -155,7 +154,7 @@ push!(clust_methods,Dict("name"=>"k-medoids", "rev"=> revenue_best[:],"color"=>"
  # averaging
 cost_rev_clouds = Dict()
 cost_rev_points = Array{Dict,1}()
-descr=string("plots/cloud_kmedoids_",region,".png")
+descr=string(joinpath("plots","cloud_kmedoids_"),region,".png")
 
 cost_rev_clouds["cost"]=cost
 cost_rev_clouds["rev"] = revenue

@@ -1,6 +1,5 @@
- # imports
-push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForOpt to the LOAD_PATH
-push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
+CLUST_FOR_OPT=ENV["CLUST_FOR_OPT"]
+push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using JLD2 # Much faster than JLD (50s vs 20min)
 using FileIO
@@ -61,7 +60,7 @@ for region_ in regions
     n_clust_ar = collect(n_clust_min:n_clust_max)
 
      # load saved JLD data
-    saved_data_dict= load(string("outfiles/aggregated_results_kmeans_",region_,".jld2"))
+    saved_data_dict= load(string(joinpath("outfiles","aggregated_results_kmeans_"),region_,".jld2"))
     #unpack saved JLD data
     # string _ is added because calling weights later gives weird error where weights from StatsBase is called. 
      for (k,v) in saved_data_dict
@@ -109,7 +108,7 @@ for region_ in regions
     dist_type = "SqEuclidean"   # "SqEuclidean"   "Cityblock"
 
      # load saved JLD data - kmeans algorithm of kmedoids
-    saved_data_dict= load(string("outfiles/aggregated_results_kmedoids_",dist_type,"_",region_,".jld2"))
+    saved_data_dict= load(string(joinpath("outfiles","aggregated_results_kmedoids_"),dist_type,"_",region_,".jld2"))
      #unpack saved JLD data
      for (k,v) in saved_data_dict
        @eval $(Symbol(string(k,"_"))) = $v
@@ -134,7 +133,7 @@ for region_ in regions
     end
     
     # load saved JLD data - exact algorithm of kmedoids
-    saved_data_dict= load(string("outfiles/aggregated_results_kmedoids_exact_",dist_type,"_",region_,".jld2"))
+    saved_data_dict= load(string(joinpath("outfiles","aggregated_results_kmedoids_exact_"),dist_type,"_",region_,".jld2"))
      #unpack saved JLD data
      for (k,v) in saved_data_dict
        @eval $(Symbol(string(k,"_"))) = $v
@@ -172,7 +171,7 @@ for region_ in regions
     n_clust_ar = collect(n_clust_min:n_clust_max)
 
      # load saved JLD data
-    saved_data_dict= load(string("outfiles/aggregated_results_hier_centroid_",region_,".jld2"))
+    saved_data_dict= load(string(joinpath("outfiles","aggregated_results_hier_centroid_"),region_,".jld2"))
      #unpack saved JLD data
      for (k,v) in saved_data_dict
        @eval $(Symbol(string(k,"_centroid"))) = $v
@@ -191,7 +190,7 @@ for region_ in regions
     end
      
      # load saved JLD data
-    saved_data_dict= load(string("outfiles/aggregated_results_hier_medoid_",region_,".jld2"))
+    saved_data_dict= load(string(joinpath("outfiles","aggregated_results_hier_medoid_"),region_,".jld2"))
      #unpack saved JLD data
      for (k,v) in saved_data_dict
        @eval $(Symbol(string(k,"_medoid"))) = $v
@@ -274,7 +273,7 @@ for region_ in regions
 
 
      # load saved JLD data
-    saved_data_dict= load(string("outfiles/aggregated_results_dtw_",region_,".jld2"))
+    saved_data_dict= load(string(joinpath("outfiles","aggregated_results_dtw_"),region_,".jld2"))
      #unpack saved JLD data
      for (k,v) in saved_data_dict
        @eval $(Symbol(string(k,"_"))) = $v
@@ -323,7 +322,7 @@ for region_ in regions
     n_clust_ar = collect(n_clust_min:n_clust_max)
 
      # load saved JLD data
-    saved_data_dict= load(string("outfiles/aggregated_results_kshape_",region,".jld2"))
+    saved_data_dict= load(string(joinpath("outfiles","aggregated_results_kshape_"),region,".jld2"))
      #unpack saved JLD data
      for (k,v) in saved_data_dict
        @eval $(Symbol(string(k,"_"))) = $v
@@ -369,7 +368,7 @@ for region_ in regions
       ax_array[2,1]["legend"]()  
       ax_array[2,1]["set"](ylabel="EUR/MWh")
       fig["subplots_adjust"](hspace=0.1)
-      savefig("plots/example_clusters_$region.eps",format="eps")
+      savefig(joinpath("plots","example_clusters_$region.eps"),format="eps")
       
     
       plot_clusters(e_f_centers["kmeans"],e_f_weights["kmeans"];region=region,descr="kmeans")
@@ -387,7 +386,7 @@ for region_ in regions
 
       cost_rev_clouds = Dict()
       cost_rev_points = Array{Dict,1}()
-      descr=string("plots/cloud_kmeans_",region,".png")
+      descr=string(joinpath("plots","cloud_kmeans_"),region,".png")
 
       cost_rev_clouds["cost"]=cost_dict["kmeans"]
       cost_rev_clouds["rev"] = revenue_dict["kmeans"]
@@ -403,7 +402,7 @@ for region_ in regions
        # k-medoids
       cost_rev_clouds = Dict()
       cost_rev_points = Array{Dict,1}()
-      descr=string("plots/cloud_kmedoids_",region,".png")
+      descr=string(joinpath("plots","cloud_kmedoids_"),region,".png")
 
       cost_rev_clouds["cost"]=cost_dict["kmedoids"]
       cost_rev_clouds["rev"] = revenue_dict["kmedoids"]
@@ -482,44 +481,6 @@ ax_array[1,2]["set_title"]("Battery\nCA")
 ax_array[1,3]["set_title"]("Gas turbine\nGER")
 ax_array[1,4]["set_title"]("Gas turbine\nCA")
 
-savefig("plots/rev_vs_k.eps",format="eps")
+savefig(joinpath("plots","rev_vs_k.eps"),format="eps")
 
 
- #=
-
- # revenue vs. SSE
- # averaging
-
-cost_rev_clouds = Dict()
-cost_rev_points = Array{Dict,1}()
-descr=string("plots/cloud_kmeans_",region,".png")
-
-cost_rev_clouds["cost"]=cost_dict["kmeans"]
-cost_rev_clouds["rev"] = revenue_dict["kmeans"]
-
- #push!(cost_rev_points,Dict("label"=>"Hierarchical centroid","cost"=>cost_dict["hier_centroid"],"rev"=>revenue_dict["hier_centroid"],"mec"=>"k","mew"=>2.0,"marker"=>"." ))
- # \TODO   --> add best kmeans
-push!(cost_rev_points,Dict("label"=>"kmeans best","cost"=>cost_best["kmeans"],"rev"=>revenue_best["kmeans"],"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
-
-plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily)
- 
-
-# Medoid
- # k-medoids
-cost_rev_clouds = Dict()
-cost_rev_points = Array{Dict,1}()
-descr=string("plots/cloud_kmedoids_",region,".png")
-
-cost_rev_clouds["cost"]=cost_dict["kmedoids"]
-cost_rev_clouds["rev"] = revenue_dict["kmedoids"]
-
- # k-medoids exact
-push!(cost_rev_points,Dict("label"=>"k-medoids exact","cost"=>cost_dict["kmedoids_exact"],"rev"=>revenue_dict["kmedoids_exact"],"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
-
- # hier medoid
-push!(cost_rev_points,Dict("label"=>"Hierarchical medoid","cost"=>cost_dict["hier_medoid"],"rev"=>revenue_dict["hier_medoid"],"mec"=>"k","mew"=>3.0,"marker"=>"x" ))
-
-plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily;n_col=3)
- 
- 
- =#

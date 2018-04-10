@@ -1,11 +1,10 @@
-# imports
-push!(LOAD_PATH, normpath(joinpath(pwd(),".."))) #adds the location of ClustForOpt to the LOAD_PATH
-push!(LOAD_PATH, "/data/cees/hteich/clustering/src")
+CLUST_FOR_OPT=ENV["CLUST_FOR_OPT"]
+push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using JLD2
 using FileIO
 using PyCall
-util_path = normpath(joinpath("/data","cees","hteich","clustering","src","utils"))
+util_path = normpath(joinpath(CLUST_FOR_OPT,"src","utils"))
 unshift!(PyVector(pyimport("sys")["path"]), util_path) # add util path to search path ### unshift!(PyVector(pyimport("sys")["path"]), "") # add current path to search path
 @pyimport load_clusters
 
@@ -168,7 +167,7 @@ end #k=1:n_k
                    "weights"=>weights,
                    "revenue"=>revenue )
                     
-  save(string("outfiles/aggregated_results_kshape_",region,".jld2"),save_dict)
+  save(string(joinpath("outfiles","aggregated_results_kshape_"),region,".jld2"),save_dict)
   println("kshape data revenue calculated + saved.")
 
  
