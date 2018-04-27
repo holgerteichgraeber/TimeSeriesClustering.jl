@@ -150,5 +150,11 @@ plot(collect(1:length(n_clust_ar)),revenue_best,label="best cost")
 plt.legend()
 plt.ylabel("revenue")
 
+ #### analyze kmeans results
+k=2
+println("centers: ",centers[k,ind_mincost[k]])
+println("weights: ",weights[k,ind_mincost[k]])
+plot_clusters(centers[k,ind_mincost[k]],weights[k,ind_mincost[k]])
+
 
 plt.show()

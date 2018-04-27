@@ -55,19 +55,19 @@ revenue_medoid=revenue_medoid[problem_type]
 
 
  # Find best cost index - save
-ind_mincost = findmin(cost_centroid,2)[2]  # along dimension 2
-ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
+ind_mincost_centr = findmin(cost_centroid,2)[2]  # along dimension 2
+ind_mincost_centr = reshape(ind_mincost_centr,size(ind_mincost_centr,1))
 revenue_centroid_best = zeros(size(revenue_centroid,1))
 for i=1:size(revenue_centroid,1)
-    revenue_centroid_best[i]=revenue_centroid[ind_mincost[i]] 
+    revenue_centroid_best[i]=revenue_centroid[ind_mincost_centr[i]] 
 end
 
  # Find best cost index - save
-ind_mincost = findmin(cost_medoid,2)[2]  # along dimension 2
-ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
+ind_mincost_med = findmin(cost_medoid,2)[2]  # along dimension 2
+ind_mincost_med = reshape(ind_mincost_med,size(ind_mincost_med,1))
 revenue_medoid_best = zeros(size(revenue_medoid,1))
 for i=1:size(revenue_medoid,1)
-    revenue_medoid_best[i]=revenue_medoid[ind_mincost[i]] 
+    revenue_medoid_best[i]=revenue_medoid[ind_mincost_med[i]] 
 end
 
 
@@ -94,6 +94,11 @@ function plot_cost_rev()
 end #function
 
  #plot_cost_rev()
+
+ ### analyze some results
+k=2
+plot_clusters(centers_centroid[k,1],weights_centroid[k,1])
+
 
 
 plt.show()

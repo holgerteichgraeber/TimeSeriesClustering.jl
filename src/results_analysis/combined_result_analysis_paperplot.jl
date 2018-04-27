@@ -355,7 +355,7 @@ for region_ in regions
  # plot clusters - possibly as heat map
 
     
-    if region == example_figs_region 
+    if region == example_figs_region && false 
       
       fig,ax_array = plt.subplots(2,1,sharex=true)#figsize=()
       subplot_clusters(e_f_centers["kmeans"],e_f_weights["kmeans"],ax_array[1,1];region=region,descr="kmeans")
@@ -394,6 +394,7 @@ for region_ in regions
        #push!(cost_rev_points,Dict("label"=>"Hierarchical centroid","cost"=>cost_dict["hier_centroid"],"rev"=>revenue_dict["hier_centroid"],"mec"=>"k","mew"=>2.0,"marker"=>"." ))
        # \TODO   --> add best kmeans
       push!(cost_rev_points,Dict("label"=>"kmeans best","cost"=>cost_best["kmeans"],"rev"=>revenue_best["kmeans"],"mec"=>"k","mew"=>2.0,"marker"=>"s" ))
+      push!(cost_rev_points,Dict("label"=>"Hierarchical centroid","cost"=>cost_dict["hier_centroid"],"rev"=>revenue_dict["hier_centroid"],"mec"=>"k","mew"=>3.0,"marker"=>"x" ))
 
       plot_SSE_rev(n_clust_ar, cost_rev_clouds, cost_rev_points, descr,revenue_orig_daily)
        
@@ -423,19 +424,19 @@ for region_ in regions
 
       # revenue vs. k - pre-sort
       clust_methods[plot_descr] = Array{Dict,1}()
-      push!(clust_methods[plot_descr],Dict("name"=>"full representation", "rev"=> revenue_orig_daily*ones(length(n_clust_ar)),"color"=>"k","linestyle"=>"--","width"=>3))
+      push!(clust_methods[plot_descr],Dict("name"=>"full representation", "rev"=> revenue_orig_daily*ones(length(n_clust_ar)),"color"=>"k","linestyle"=>"--","width"=>1.5))
       
       if plot_type == plot_types[1] # trad_cen  
-        push!(clust_methods[plot_descr],Dict("name"=>"hierarchical centroid", "rev"=> revenue_best["hier_centroid"][:],"color"=>col.dblue,"linestyle"=>"-","width"=>2))
-        push!(clust_methods[plot_descr],Dict("name"=>"k-means", "rev"=> revenue_best["kmeans"][:],"color"=>col.red,"linestyle"=>"-","width"=>2))
+        push!(clust_methods[plot_descr],Dict("name"=>"hierarchical centroid", "rev"=> revenue_best["hier_centroid"][:],"color"=>col.dblue,"linestyle"=>"-","width"=>1.5))
+        push!(clust_methods[plot_descr],Dict("name"=>"k-means", "rev"=> revenue_best["kmeans"][:],"color"=>col.red,"linestyle"=>"-","width"=>1.5))
       elseif plot_type == plot_types[2] # trad_med
-        push!(clust_methods[plot_descr],Dict("name"=>"k-medoids", "rev"=> revenue_best["kmedoids_exact"][:],"color"=>col.orange,"linestyle"=>"-","width"=>2))
-        push!(clust_methods[plot_descr],Dict("name"=>"hierarchical medoid", "rev"=> revenue_best["hier_medoid"][:],"color"=>col.lblue,"linestyle"=>"-","width"=>2))
+        push!(clust_methods[plot_descr],Dict("name"=>"k-medoids", "rev"=> revenue_best["kmedoids_exact"][:],"color"=>col.orange,"linestyle"=>"-","width"=>1.5))
+        push!(clust_methods[plot_descr],Dict("name"=>"hierarchical medoid", "rev"=> revenue_best["hier_medoid"][:],"color"=>col.lblue,"linestyle"=>"-","width"=>1.5))
       elseif plot_type == plot_types[3] # shape
-        push!(clust_methods[plot_descr],Dict("name"=>"k-shape", "rev"=> revenue_best["kshape"][:],"color"=>col.yellow,"linestyle"=>"-","width"=>2))
-        push!(clust_methods[plot_descr],Dict("name"=>"DTW skband = 0", "rev"=> revenue_best["dtw"][:,1],"color"=>col.brown,"linestyle"=>"-","width"=>2))
-        push!(clust_methods[plot_descr],Dict("name"=>"DTW skband = 1", "rev"=> revenue_best["dtw"][:,2],"color"=>col.brown,"linestyle"=>"--","width"=>2))
-        push!(clust_methods[plot_descr],Dict("name"=>"DTW skband = 2", "rev"=> revenue_best["dtw"][:,3],"color"=>col.brown,"linestyle"=>":","width"=>2))
+        push!(clust_methods[plot_descr],Dict("name"=>"k-shape", "rev"=> revenue_best["kshape"][:],"color"=>col.yellow,"linestyle"=>"-","width"=>1.5))
+        push!(clust_methods[plot_descr],Dict("name"=>"DTW skband = 0", "rev"=> revenue_best["dtw"][:,1],"color"=>col.brown,"linestyle"=>"-","width"=>1.5))
+        push!(clust_methods[plot_descr],Dict("name"=>"DTW skband = 1", "rev"=> revenue_best["dtw"][:,2],"color"=>col.brown,"linestyle"=>"--","width"=>1.5))
+        push!(clust_methods[plot_descr],Dict("name"=>"DTW skband = 2", "rev"=> revenue_best["dtw"][:,3],"color"=>col.brown,"linestyle"=>":","width"=>1.5))
       end #plot_type
     end # plot_type in plot_types
 
@@ -471,10 +472,10 @@ fig["subplots_adjust"](wspace=0.1)
 ax_array[1,1]["set"](xticks=n_clust_ar)
 ax_array[1,1]["set"](ylabel="Centroid\nObjective value")
 ax_array[2,1]["set"](ylabel="Medoid\nObjective value")
-ax_array[3,1]["set"](xlabel="# of clusters",ylabel="Shape\nObjective value")
-ax_array[3,2]["set"](xlabel="# of clusters")
-ax_array[3,3]["set"](xlabel="# of clusters")
-ax_array[3,4]["set"](xlabel="# of clusters")
+ax_array[3,1]["set"](xlabel="k",ylabel="Shape\nObjective value")
+ax_array[3,2]["set"](xlabel="k")
+ax_array[3,3]["set"](xlabel="k")
+ax_array[3,4]["set"](xlabel="k")
 
 ax_array[1,1]["set_title"]("Battery\nGER")
 ax_array[1,2]["set_title"]("Battery\nCA")

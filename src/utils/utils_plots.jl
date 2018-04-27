@@ -102,7 +102,7 @@ function plot_k_rev_subplot(range_k::Array,methods::Array{Dict,1},descr::String,
   =#
 end #plot_k_rev
 
-function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Array{Dict,1},descr::String,rev_365::Float64;n_col::Int=2, save::Bool=true)
+function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Array{Dict,1},descr::String,rev_365::Float64;n_col::Int=3, save::Bool=true)
   figure()
   fsize_ref = 16
   for i=1:length(range_k)
@@ -123,7 +123,10 @@ function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Arra
     end
   end
   plot(0.0,1.0,marker="*",ms=10,linestyle="none",color="k",label="Full representation")
-  legend(fontsize=fsize_ref-4,ncol=n_col)
+  leg = legend(fontsize=fsize_ref-4,ncol=n_col)
+  for lh in leg[:legendHandles]
+    lh[:set_alpha](0)
+  end
   xlabel("Clustering measure (SSE)",fontsize=fsize_ref)
   ylabel("Objective function value",fontsize=fsize_ref)
   ax = axes()
