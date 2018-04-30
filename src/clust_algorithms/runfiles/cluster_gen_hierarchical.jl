@@ -87,15 +87,20 @@ for centr = 1:length(centroid_descr)
         results = hierarchical.run_hierClust(seq_norm',n_clust) # transpose input data because scikit learn has opposite convention of julia clustering
 
         # save clustering results
+        centers_norm_SSE = []
         if centroid_descr[centr] == "centroid"
           centers_norm = results["centers"]' # transpose back 
           centers_ = undo_z_normalize(centers_norm,hourly_mean,hourly_sdv)    
-          centers[n_clust,i]=centers_ 
+          centers[n_clust,i]=centers_
+          centers_norm_SSE=centers_norm
         elseif centroid_descr[centr] == "medoid" 
           centers[n_clust,i] = seq[:,round.(Int,results["closest_day_ind"])+1] 
+        centers_norm_SSE=seq_norm[:,round.(Int,results["closest_day_ind"])+1] 
+
         end
         clustids[n_clust,i] = results["labels"]+1
-        cost[n_clust_it,i] = results["SSE"]
+        SSE = calc_SSE(seq_norm,centers_norm_SSE,clustids[n_clust,i])
+        cost[n_clust_it,i] = SSE
         iter[n_clust_it,i] = 1
          ##########################
         

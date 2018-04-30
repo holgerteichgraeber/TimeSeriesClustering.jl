@@ -9,6 +9,7 @@
 module ClustForOpt
 
 using Reexport
+using Distances
 using PyPlot
 @reexport using DataFrames
 
@@ -26,7 +27,8 @@ export run_opt,
        plot_SSE_rev,
        sort_centers,
        cols,
-       col
+       col,
+       calc_SSE
 
 include(joinpath("utils",".juliarc.jl"))
 include(joinpath("utils","optim_problems.jl"))
