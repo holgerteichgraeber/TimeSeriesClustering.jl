@@ -35,8 +35,7 @@ iterations = 1 # doesn't matter for exact methods
 try
   mkdir("outfiles")
 catch
-  rm("outfiles",recursive=true)
-  mkdir("outfiles")
+ #
 end
 
 # save settings in txt file

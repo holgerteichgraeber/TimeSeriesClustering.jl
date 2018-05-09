@@ -42,8 +42,7 @@ rad_sc_ar = collect(rad_sc_min:rad_sc_max)
 try
   mkdir("outfiles")
 catch
-  rm("outfiles",recursive=true)
-  mkdir("outfiles")
+  #
 end
 
 # save settings in txt file

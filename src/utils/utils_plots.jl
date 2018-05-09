@@ -102,7 +102,7 @@ function plot_k_rev_subplot(range_k::Array,methods::Array{Dict,1},descr::String,
   =#
 end #plot_k_rev
 
-function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Array{Dict,1},descr::String,rev_365::Float64;n_col::Int=3, save::Bool=true)
+function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Array{Dict,1},descr::String,rev_365::Float64;n_col::Int=2, save::Bool=true)
   figure()
   fsize_ref = 16
   for i=1:length(range_k)
@@ -122,17 +122,14 @@ function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Arra
       end # if
     end
   end
-  plot(0.0,1.0,marker="*",ms=10,linestyle="none",color="k",label="Full representation")
+  plot(0.0,1.0,marker="*",ms=10,linestyle="none",color=StanfordDGreen,fillstyle="bottom",markeredgecolor="k",label="Full representation") # markerfacecoloralt=StanfordDGreen
   leg = legend(fontsize=fsize_ref-4,ncol=n_col)
-  for lh in leg[:legendHandles]
-    lh[:set_alpha](0)
-  end
   xlabel("Clustering measure (SSE)",fontsize=fsize_ref)
-  ylabel("Objective function value",fontsize=fsize_ref)
+  ylabel("Objective value",fontsize=fsize_ref)
   ax = axes()
   ax[:tick_params]("both",labelsize=fsize_ref-1)
   tight_layout()
   xlim((9500,-120))
   ylim((0.5,1.05))
-  save && savefig(descr,format="png",dpi=300)
+  save && savefig(descr,format="png",dpi=600) #; eps does not support transparency, pdf takes forever to load in inkscape, format="png",dpi=300
 end # plot_SSE_rev
