@@ -57,7 +57,7 @@ n_clust_ar = collect(n_clust_min:n_clust_max)
 writetable(joinpath("outfiles",string("parameters_hier_",region,".txt")),df)
 
 # normalized clustering hourly
-seq_norm, hourly_mean, hourly_sdv = z_normalize(seq,hourly=true)
+seq_norm, hourly_mean, hourly_sdv = z_normalize(seq,scope="full")
 
  
 problem_type_ar = ["battery", "gas_turbine"]

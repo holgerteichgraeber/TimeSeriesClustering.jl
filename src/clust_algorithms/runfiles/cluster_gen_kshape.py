@@ -103,6 +103,13 @@ def normalize_01(price_dat_resh): # normalize such that maximum is 1
         price_dat_norm[:, i] = price_dat_resh[:, i] / hourly_max[i]
     return price_dat_norm, hourly_max
 
+def normalize_meansdv(price_dat_resh): 
+    price_dat_norm = np.zeros(np.shape(price_dat_resh))
+    hourly_mean = np.mean(price_dat_resh)
+    hourly_sdv = np.std(price_dat_resh)
+    price_dat_norm = (price_dat_resh-hourly_mean)/hourly_std
+    return price_dat_norm,hourly_mean,hourly_sdv
+
 def normalize_by_hour_meansdv(price_dat_resh):
     price_dat_norm = np.zeros(np.shape(price_dat_resh))
     hourly_mean = np.zeros(np.shape(price_dat_resh)[1])

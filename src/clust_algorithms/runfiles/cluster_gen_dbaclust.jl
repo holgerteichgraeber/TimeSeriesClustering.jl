@@ -63,7 +63,7 @@ for n_clust=n_clust_min:n_clust_max
 
        ##########################
       # normalized clustering hourly
-      seq_norm, hourly_mean, hourly_sdv = z_normalize(seq,hourly=true)
+      seq_norm, hourly_mean, hourly_sdv = z_normalize(seq,scope="sequence")
       tic()
       results = dbaclust(seq_norm,n_clust,n_init,ClassicDTW();iterations=iterations,inner_iterations=inner_iterations,rtol=1e-5,show_progress=false,store_trace=false,i2min=rmin,i2max=rmax)
       el_time = toq()

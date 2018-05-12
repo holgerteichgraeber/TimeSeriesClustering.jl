@@ -50,14 +50,13 @@ function sort_centers(centers::Array,weights::Array)
 end # function
 
 """
-function z_normalize(data;hourly=true,sequence=false)
+function z_normalize(data;scope="full")
 # z-normalize data with mean and sdv by hour
 # data: input format: (1st dimension: 24 hours, 2nd dimension: # of days)
-# sequence: sequence based scaling - hourly is disregarded
-#  hourly: true means univariate scaling: each hour is scaled seperately. False means one mean and standard deviation for the full data set.
+  scope: "full": one mean and sdv for the full data set; "hourly": univariate scaling: each hour is scaled seperately; "sequence": sequence based scaling
 """
-function z_normalize(data;hourly=true,sequence=false)
-  if sequence
+function z_normalize(data;scope="full")
+  if scope == "sequence"
     seq_mean = zeros(size(data)[2])
     seq_sdv = zeros(size(data)[2])
     data_norm = zeros(size(data)) 
@@ -69,24 +68,25 @@ function z_normalize(data;hourly=true,sequence=false)
       data_norm[:,i] = data_norm[:,i]/seq_sdv[i]
     end
     return data_norm,seq_mean,seq_sdv
-  else #no sequence
+  elseif scope == "hourly"
     hourly_mean = zeros(size(data)[1])
     hourly_sdv = zeros(size(data)[1])
     data_norm = zeros(size(data)) 
-    if hourly # alternatively, use mean_and_std() and zscore() from StatsBase.jl
-      for i=1:size(data)[1]
-        hourly_mean[i] = mean(data[i,:])
-        hourly_sdv[i] = std(data[i,:])
-        isnan(hourly_sdv[i]) &&  (hourly_sdv[i] =1)
-        data_norm[i,:] = data[i,:] - hourly_mean[i]
-        data_norm[i,:] = data_norm[i,:]/hourly_sdv[i]
-      end
-    else # hourly = false
-      hourly_mean = mean(data)*ones(size(data)[1])
-      hourly_sdv = std(data)*ones(size(data)[1])
-      data_norm = (data-hourly_mean[1])/hourly_sdv[1]
+    for i=1:size(data)[1]
+      hourly_mean[i] = mean(data[i,:])
+      hourly_sdv[i] = std(data[i,:])
+      isnan(hourly_sdv[i]) &&  (hourly_sdv[i] =1)
+      data_norm[i,:] = data[i,:] - hourly_mean[i]
+      data_norm[i,:] = data_norm[i,:]/hourly_sdv[i]
     end
     return data_norm, hourly_mean, hourly_sdv
+  elseif scope == "full"
+    hourly_mean = mean(data)*ones(size(data)[1])
+    hourly_sdv = std(data)*ones(size(data)[1])
+    data_norm = (data-hourly_mean[1])/hourly_sdv[1]
+    return data_norm, hourly_mean, hourly_sdv
+  else
+    error("scope _ ",scope," _ not defined.")
   end
 end # function z_normalize
 
