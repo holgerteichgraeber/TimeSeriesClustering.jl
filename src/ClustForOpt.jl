@@ -28,7 +28,8 @@ export run_opt,
        sort_centers,
        cols,
        col,
-       calc_SSE
+       calc_SSE,
+       find_medoids
 
 include(joinpath("utils",".juliarc.jl"))
 include(joinpath("utils","optim_problems.jl"))

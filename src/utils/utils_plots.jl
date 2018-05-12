@@ -88,7 +88,7 @@ function plot_k_rev_subplot(range_k::Array,methods::Array{Dict,1},descr::String,
   for m in methods
     axis["plot"](range_k,m["rev"]/methods[1]["rev"][1],label=m["name"],color=m["color"],linestyle=m["linestyle"],lw=m["width"])
   end
- axis["legend"](loc="lower right")
+ #axis["legend"](loc="lower right")
  #=
   xlabel("Number of clusters",fontsize=fsize_ref)
   ylabel("Objective function value",fontsize=fsize_ref)

@@ -150,6 +150,28 @@ function calc_SSE(data::Array,centers::Array,assignments::Array)
   return sum(SSE_sum)
 end # calc_SSE 
 
+"""
+function find_medoids(data::Array,centers::Array,assignments::Array)
+
+Given the data and cluster centroids and their respective assignments, this function finds
+the medoids that are closest to the cluster center. 
+"""
+function find_medoids(data::Array,centers::Array,assignments::Array)
+  k=size(centers,2) #number of clusters
+  n_periods =size(data,2)  
+  SSE=Float64[]
+  for i=1:k
+    push!(SSE,Inf)
+  end
+  medoids=zeros(centers)
+  for i=1:n_periods
+    d = sqeuclidean(data[:,i],centers[:,assignments[i]])
+    if d < SSE[assignments[i]]
+      medoids[:,assignments[i]] = data[:,i]
+    end
+  end
+  return medoids
+end
 
 
 
