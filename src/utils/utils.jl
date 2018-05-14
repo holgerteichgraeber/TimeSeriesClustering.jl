@@ -98,7 +98,7 @@ function undo_z_normalize(data_norm, mn, sdv; idx=[])
 # hourly_sdv; 24 hour vector with hourly standard deviations
 """
 function undo_z_normalize(data_norm, mn, sdv; idx=[])
-  if size(data_norm,1) == size(mn,1) # hourly
+  if size(data_norm,1) == size(mn,1) # hourly - even if idx is provided, doesn't matter if it is hourly
     data = data_norm .* sdv + mn * ones(size(data_norm)[2])'
     return data
   elseif !isempty(idx) && size(data_norm,2) == maximum(idx) # sequence based

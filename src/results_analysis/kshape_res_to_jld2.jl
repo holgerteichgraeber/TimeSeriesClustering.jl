@@ -29,10 +29,9 @@ n_clust_min=1
 n_clust_max = n_k
 
 
-result_data = "kshape_it1000_max100"
 
-n_kshape =10
-iterations=200
+n_kshape =1000
+iterations=1000
 
 # create directory where data is saved
 try
@@ -63,7 +62,7 @@ problem_type_ar = ["battery", "gas_turbine"]
 
 # calc hourly mean and sdv, Note: For GER, these are in EUR, since the original data is in EUR
  # sequence based normalization
-seq_norm, hourly_mean, hourly_sdv = z_normalize(seq;sequence=true)
+seq_norm, hourly_mean, hourly_sdv = z_normalize(seq;scope="sequence")
 
  # initialize dictionaries of the loaded data (key: number of clusters)
  # for debugging - DELETE LATER

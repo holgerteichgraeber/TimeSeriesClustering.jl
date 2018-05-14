@@ -2,6 +2,8 @@
 # coding: utf-8
 # THIS FILE SHOULD BE INDEPENDENT OF ITS LOCATION --> Only full path references
 # This file currently only works on LINUX based systems
+# Runs kshape and kshape saves local results in normalized space in pkl. This file also saves the best centroids as txt, but undoing the normalization may not be up to date. Possibly delete (TODO)
+
 
 from time import time
 import os,sys
@@ -107,7 +109,7 @@ def normalize_meansdv(price_dat_resh):
     price_dat_norm = np.zeros(np.shape(price_dat_resh))
     hourly_mean = np.mean(price_dat_resh)
     hourly_sdv = np.std(price_dat_resh)
-    price_dat_norm = (price_dat_resh-hourly_mean)/hourly_std
+    price_dat_norm = (price_dat_resh-hourly_mean)/hourly_sdv
     return price_dat_norm,hourly_mean,hourly_sdv
 
 def normalize_by_hour_meansdv(price_dat_resh):
@@ -437,7 +439,7 @@ def draw_heatmap(x, y, map_value, title=" ", unit=" ", max_col=0 ):
 ##################################################################
 if __name__ == '__main__':
     # argv[1] -> either CA or GER
-    if len(sys.argv) == 1 or len(sys.argv) >2:
+    if len(sys.argv) <= 2 or len(sys.argv) >3:
         sys.exit("Not the correct number of input arguments")
     else:
         if sys.argv[1] == "GER" or sys.argv[1] == "CA":
@@ -445,19 +447,22 @@ if __name__ == '__main__':
             print "Region: ", sys.argv[1], "\n"
         else:
             sys.exit("Region not defined: " + sys.argv[2])
+        scope = sys.argv[2]
+        print "Scope: ", sys.argv[2], "\n"
+
 
     plt.close("all")
     tic_begin = time()
 
 
     ### SETTINGS ###
-    n_rand_km = 1#  random starting points for kmeans
+    n_rand_km = 1000#  random starting points for kmeans
     min_k =1
-    max_k=min_k+9
+    max_k=min_k+9   # if we want to cluster 8,9, min_k=8, max_k=8+2
     n_k = np.arange(min_k,max_k)
     showfigs = False  
     n_jobs = -1  #1 default, -1 as many cores as available
-    max_iter = 200
+    max_iter = 1000
     plots = False
     ##############
 
@@ -477,6 +482,7 @@ if __name__ == '__main__':
     el_CA_2015_normtot,max_el = normalize_01(el_CA_2015_resh)
     el_CA_2015_norm_meansdv_hourly,mean_hourly,sdv_hourly= normalize_by_hour_meansdv(el_CA_2015_resh)
     el_CA_2015_norm_meansdv,mean_seq,sdv_seq= normalize_by_seq_meansdv(el_CA_2015_resh)
+    el_CA_2015_full_meansdv,mean_full,sdv_full= normalize_meansdv(el_CA_2015_resh)
     #pdb.set_trace()
 
     '''
@@ -511,22 +517,30 @@ if __name__ == '__main__':
     for k in n_k:
         i = i+1
         tic = time()
-        res = run_kshape(el_CA_2015_norm_meansdv, k,n_init=n_rand_km, max_iter=max_iter, n_jobs=n_jobs,region=region,normalize=True)
+        res=[]
+        if scope == "full":
+            res = run_kshape(el_CA_2015_full_meansdv, k,n_init=n_rand_km, max_iter=max_iter, n_jobs=n_jobs,region=region,normalize=False)
+        elif scope == "hourly":
+            res = run_kshape(el_CA_2015_norm_meansdv_hourly, k,n_init=n_rand_km, max_iter=max_iter, n_jobs=n_jobs,region=region,normalize=False)
+        elif scope == "sequence":
+            res = run_kshape(el_CA_2015_norm_meansdv, k,n_init=n_rand_km, max_iter=max_iter, n_jobs=n_jobs,region=region,normalize=True)
+        else:
+            print "Scope _ ", scope, " _ not defined. \n"
         toc = time()
         sys.stdout.write("k=" + str(k) + " took " + str(toc - tic) + " s  \n" ) # on cluster, print seems to be omitted in out
         
         sys.stdout.flush() # empty the buffer
         if plots:
             plot_clusters(np.multiply(res['centers'],np.transpose(sdv_hourly))+np.dot(np.identity(np.shape(el_CA_2015_resh)[1]),np.transpose(mean_hourly)),res['weights'],k,region + ' k-shape', el_CA_2015_resh, res['closest_day'], showfigs = showfigs)
-        SSE_kshape[i-1] = res['SSE']
-        cluster_centers_kshape.append(np.multiply(res['centers'],np.transpose(sdv_hourly))+np.dot(np.identity(np.shape(el_CA_2015_resh)[1]),np.transpose(mean_hourly)))
-        labels_kshape.append(res['labels'])
-        wt_kshape.append(res['weights'])
-        cluster_closest_day_kshape.append(res['closest_day'])
+        #SSE_kshape[i-1] = res['SSE']
+        #cluster_centers_kshape.append(np.multiply(res['centers'],np.transpose(sdv_hourly))+np.dot(np.identity(np.shape(el_CA_2015_resh)[1]),np.transpose(mean_hourly)))
+        #labels_kshape.append(res['labels'])
+        #wt_kshape.append(res['weights'])
+        #cluster_closest_day_kshape.append(res['closest_day'])
         #save centroid 
         filename_ep = reg_str + 'Elec_Price_kmeans_kshape_cluster_' + str(k) + '.txt'
         filename_wt = reg_str + 'Weights_kmeans_kshape_cluster_' + str(k) + '.txt'
-        write_clusters_to_txt_battery_opt(cluster_centers_kshape[i-1],wt_kshape[i-1], k,filename_ep,filename_wt)
+        #write_clusters_to_txt_battery_opt(cluster_centers_kshape[i-1],wt_kshape[i-1], k,filename_ep,filename_wt)
         #save closest 
         filename_ep = reg_str + 'Elec_Price_kmeans_kshape_closest_' + str(k) + '.txt'
         filename_wt = reg_str + 'Weights_kmeans_kshape_closest_' + str(k) + '.txt'

@@ -79,7 +79,7 @@ writetable(joinpath("outfiles",string("parameters_dtw_",region,".txt")),df)
 
   centers_norm = results.centers
   clustids = results.clustids
-  centers = undo_z_normalize(seq_to_array(centers_norm),hourly_mean,hourly_sdv)
+  centers = undo_z_normalize(seq_to_array(centers_norm),hourly_mean,hourly_sdv;idx=clustids)
 
    # save results to txt
 
