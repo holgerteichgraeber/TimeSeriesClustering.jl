@@ -4,7 +4,8 @@ using JuMP
  #using GLPKMathProgInterface 
  #using Cbc
 using Gurobi  # Gurobi is super fast compared to the other solvers
-
+env = Gurobi.Env() # reusing the same gurobi environment for multiple solves
+  
 """
    kmedoidsResult()
  
@@ -38,7 +39,7 @@ d_mat=pairwise(_dist,data)
 
 
 # create jump model
-m = Model(solver=GurobiSolver())  
+m = Model(solver=GurobiSolver(env)) # GurobiSolver(env,OutputFlag=0) 
 @variable(m,z[1:N_i,1:N_i],Bin)
 @variable(m,y[1:N_i],Bin)
 @objective(m,Min,sum(d_mat[i,j]*z[i,j] for i=1:N_i, j=1:N_i))
