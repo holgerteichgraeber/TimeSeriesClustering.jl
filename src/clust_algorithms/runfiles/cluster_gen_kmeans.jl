@@ -74,19 +74,19 @@ for n_clust_it=1:length(n_clust_ar)
     for i = 1:n_kmeans
       if n_clust ==1 
         centers_norm = mean(seq_norm,2) # should be 0 due to normalization
+        clustids[n_clust,i] = ones(Int,size(seq,2))
         centers_ = undo_z_normalize(centers_norm,hourly_mean,hourly_sdv)          
         centers[n_clust,i]=centers_ #transpose to match optimization formulation 
-        clustids[n_clust,i] = ones(Int,size(seq,2))
         cost[n_clust_it,i] = sum(pairwise(SqEuclidean(),centers_norm,seq_norm)) #same as sum((seq_norm-repmat(mean(seq_norm,2),1,size(seq,2))).^2)
         iter[n_clust_it,i] = 1
       else
         results = kmeans(seq_norm,n_clust;maxiter=iterations)
 
         # save clustering results
+        clustids[n_clust,i] = results.assignments
         centers_norm = results.centers
         centers_ = undo_z_normalize(centers_norm,hourly_mean,hourly_sdv)    
         centers[n_clust,i]=centers_ 
-        clustids[n_clust,i] = results.assignments
         cost[n_clust_it,i] = results.totalcost
         iter[n_clust_it,i] = results.iterations
       end

@@ -5,10 +5,19 @@ using JLD2
 using FileIO
 
 region_ = "GER"
+
+ # create directory where data is saved
+try
+  mkdir("outfiles_jld2")
+catch
+ # 
+end
+cp(joinpath("outfiles",string("parameters_dtw_",region_,".txt")),joinpath("outfiles_jld2",string("parameters_dtw_",region_,".txt")))
+
  # read parameters
 param=DataFrame()
 try
-  param = readtable(joinpath("outfiles",string("parameters_dtw_",region_,".txt")))
+  param = readtable(joinpath("outfiles_jld2",string("parameters_dtw_",region_,".txt")))
 catch
   error("No input file parameters.txt exists in folder outfiles.")
 end
@@ -95,7 +104,7 @@ save_dict = Dict("centers"=>centers,
                  "weights"=>weights,
                  "revenue"=>revenue )
                   
-save(string(joinpath("outfiles","aggregated_results_dtw_"),region,".jld2"),save_dict)
+save(string(joinpath("outfiles_jld2","aggregated_results_dtw_"),region,".jld2"),save_dict)
 println("Dbaclust data revenue calculated + saved.")
 
 

@@ -87,6 +87,7 @@ for centr = 1:length(centroid_descr)
 
         # save clustering results
         centers_norm_SSE = []
+        clustids[n_clust,i] = results["labels"]+1
         if centroid_descr[centr] == "centroid"
           centers_norm = results["centers"]' # transpose back 
           centers_ = undo_z_normalize(centers_norm,hourly_mean,hourly_sdv)    
@@ -97,7 +98,6 @@ for centr = 1:length(centroid_descr)
         centers_norm_SSE=seq_norm[:,round.(Int,results["closest_day_ind"])+1] 
 
         end
-        clustids[n_clust,i] = results["labels"]+1
         SSE = calc_SSE(seq_norm,centers_norm_SSE,clustids[n_clust,i])
         cost[n_clust_it,i] = SSE
         iter[n_clust_it,i] = 1
