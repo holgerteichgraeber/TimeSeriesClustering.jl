@@ -5,6 +5,9 @@ using Distances
 using Clustering
 using JLD2
 using FileIO
+using Gurobi
+
+env = Gurobi.Env() # reusing the same gurobi environment for multiple solves
 
  ######## DATA INPUT ##########
 
@@ -89,7 +92,7 @@ for dist = 1:length(distance_type_ar)
     n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts
       for i = 1:n_kmedeoids
          
-          results = kmedoids_exact(seq_norm,n_clust,distance_type_ar[dist])
+          results = kmedoids_exact(seq_norm,n_clust,env;distance_type_ar[dist])
 
           # save clustering results
           centers_norm = results.medoids

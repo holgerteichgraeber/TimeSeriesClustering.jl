@@ -86,6 +86,47 @@ for region_ in regions
       e_f_weights["kmeans"]=weights_[example_figs_n_clust,ind_mincost[example_figs_n_clust]]
     end
 
+    #### k-means with medoid as representation ###
+
+     # read parameters
+    param=DataFrame()
+    try
+      param = readtable(joinpath("outfiles",string("parameters_kmeans_medoidrep",region_,".txt")))
+    catch
+      error("No input file parameters.txt exists in folder outfiles.")
+    end
+
+    n_clust_min=param[:n_clust_min][1]
+    n_clust_max=param[:n_clust_max][1]
+    n_kmeans=param[:n_kmeans][1]
+    iterations=param[:iterations][1]
+    region=param[:region][1]
+
+    n_clust_ar = collect(n_clust_min:n_clust_max)
+
+     # load saved JLD data
+    saved_data_dict= load(string(joinpath("outfiles","aggregated_results_kmeans_medoidrep"),region_,".jld2"))
+    #unpack saved JLD data
+    # string _ is added because calling weights later gives weird error where weights from StatsBase is called. 
+     for (k,v) in saved_data_dict
+       @eval $(Symbol(string(k,"_"))) = $v
+     end
+
+     #set revenue to the chosen problem type
+    revenue_dict["kmeans_medoidrep"] =revenue_[problem_type] 
+    cost_dict["kmeans_medoidrep"] = cost_
+
+     # Find best cost index - save
+    ind_mincost = findmin(cost_,2)[2]  # along dimension 2
+    ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
+    revenue_best["kmeans_medoidrep"] = zeros(size(revenue_dict["kmeans_medoidrep"],1))
+    cost_best["kmeans_medoidrep"] = zeros(size(cost_dict["kmeans_medoidrep"],1))
+    for i=1:size(revenue_dict["kmeans_medoidrep"],1)
+        revenue_best["kmeans_medoidrep"][i]=revenue_dict["kmeans_medoidrep"][ind_mincost[i]] 
+        cost_best["kmeans_medoidrep"][i]=cost_dict["kmeans_medoidrep"][ind_mincost[i]] 
+    end
+
+
      ##### k-medoids #######
 
 
@@ -432,6 +473,7 @@ for region_ in regions
       elseif plot_type == plot_types[2] # trad_med
         push!(clust_methods[plot_descr],Dict("name"=>"k-medoids", "rev"=> revenue_best["kmedoids_exact"][:],"color"=>col.orange,"linestyle"=>"-","width"=>1.5))
         push!(clust_methods[plot_descr],Dict("name"=>"hierarchical medoid", "rev"=> revenue_best["hier_medoid"][:],"color"=>col.lblue,"linestyle"=>"-","width"=>1.5))
+        push!(clust_methods[plot_descr],Dict("name"=>"k-means", "rev"=> revenue_best["kmeans_medoidrep"][:],"color"=>col.purple,"linestyle"=>"-","width"=>1.5))
       elseif plot_type == plot_types[3] # shape
         push!(clust_methods[plot_descr],Dict("name"=>"k-shape", "rev"=> revenue_best["kshape"][:],"color"=>col.yellow,"linestyle"=>"-","width"=>1.5))
         push!(clust_methods[plot_descr],Dict("name"=>"DTW skband = 0", "rev"=> revenue_best["dtw"][:,1],"color"=>col.brown,"linestyle"=>"-","width"=>1.5))

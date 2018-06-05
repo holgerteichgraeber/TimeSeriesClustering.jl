@@ -83,12 +83,15 @@ plot within subfigure
       linestyle
       width
 """
-function plot_k_rev_subplot(range_k::Array,methods::Array{Dict,1},descr::String, axis::Any; save::Bool=true)
+function plot_k_rev_subplot(range_k::Array,methods::Array{Dict,1},descr::String, axis::Any; save::Bool=true,legend::Bool=false)
   fsize_ref = 16
   for m in methods
-    axis["plot"](range_k,m["rev"]/methods[1]["rev"][1],label=m["name"],color=m["color"],linestyle=m["linestyle"],lw=m["width"])
+    # use if all start at 1, but some are not until 9
+    axis["plot"](1:length(m["rev"]),m["rev"]/methods[1]["rev"][1],label=m["name"],color=m["color"],linestyle=m["linestyle"],lw=m["width"])
+ #axis["plot"](range_k,m["rev"]/methods[1]["rev"][1],label=m["name"],color=m["color"],linestyle=m["linestyle"],lw=m["width"])
   end
- #axis["legend"](loc="lower right")
+ legend && axis["legend"](loc="lower right")
+ axis["set_ylim"]([0.0,1.4])
  #=
   xlabel("Number of clusters",fontsize=fsize_ref)
   ylabel("Objective function value",fontsize=fsize_ref)
@@ -129,7 +132,7 @@ function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Arra
   ax = axes()
   ax[:tick_params]("both",labelsize=fsize_ref-1)
   tight_layout()
-  xlim((9500,-120))
+  xlim((7120,-120)) #9500
   ylim((0.5,1.05))
   save && savefig(descr,format="png",dpi=600) #; eps does not support transparency, pdf takes forever to load in inkscape, format="png",dpi=300
 end # plot_SSE_rev

@@ -4,7 +4,6 @@ using JuMP
  #using GLPKMathProgInterface 
  #using Cbc
 using Gurobi  # Gurobi is super fast compared to the other solvers
-env = Gurobi.Env() # reusing the same gurobi environment for multiple solves
   
 """
    kmedoidsResult()
@@ -20,15 +19,24 @@ end
 
 
 """  
+function kmedoids_exact(
+   data::Array{Float64},
+   nclust::Int,
+   _dist::SemiMetric = SqEuclidean(),
+   env::Any;
+   unnecessary_param::Int = 1
+   )
    results = kmedoids_exact()
    data { HOURS,DAYS }
 Performs the exact kmedoids algorithm as in Kotzur et al, 2017
 
+env = Gurobi.Env() # reusing the same gurobi environment for multiple solves
 """
 function kmedoids_exact(
    data::Array{Float64},
    nclust::Int,
-   _dist::SemiMetric = SqEuclidean();
+   env::Any;
+   _dist::SemiMetric = SqEuclidean(),
    unnecessary_param::Int = 1
    )
 N_i = size(data,2)

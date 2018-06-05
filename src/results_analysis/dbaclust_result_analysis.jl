@@ -16,7 +16,7 @@ region_ = "GER"
  # read parameters
 param=DataFrame()
 try
-  param = readtable(joinpath("outfiles",string("parameters_dtw_",region_,".txt")))
+  param = readtable(joinpath("outfiles_jld2",string("parameters_dtw_",region_,".txt")))
 catch
   error("No input file parameters.txt exists in folder outfiles.")
 end
@@ -43,7 +43,7 @@ problem_type = "battery"
 
 
  # load saved JLD data
-saved_data_dict= load(string(joinpath("outfiles","aggregated_results_dtw_"),region,".jld2"))
+saved_data_dict= load(string(joinpath("outfiles_jld2","aggregated_results_dtw_"),region,".jld2"))
  #unpack saved JLD data
  for (k,v) in saved_data_dict
    @eval $(Symbol(k)) = $v
