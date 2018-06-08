@@ -106,5 +106,5 @@ n_clust_iter = reshape(repmat(n_clust_ar,1,length(rad_sc_ar)*n_dbaclust)',:,1)
 i_iter = repmat(reshape(repmat(collect(1:n_dbaclust),1,length(rad_sc_ar))',:,1),length(n_clust_ar),1)
 rad_sc_iter = repmat(rad_sc_ar,length(n_clust_ar)*n_dbaclust,1)
 
-pmap(dbac_par_sc,n_clust_iter,i_iter,rad_sc_iter,seq_iter,n_init_iter,iterations_iter,inner_iterations_iter)
+pmap(dbac_par_sc,n_clust_iter,i_iter,rad_sc_iter,seq_iter,n_init_iter,iterations_iter,inner_iterations_iter;retry_delays=ones(10)*20)
 
