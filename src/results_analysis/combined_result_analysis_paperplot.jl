@@ -465,7 +465,7 @@ for region_ in regions
 
       # revenue vs. k - pre-sort
       clust_methods[plot_descr] = Array{Dict,1}()
-      push!(clust_methods[plot_descr],Dict("name"=>"full representation", "rev"=> revenue_orig_daily*ones(length(n_clust_ar)),"color"=>"k","linestyle"=>"--","width"=>1.5))
+      push!(clust_methods[plot_descr],Dict("name"=>"365 days", "rev"=> revenue_orig_daily*ones(length(n_clust_ar)),"color"=>"k","linestyle"=>"--","width"=>1.5))
       
       if plot_type == plot_types[1] # trad_cen  
         push!(clust_methods[plot_descr],Dict("name"=>"hierarchical centroid", "rev"=> revenue_best["hier_centroid"][:],"color"=>col.dblue,"linestyle"=>"-","width"=>1.5))
@@ -473,12 +473,12 @@ for region_ in regions
       elseif plot_type == plot_types[2] # trad_med
         push!(clust_methods[plot_descr],Dict("name"=>"k-medoids", "rev"=> revenue_best["kmedoids_exact"][:],"color"=>col.orange,"linestyle"=>"-","width"=>1.5))
         push!(clust_methods[plot_descr],Dict("name"=>"hierarchical medoid", "rev"=> revenue_best["hier_medoid"][:],"color"=>col.lblue,"linestyle"=>"-","width"=>1.5))
-        push!(clust_methods[plot_descr],Dict("name"=>"k-means", "rev"=> revenue_best["kmeans_medoidrep"][:],"color"=>col.purple,"linestyle"=>"-","width"=>1.5))
+        push!(clust_methods[plot_descr],Dict("name"=>"k-means + medoid", "rev"=> revenue_best["kmeans_medoidrep"][:],"color"=>col.purple,"linestyle"=>"-","width"=>1.5))
       elseif plot_type == plot_types[3] # shape
         push!(clust_methods[plot_descr],Dict("name"=>"k-shape", "rev"=> revenue_best["kshape"][:],"color"=>col.yellow,"linestyle"=>"-","width"=>1.5))
-        push!(clust_methods[plot_descr],Dict("name"=>"DTW skband = 0", "rev"=> revenue_best["dtw"][:,1],"color"=>col.brown,"linestyle"=>"-","width"=>1.5))
-        push!(clust_methods[plot_descr],Dict("name"=>"DTW skband = 1", "rev"=> revenue_best["dtw"][:,2],"color"=>col.brown,"linestyle"=>"--","width"=>1.5))
-        push!(clust_methods[plot_descr],Dict("name"=>"DTW skband = 2", "rev"=> revenue_best["dtw"][:,3],"color"=>col.brown,"linestyle"=>":","width"=>1.5))
+        push!(clust_methods[plot_descr],Dict("name"=>"DBA b=0", "rev"=> revenue_best["dtw"][:,1],"color"=>col.brown,"linestyle"=>"-","width"=>1.5))
+        push!(clust_methods[plot_descr],Dict("name"=>"DBA b=1", "rev"=> revenue_best["dtw"][:,2],"color"=>col.brown,"linestyle"=>"--","width"=>1.5))
+        push!(clust_methods[plot_descr],Dict("name"=>"DBA b=2", "rev"=> revenue_best["dtw"][:,3],"color"=>col.brown,"linestyle"=>":","width"=>1.5))
       end #plot_type
     end # plot_type in plot_types
 

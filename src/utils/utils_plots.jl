@@ -125,14 +125,14 @@ function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Arra
       end # if
     end
   end
-  plot(0.0,1.0,marker="*",ms=10,linestyle="none",color=StanfordDGreen,fillstyle="bottom",markeredgecolor="k",label="Full representation") # markerfacecoloralt=StanfordDGreen
+  plot(0.0,1.0,marker="*",ms=15,linestyle="none",color=StanfordDGreen,fillstyle="bottom",markeredgecolor="k",label="365 days") # markerfacecoloralt=StanfordDGreen
   leg = legend(fontsize=fsize_ref-4,ncol=n_col)
   xlabel("Clustering measure (SSE)",fontsize=fsize_ref)
   ylabel("Objective value",fontsize=fsize_ref)
   ax = axes()
   ax[:tick_params]("both",labelsize=fsize_ref-1)
   tight_layout()
-  xlim((7120,-120)) #9500
+  xlim((7120,-150)) #9500
   ylim((0.5,1.05))
   save && savefig(descr,format="png",dpi=600) #; eps does not support transparency, pdf takes forever to load in inkscape, format="png",dpi=300
 end # plot_SSE_rev

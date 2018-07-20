@@ -1,3 +1,5 @@
+# this file generates the plots for the framework figure in Teichgraeber et al. (2018)
+
 CLUST_FOR_OPT=ENV["CLUST_FOR_OPT"]
 push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
@@ -32,7 +34,7 @@ ind_min2 = ind_sort[length(ind_sort)-2]
 ind_plot= [ind_max1,ind_max2,ind_min1,ind_min2]
 
 sample_days = seq[:,ind_plot]
-seq_norm,hourly_mean,hourly_sdv = z_normalize(seq,hourly=true,sequence=false)
+seq_norm,hourly_mean,hourly_sdv = z_normalize(seq,scope="hourly")
  #sample_days_norm,hourly_mean,hourly_sdv = z_normalize(sample_days;hourly=true,sequence=false)
 sample_days_norm=seq_norm[:,ind_plot]
 
