@@ -60,6 +60,7 @@ seq_norm, hourly_mean, hourly_sdv = z_normalize(seq,scope="full")
 problem_type_ar = ["battery", "gas_turbine"]
 
   centers = Dict{Tuple{Int,Int},Array}()
+  mu_seq_mu_clust = Dict{Tuple{Int,Int},Float64}()
   clustids = Dict{Tuple{Int,Int},Array}()
   cost = zeros(length(n_clust_ar),n_kmedeoids)
   iter =  zeros(length(n_clust_ar),n_kmedeoids)
@@ -70,13 +71,14 @@ problem_type_ar = ["battery", "gas_turbine"]
   end
 
   
-distance_type_ar = [SqEuclidean(), Cityblock()]
-distance_descr = ["SqEuclidean", "Cityblock"]
+distance_type_ar = [SqEuclidean()]#, Cityblock()]
+distance_descr = ["SqEuclidean"]#, "Cityblock"]
 
 for dist = 1:length(distance_type_ar)
 
    # initialize dictionaries of the loaded data (key: number of clusters)
   centers = Dict{Tuple{Int,Int},Array}()
+  mu_seq_mu_clust = Dict{Tuple{Int,Int},Float64}()
   clustids = Dict{Tuple{Int,Int},Array}()
   cost = zeros(length(n_clust_ar),n_kmedeoids)
   iter =  zeros(length(n_clust_ar),n_kmedeoids)
@@ -92,7 +94,7 @@ for dist = 1:length(distance_type_ar)
     n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts
       for i = 1:n_kmedeoids
          
-          results = kmedoids_exact(seq_norm,n_clust,env;distance_type_ar[dist])
+          results = kmedoids_exact(seq_norm,n_clust,env)#;distance_type_ar[dist])
 
           # save clustering results
           centers_norm = results.medoids
@@ -108,6 +110,19 @@ for dist = 1:length(distance_type_ar)
             weights[n_clust,i][clustids[n_clust,i][j]] +=1
         end
         weights[n_clust,i] =  weights[n_clust,i] /length(clustids[n_clust,i])
+        
+ 
+        ##### recalculate centers
+        mu_seq = sum(seq)
+ 
+        mu_clust = 0
+        for ii=1:n_clust_it
+          mu_clust += weights[n_clust,i][ii]*sum(centers[n_clust,i][:,ii])
+        end
+        mu_clust *= length(clustids[n_clust,i])
+        mu_seq_mu_clust[n_clust,i] = mu_seq/mu_clust
+       
+        centers[n_clust,i] *= mu_seq_mu_clust[n_clust,i]
 
         # run opt
         for ii=1:length(problem_type_ar)

@@ -173,6 +173,8 @@ function find_medoids(data::Array,centers::Array,assignments::Array)
   return medoids
 end
 
-
-
+"""
+"""
+function norm_medoids(data::Array,centers::Array,weights::Array)
+end
 
