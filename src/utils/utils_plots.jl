@@ -105,7 +105,7 @@ function plot_k_rev_subplot(range_k::Array,methods::Array{Dict,1},descr::String,
   =#
 end #plot_k_rev
 
-function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Array{Dict,1},descr::String,rev_365::Float64;n_col::Int=2, save::Bool=true)
+function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Array{Dict,1},descr::String,rev_365::Float64;n_col::Int=3, save::Bool=true)
   figure()
   fsize_ref = 16
   for i=1:length(range_k)

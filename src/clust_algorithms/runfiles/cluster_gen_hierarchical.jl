@@ -88,6 +88,14 @@ for centr = 1:length(centroid_descr)
         # save clustering results
         centers_norm_SSE = []
         clustids[n_clust,i] = results["labels"]+1
+       
+        # calculate weights
+        weights[n_clust,i] = zeros(n_clust) 
+        for j=1:length(clustids[n_clust,i])
+            weights[n_clust,i][clustids[n_clust,i][j]] +=1
+        end
+        weights[n_clust,i] =  weights[n_clust,i] /length(clustids[n_clust,i])
+        
         if centroid_descr[centr] == "centroid"
           centers_norm = results["centers"]' # transpose back 
           centers_ = undo_z_normalize(centers_norm,hourly_mean,hourly_sdv)    
@@ -95,7 +103,10 @@ for centr = 1:length(centroid_descr)
           centers_norm_SSE=centers_norm
         elseif centroid_descr[centr] == "medoid" 
           centers[n_clust,i] = seq[:,round.(Int,results["closest_day_ind"])+1] 
-        centers_norm_SSE=seq_norm[:,round.(Int,results["closest_day_ind"])+1] 
+
+          ##### recalculate centers
+          centers[n_clust,i] = resize_medoids(seq,centers[n_clust,i],weights[n_clust,i])
+          centers_norm_SSE=seq_norm[:,round.(Int,results["closest_day_ind"])+1] 
 
         end
         SSE = calc_SSE(seq_norm,centers_norm_SSE,clustids[n_clust,i])
@@ -103,12 +114,6 @@ for centr = 1:length(centroid_descr)
         iter[n_clust_it,i] = 1
          ##########################
         
-        # calculate weights
-        weights[n_clust,i] = zeros(n_clust) 
-        for j=1:length(clustids[n_clust,i])
-            weights[n_clust,i][clustids[n_clust,i][j]] +=1
-        end
-        weights[n_clust,i] =  weights[n_clust,i] /length(clustids[n_clust,i])
 
         # run opt
         for ii=1:length(problem_type_ar)

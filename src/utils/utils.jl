@@ -173,8 +173,21 @@ function find_medoids(data::Array,centers::Array,assignments::Array)
   return medoids
 end
 
+  
 """
+function resize_medoids(data::Array,centers::Array,weights::Array)
+
+Takes in centers (typically medoids) and normalizes them such that the yearly average of the clustered data is the same as the yearly average of the original data.
 """
-function norm_medoids(data::Array,centers::Array,weights::Array)
+function resize_medoids(data::Array,centers::Array,weights::Array)
+    mu_data = sum(data)
+    mu_clust = 0
+    for ii=1:size(centers)[2]
+      mu_clust += weights[ii]*sum(centers[:,ii])
+    end
+    mu_clust *= size(data)[2]
+    mu_data_mu_clust = mu_data/mu_clust
+    new_centers = centers* mu_data_mu_clust  
+    return new_centers 
 end
 

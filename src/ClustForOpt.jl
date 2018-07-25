@@ -29,7 +29,8 @@ export run_opt,
        cols,
        col,
        calc_SSE,
-       find_medoids
+       find_medoids,
+       resize_medoids
 
 include(joinpath("utils",".juliarc.jl"))
 include(joinpath("utils","optim_problems.jl"))

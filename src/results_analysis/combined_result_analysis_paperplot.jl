@@ -473,7 +473,7 @@ for region_ in regions
       elseif plot_type == plot_types[2] # trad_med
         push!(clust_methods[plot_descr],Dict("name"=>"k-medoids", "rev"=> revenue_best["kmedoids_exact"][:],"color"=>col.orange,"linestyle"=>"-","width"=>1.5))
         push!(clust_methods[plot_descr],Dict("name"=>"hierarchical medoid", "rev"=> revenue_best["hier_medoid"][:],"color"=>col.lblue,"linestyle"=>"-","width"=>1.5))
-        push!(clust_methods[plot_descr],Dict("name"=>"k-means + medoid", "rev"=> revenue_best["kmeans_medoidrep"][:],"color"=>col.purple,"linestyle"=>"-","width"=>1.5))
+        push!(clust_methods[plot_descr],Dict("name"=>"k-means + medoid rep.", "rev"=> revenue_best["kmeans_medoidrep"][:],"color"=>col.purple,"linestyle"=>"-","width"=>1.5))
       elseif plot_type == plot_types[3] # shape
         push!(clust_methods[plot_descr],Dict("name"=>"k-shape", "rev"=> revenue_best["kshape"][:],"color"=>col.yellow,"linestyle"=>"-","width"=>1.5))
         push!(clust_methods[plot_descr],Dict("name"=>"DBA b=0", "rev"=> revenue_best["dtw"][:,1],"color"=>col.brown,"linestyle"=>"-","width"=>1.5))

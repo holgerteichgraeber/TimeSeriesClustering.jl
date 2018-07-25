@@ -89,6 +89,7 @@ for n_clust_it=1:length(n_clust_ar)
         clustids[n_clust,i] = results.assignments
         centers_= find_medoids(seq_norm,centers_norm,clustids[n_clust,i]) 
         centers[n_clust,i]=undo_z_normalize(centers_,hourly_mean,hourly_sdv) 
+        
         cost[n_clust_it,i] = results.totalcost
         iter[n_clust_it,i] = results.iterations
       end
@@ -101,6 +102,9 @@ for n_clust_it=1:length(n_clust_ar)
       end
       weights[n_clust,i] =  weights[n_clust,i] /length(clustids[n_clust,i])
 
+        ##### recalculate centers
+      centers[n_clust,i] = resize_medoids(seq,centers[n_clust,i],weights[n_clust,i])
+      
       # run opt
       for ii=1:length(problem_type_ar)
         revenue[problem_type_ar[ii]][n_clust_it,i]=sum(run_opt(problem_type_ar[ii],(centers[n_clust,i]),weights[n_clust,i],region,false))
