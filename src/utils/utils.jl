@@ -173,7 +173,24 @@ function find_medoids(data::Array,centers::Array,assignments::Array)
   return medoids
 end
 
-  
+"""
+function resize_medoids(data::Array,centers::Array,weights::Array,assignments::Array)
+
+Takes in centers (typically medoids) and normalizes them such that for all clusters the average of the cluster is the same as the average of the respective original data that belongs to that cluster.
+
+In order to use this method of the resize function, add assignments to the function call (e.g. clustids[5,1]).  
+"""
+function resize_medoids(data::Array,centers::Array,weights::Array,assignments::Array)
+    new_centers = zeros(centers)
+    for k=1:size(centers)[2] # number of clusters
+       is_in_k = assignments.==k
+       n = sum(is_in_k)
+       new_centers[:,k]=resize_medoids(reshape(data[:,is_in_k],:,n),reshape(centers[:,k] , : ,1),[1.0])# reshape is used for the side case with only one vector, so that resulting vector is 24x1 instead of 24-element 
+    end
+    return new_centers
+end
+
+
 """
 function resize_medoids(data::Array,centers::Array,weights::Array)
 
@@ -182,12 +199,13 @@ Takes in centers (typically medoids) and normalizes them such that the yearly av
 function resize_medoids(data::Array,centers::Array,weights::Array)
     mu_data = sum(data)
     mu_clust = 0
-    for ii=1:size(centers)[2]
-      mu_clust += weights[ii]*sum(centers[:,ii])
+    for k=1:size(centers)[2]
+      mu_clust += weights[k]*sum(centers[:,k]) # 0<=weights<=1
     end
     mu_clust *= size(data)[2]
     mu_data_mu_clust = mu_data/mu_clust
-    new_centers = centers* mu_data_mu_clust  
+    new_centers = centers* mu_data_mu_clust 
+    #println(mu_data_mu_clust)
     return new_centers 
 end
 
