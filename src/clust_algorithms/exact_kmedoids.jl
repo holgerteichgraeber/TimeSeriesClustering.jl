@@ -24,7 +24,6 @@ function kmedoids_exact(
    nclust::Int,
    _dist::SemiMetric = SqEuclidean(),
    env::Any;
-   unnecessary_param::Int = 1
    )
    results = kmedoids_exact()
    data { HOURS,DAYS }
@@ -37,7 +36,6 @@ function kmedoids_exact(
    nclust::Int,
    env::Any;
    _dist::SemiMetric = SqEuclidean(),
-   unnecessary_param::Int = 1
    )
 N_i = size(data,2)
 

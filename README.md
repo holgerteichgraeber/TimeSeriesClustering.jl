@@ -1,8 +1,12 @@
-ClustForOpt 
-==============
+# ClustForOpt 
 
-Usage 
------
+julia implementation of different clustering algorithms 
+
+## Installation 
+Installation Pkg.clone("") 
+
+Seperately install TimeWarp.jl (link here)
+
 Installation: add environment variable CLUST\_FOR\_OPT = "path/to/ClustForOpt" to your systems environment variables
 
 

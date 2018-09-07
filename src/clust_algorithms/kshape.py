@@ -1,4 +1,4 @@
-#!/data/cees/hteich/libraries/miniconda/bin/ python
+# This is a slightly modified copy of https://github.com/holgerteichgraeber/kshape/tree/master/kshape/core.py
 
 import sys
 import math
@@ -10,7 +10,6 @@ from numpy.fft import fft, ifft
 import pdb
 from sklearn.externals.joblib import Parallel,delayed
 from sklearn.utils import check_random_state
-#from sklearn.externals.joblib import cpu_count
 
 def zscore(a, axis=0, ddof=0):
     a = np.asanyarray(a)
