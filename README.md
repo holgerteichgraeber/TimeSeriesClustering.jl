@@ -9,7 +9,14 @@ Seperately install TimeWarp.jl (link here)
 
 Installation: add environment variable CLUST\_FOR\_OPT = "path/to/ClustForOpt" to your systems environment variables
 
+## Clustering methods available
 
+The following combinations of clustering method and representation are supported:
+Name | method argument | representation argument
+---- | --------------- | -----------------------
+k-means clustering | `<kmeans>` | `<centroid>`
+k-means clustering with medoid representation | `<kmeans>` | `<medoid>`
+k-medoids clustering (exact) | `<kmedoids>` | `<centroid>`
 
 old
 ---
