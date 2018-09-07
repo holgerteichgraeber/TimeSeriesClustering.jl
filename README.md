@@ -1,23 +1,29 @@
 # ClustForOpt 
 
-julia implementation of different clustering algorithms 
+julia implementation of using different clustering algorithms for finding representative perdiods for the optimization of energy systems. 
 
-## Installation 
-Installation Pkg.clone("") 
+## Installation
+This package is not officielly registered. Install using: 
 
-Seperately install TimeWarp.jl (link here)
+> Pkg.clone("https://github.com/holgerteichgraeber/ClustForOpt.jl.git") 
 
-Installation: add environment variable CLUST\_FOR\_OPT = "path/to/ClustForOpt" to your systems environment variables
+Seperately install [TimeWarp.jl](https://github.com/ahwillia/TimeWarp.jl) 
 
-## Clustering methods available
 
-The following combinations of clustering method and representation are supported:
+## Supported clustering methods
+
+The following combinations of clustering method and representation are supported by run\_clust():
 
 Name | method argument | representation argument
 ---- | --------------- | -----------------------
 k-means clustering | `<kmeans>` | `<centroid>`
 k-means clustering with medoid representation | `<kmeans>` | `<medoid>`
 k-medoids clustering (exact) | `<kmedoids>` | `<centroid>`
+k-medoids clustering (partitional) | `<kmedoids_partitional>` | `<centroid>`
+hierarchical clustering with centroid representation | `<hierarchical>` | `<centroid>`
+hierarchical clustering with medoid representation | `<hierarchical>` | `<medoid>`
+dynamic barycenter averaging (DBA) clustering | `<dbaclust>` | `<centroid>`
+k-shape clustering | `<kshape>` | `<centroid>`
 
 old
 ---
