@@ -5,7 +5,9 @@ julia implementation of using different clustering algorithms for finding repres
 ## Installation
 This package is not officielly registered. Install using: 
 
-> Pkg.clone("https://github.com/holgerteichgraeber/ClustForOpt.jl.git") 
+```julia
+Pkg.clone("https://github.com/holgerteichgraeber/ClustForOpt.jl.git") 
+```
 
 Seperately install [TimeWarp.jl](https://github.com/ahwillia/TimeWarp.jl) 
 
