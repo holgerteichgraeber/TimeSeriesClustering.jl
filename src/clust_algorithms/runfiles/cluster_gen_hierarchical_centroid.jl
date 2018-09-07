@@ -1,4 +1,8 @@
-function run_clust_kmeans_medoid(
+util_path = normpath(joinpath(dirname(@__FILE__),".."))
+unshift!(PyVector(pyimport("sys")["path"]), util_path) # add util path to search path ### unshift!(PyVector(pyimport("sys")["path"]), "") # add current path to search path
+@pyimport hierarchical
+
+function run_clust_hierarchical_centroid(
       region::String,
       opt_problems::Array{String},
       norm_op::String,
@@ -14,11 +18,12 @@ function run_clust_kmeans_medoid(
     # read in original data
     seq = load_pricedata(region)
 
+
     # create directory where data is saved
     try
       mkdir("outfiles")
     catch
-     # 
+      #
     end
 
     # save settings in txt file
@@ -31,13 +36,15 @@ function run_clust_kmeans_medoid(
 
     n_clust_ar = collect(n_clust_min:n_clust_max)
 
-    writetable(joinpath("outfiles",string(string("parameters_kmeans_medoidrep",region,".txt"))),df)
+    writetable(joinpath("outfiles",string("parameters_hier_",region,".txt")),df)
 
     # normalized clustering hourly
     seq_norm, hourly_mean, hourly_sdv = z_normalize(seq,scope="full")
 
      
     problem_type_ar = ["battery", "gas_turbine"]
+
+
 
      # initialize dictionaries of the loaded data (key: number of clusters)
     centers = Dict{Tuple{Int,Int},Array}()
@@ -55,39 +62,29 @@ function run_clust_kmeans_medoid(
     for n_clust_it=1:length(n_clust_ar)
       n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts
         for i = 1:n_init
-          if n_clust ==1 
-            centers_norm = mean(seq_norm,2) # should be 0 due to normalization
-            #centers_ = undo_z_normalize(centers_norm,hourly_mean,hourly_sdv)          
-            clustids[n_clust,i] = ones(Int,size(seq,2))
-            centers[n_clust,i]= undo_z_normalize(find_medoids(seq_norm,centers_norm,clustids[n_clust,i]),hourly_mean,hourly_sdv)  
-     # kmeans cost for now
-            cost[n_clust_it,i] = sum(pairwise(SqEuclidean(),centers_norm,seq_norm)) #same as sum((seq_norm-repmat(mean(seq_norm,2),1,size(seq,2))).^2)
-            iter[n_clust_it,i] = 1
-          else
-            results = kmeans(seq_norm,n_clust;maxiter=iterations)
+          results = hierarchical.run_hierClust(seq_norm',n_clust) # transpose input data because scikit learn has opposite convention of julia clustering
 
-            # save clustering results
-            centers_norm = results.centers
-            #centers_ = undo_z_normalize(centers_norm,hourly_mean,hourly_sdv)    
-            clustids[n_clust,i] = results.assignments
-            centers_= find_medoids(seq_norm,centers_norm,clustids[n_clust,i]) 
-            centers[n_clust,i]=undo_z_normalize(centers_,hourly_mean,hourly_sdv) 
-            
-            cost[n_clust_it,i] = results.totalcost
-            iter[n_clust_it,i] = results.iterations
-          end
-           ##########################
-          
+          # save clustering results
+          centers_norm_SSE = []
+          clustids[n_clust,i] = results["labels"]+1
+         
           # calculate weights
           weights[n_clust,i] = zeros(n_clust) 
           for j=1:length(clustids[n_clust,i])
               weights[n_clust,i][clustids[n_clust,i][j]] +=1
           end
           weights[n_clust,i] =  weights[n_clust,i] /length(clustids[n_clust,i])
-
-            ##### recalculate centers
-          centers[n_clust,i] = resize_medoids(seq,centers[n_clust,i],weights[n_clust,i])
           
+          centers_norm = results["centers"]' # transpose back 
+          centers_ = undo_z_normalize(centers_norm,hourly_mean,hourly_sdv)    
+          centers[n_clust,i]=centers_
+          centers_norm_SSE=centers_norm
+          SSE = calc_SSE(seq_norm,centers_norm_SSE,clustids[n_clust,i])
+          cost[n_clust_it,i] = SSE
+          iter[n_clust_it,i] = 1
+           ##########################
+          
+
           # run opt
           for ii=1:length(problem_type_ar)
             revenue[problem_type_ar[ii]][n_clust_it,i]=sum(run_opt(problem_type_ar[ii],(centers[n_clust,i]),weights[n_clust,i],region,false))
@@ -106,11 +103,7 @@ function run_clust_kmeans_medoid(
                      "weights"=>weights,
                      "revenue"=>revenue )
                       
-    save(string(joinpath("outfiles","aggregated_results_kmeans_medoidrep"),region,".jld2"),save_dict)
-    println("kmeans medoid rep. data revenue calculated + saved.")
+    save(string(joinpath("outfiles","aggregated_results_hier_"),"centroid","_",region,".jld2"),save_dict)
+    println("hier data revenue calculated + saved.")
 
-
-end # function
-
-
-
+end #function

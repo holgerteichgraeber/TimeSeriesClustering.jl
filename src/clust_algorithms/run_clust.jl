@@ -4,6 +4,11 @@
 wor_dir = pwd()
 cd(dirname(@__FILE__)) # change working directory to current file
 include(joinpath(pwd(),"runfiles","cluster_gen_kmeans_centroid.jl"))
+include(joinpath(pwd(),"runfiles","cluster_gen_kmeans_medoid.jl"))
+include(joinpath(pwd(),"runfiles","cluster_gen_kmedoids_medoid.jl"))
+include(joinpath(pwd(),"runfiles","cluster_gen_kmedoids_exact_medoid.jl"))
+include(joinpath(pwd(),"runfiles","cluster_gen_hierarchical_centroid.jl"))
+include(joinpath(pwd(),"runfiles","cluster_gen_hierarchical_medoid.jl"))
 
 cd(wor_dir) # change working directory to old previous file's dir
 
@@ -37,8 +42,7 @@ function run_clust(
     
     # function call to the respective function (method + representation)
     fun_name = Symbol("run_clust_"*method*"_"*representation)
-    @eval $fun_name($region,$opt_problems,$norm_op,$norm_scope,$n_clust_ar,$n_init,$iterations)
- #   run_clust_kmeans_centroid(region,opt_problems,norm_op,norm_scope,n_clust_ar,n_init,iterations)
+    @eval $fun_name($region,$opt_problems,$norm_op,$norm_scope,$n_clust_ar,$n_init,$iterations;$kwargs...)
 end
 
 

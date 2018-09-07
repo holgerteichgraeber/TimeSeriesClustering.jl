@@ -14,7 +14,10 @@ using PyPlot
 using Clustering
 using JLD2
 using FileIO
+using PyCall
 @reexport using DataFrames
+ #TODO how to make PyPlot, PyCall, and TimeWarp optional? -> only import when needed
+
 
 export run_opt,
        run_clust,
