@@ -12,6 +12,7 @@ Installation: add environment variable CLUST\_FOR\_OPT = "path/to/ClustForOpt" t
 ## Clustering methods available
 
 The following combinations of clustering method and representation are supported:
+
 Name | method argument | representation argument
 ---- | --------------- | -----------------------
 k-means clustering | `<kmeans>` | `<centroid>`
