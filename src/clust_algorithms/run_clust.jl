@@ -1,42 +1,44 @@
 #
-using Distances
-using Clustering
-using JLD2
-using FileIO
 
- # include all files from runfiles folder here
+# include all files from runfiles folder here
+wor_dir = pwd()
+cd(dirname(@__FILE__)) # change working directory to current file
+include(joinpath(pwd(),"runfiles","cluster_gen_kmeans_centroid.jl"))
 
-
+cd(wor_dir) # change working directory to old previous file's dir
 
 """
 function run_clust(
-    region::String,
-    opt_problem::Array{String};
-    norm_op::String="zscore",
-    norm_scope::String="full",
-    method::String="kmeans",
-    representation::String="centroid",
-    n_clust_ar::Array=collect(1:9),
-    n_init::Int=100,
-    iter::Int=300
+      region::String,
+      opt_problem::Array{String};
+      norm_op::String="zscore",
+      norm_scope::String="full",
+      method::String="kmeans",
+      representation::String="centroid",
+      n_clust_ar::Array=collect(1:9),
+      n_init::Int=100,
+      iterations::Int=300
     )
 """
 function run_clust(
-    region::String,
-    opt_problems::Array{String};
-    norm_op::String="zscore",
-    norm_scope::String="full",
-    method::String="kmeans",
-    representation::String="centroid",
-    n_clust_ar::Array=collect(1:9),
-    n_init::Int=100,
-    iter::Int=300
+      region::String,
+      opt_problems::Array{String};
+      norm_op::String="zscore",
+      norm_scope::String="full",
+      method::String="kmeans",
+      representation::String="centroid",
+      n_clust_ar::Array=collect(1:9),
+      n_init::Int=100,
+      iterations::Int=300,
+      kwargs...
     )
 
     check_kw_args(region,opt_problems,norm_op,norm_scope,method,representation)    
-
-
-
+    
+    # function call to the respective function (method + representation)
+    fun_name = Symbol("run_clust_"*method*"_"*representation)
+    @eval $fun_name($region,$opt_problems,$norm_op,$norm_scope,$n_clust_ar,$n_init,$iterations)
+ #   run_clust_kmeans_centroid(region,opt_problems,norm_op,norm_scope,n_clust_ar,n_init,iterations)
 end
 
 
@@ -50,9 +52,9 @@ function run_clust(
 Wrapper function for run_clust to allow for one input argument only for the optimization problem type.
 """
 function run_clust(
-    region::String,
-    opt_problem::String;
-    kwargs ...
+      region::String,
+      opt_problem::String;
+      kwargs ...
     )
     return run_clust(region,[opt_problem];kwargs...)
 end
@@ -63,7 +65,7 @@ sup_kw_args["region"]=["GER","CA"]
 sup_kw_args["opt_problems"]=["battery","gas_turbine"]
 sup_kw_args["norm_op"]=["zscore"]
 sup_kw_args["norm_scope"]=["full","hourly","sequence"]
-sup_kw_args["method+representation"]=["kmeans+centroid","kmeans+medoid","kmedoids+medoid","hierarchical+centroid","hierarchical+medoid","dbaclust+centroid","kshape+centroid"]
+sup_kw_args["method+representation"]=["kmeans+centroid","kmeans+medoid","kmedoids+medoid","kmedoids_exact+medoid","hierarchical+centroid","hierarchical+medoid","dbaclust+centroid","kshape+centroid"]
 
 
 """
@@ -80,12 +82,12 @@ check_kw_args(region,opt_problems,norm_op,norm_scope,method,representation)
 checks if the arguments supplied for run_clust are supported
 """
 function check_kw_args(
-    region::String,
-    opt_problems::Array{String},
-    norm_op::String,
-    norm_scope::String,
-    method::String,
-    representation::String
+      region::String,
+      opt_problems::Array{String},
+      norm_op::String,
+      norm_scope::String,
+      method::String,
+      representation::String
     )
     check_ok = true 
     error_string = "The following keyword arguments / combinations are not currently supported: \n"

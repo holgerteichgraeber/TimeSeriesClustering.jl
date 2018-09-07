@@ -11,6 +11,9 @@ module ClustForOpt
 using Reexport
 using Distances
 using PyPlot
+using Clustering
+using JLD2
+using FileIO
 @reexport using DataFrames
 
 export run_opt,
