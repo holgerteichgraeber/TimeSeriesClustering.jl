@@ -14,7 +14,7 @@ Seperately install [TimeWarp.jl](https://github.com/ahwillia/TimeWarp.jl)
 
 ## Supported clustering methods
 
-The following combinations of clustering method and representation are supported by run\_clust():
+The following combinations of clustering method and representation are supported by ``` julia run_clust()```:
 
 Name | method argument | representation argument
 ---- | --------------- | -----------------------
