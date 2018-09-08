@@ -109,7 +109,7 @@ function run_clust_kmeans_medoid(
     save(string(joinpath("outfiles","aggregated_results_kmeans_medoidrep"),region,".jld2"),save_dict)
     println("kmeans medoid rep. data revenue calculated + saved.")
 
-
+    return save_dict
 end # function
 
 

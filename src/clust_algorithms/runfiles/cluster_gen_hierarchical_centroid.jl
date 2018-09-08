@@ -105,5 +105,5 @@ function run_clust_hierarchical_centroid(
                       
     save(string(joinpath("outfiles","aggregated_results_hier_"),"centroid","_",region,".jld2"),save_dict)
     println("hier data revenue calculated + saved.")
-
+    return save_dict
 end #function

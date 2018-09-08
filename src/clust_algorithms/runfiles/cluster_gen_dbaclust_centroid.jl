@@ -80,5 +80,5 @@ function run_clust_dbaclust_centroid(
     end
     
     # TODO  - import dbaclust_res_to_jld2.jl and automatically generate jld2 files.
-
+    return 0
 end # function

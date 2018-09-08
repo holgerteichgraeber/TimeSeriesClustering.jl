@@ -43,7 +43,7 @@ function run_clust(
     
     # function call to the respective function (method + representation)
     fun_name = Symbol("run_clust_"*method*"_"*representation)
-    @eval $fun_name($region,$opt_problems,$norm_op,$norm_scope,$n_clust_ar,$n_init,$iterations;$kwargs...)
+    return @eval $fun_name($region,$opt_problems,$norm_op,$norm_scope,$n_clust_ar,$n_init,$iterations;$kwargs...)
 end
 
 

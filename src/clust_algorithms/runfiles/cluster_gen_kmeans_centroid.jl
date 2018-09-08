@@ -102,7 +102,8 @@ function run_clust_kmeans_centroid(
                       
     save(string(joinpath("outfiles","aggregated_results_kmeans_"),region,".jld2"),save_dict)
     println("kmeans data revenue calculated + saved.")
-
+     
+    return save_dict
 
 end #function
 

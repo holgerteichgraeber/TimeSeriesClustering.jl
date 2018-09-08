@@ -128,7 +128,8 @@ function run_clust_kmedoids_medoid(
       println("kmedoids ",distance_descr[dist] ," data revenue calculated + saved.")
 
 
+    return save_dict # only use one distance type (the first one provided). Can be modified to also use other distance types from Distances.jl
     end # for dist=1:length(dist_type_ar)
-
+    
 end # function
 

@@ -107,5 +107,5 @@ function run_clust_hierarchical_medoid(
                       
     save(string(joinpath("outfiles","aggregated_results_hier_"),"medoid","_",region,".jld2"),save_dict)
     println("hier data revenue calculated + saved.")
-
+    return save_dict
 end #function

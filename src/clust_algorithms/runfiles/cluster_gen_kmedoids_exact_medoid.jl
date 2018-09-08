@@ -121,7 +121,8 @@ function run_clust_kmedoids_exact_medoid(
       println("kmedoids exact ",distance_descr[dist] ," data revenue calculated + saved.")
 
 
+    return save_dict
     end # for dist=1:length(dist_type_ar)
-
+    
 
 end # function
