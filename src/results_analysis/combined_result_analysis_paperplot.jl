@@ -1,5 +1,3 @@
-CLUST_FOR_OPT=ENV["CLUST_FOR_OPT"]
-push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using JLD2 # Much faster than JLD (50s vs 20min)
 using FileIO
@@ -248,45 +246,6 @@ for region_ in regions
     for i=1:size(revenue_dict["hier_medoid"],1)
         revenue_best["hier_medoid"][i]=revenue_dict["hier_medoid"][ind_mincost[i]] 
     end
-     
- #=
-     #### fuzzy c-means ###########
-
-     # read parameters
-    param=DataFrame()
-    try
-      param = readtable(joinpath("outfiles",string("parameters_cmeans_",region_,".txt")))
-    catch
-      error("No input file parameters.txt exists in folder outfiles.")
-    end
-
-    n_clust_min=param[:n_clust_min][1]
-    n_clust_max=param[:n_clust_max][1]
-    n_cmeans=param[:n_cmeans][1]
-    iterations=param[:iterations][1]
-    region=param[:region][1]
-
-    n_clust_ar = collect(n_clust_min:n_clust_max)
-
-     # load saved JLD data
-    saved_data_dict= load(string("outfiles/aggregated_results_cmeans_fuzzy_2.0_",region_,".jld2"))
-     #unpack saved JLD data
-     for (k,v) in saved_data_dict
-       @eval $(Symbol(k)) = $v
-     end
-
-     #set revenue to the chosen problem type
-    revenue_dict["cmeans"]=revenue[problem_type] 
-    cost_dict["cmeans"]=cost
-
-     # Find best cost index - save
-    ind_mincost = findmin(cost,2)[2]  # along dimension 2
-    ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
-    revenue_best["cmeans"] = zeros(size(revenue_dict["cmeans"],1))
-    for i=1:size(revenue_dict["cmeans"],1)
-        revenue_best["cmeans"][i]=revenue_dict["cmeans"][ind_mincost[i]] 
-    end
-    =#
 
      ##### Dynamic Time Warping #####
      #window =1, window =2

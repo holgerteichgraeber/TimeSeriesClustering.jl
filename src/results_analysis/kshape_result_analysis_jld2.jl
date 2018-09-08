@@ -1,5 +1,5 @@
-CLUST_FOR_OPT=ENV["CLUST_FOR_OPT"]
-push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
+# before running this file, run kshape_res_to_jld2.jl
+  
 using ClustForOpt
 using JLD2 # Much faster than JLD (50s vs 20min)
 using FileIO

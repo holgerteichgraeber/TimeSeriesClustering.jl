@@ -1,4 +1,4 @@
-#
+# This file provides the wrapper function run_clust for all clustering methods in the folder runfiles
 
 # include all files from runfiles folder here
 wor_dir = pwd()
@@ -25,6 +25,8 @@ function run_clust(
       n_init::Int=100,
       iterations::Int=300
     )
+
+Wrapper function that calls the specific clustering methods. Saves results as jld2 file in a newly created folder outfiles, and also returns results from clustering. 
 """
 function run_clust(
       region::String,

@@ -43,7 +43,7 @@ end #function
 
 
   """
-  plot_k_rev(range_k::Array,rev::Array{Dict,1},region::String)
+function plot_k_rev(range_k::Array,methods::Array{Dict,1},descr::String; save::Bool=true)
   The array rev contains Dicts with:  
     key: name of feature
     features:
@@ -105,6 +105,11 @@ function plot_k_rev_subplot(range_k::Array,methods::Array{Dict,1},descr::String,
   =#
 end #plot_k_rev
 
+"""
+function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Array{Dict,1},descr::String,rev_365::Float64;n_col::Int=3, save::Bool=true)
+
+Plots Sum of Squared Errors vs Revenue from the optimization problem.
+"""
 function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Array{Dict,1},descr::String,rev_365::Float64;n_col::Int=3, save::Bool=true)
   figure()
   fsize_ref = 16

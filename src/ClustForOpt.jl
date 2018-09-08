@@ -16,6 +16,8 @@ using JLD2
 using FileIO
 using PyCall
 using TimeWarp
+using JuMP
+using Clp
 @reexport using DataFrames
  #TODO how to make PyPlot, PyCall, and TimeWarp optional? -> only import when needed
 

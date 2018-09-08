@@ -1,10 +1,10 @@
 # optimization problems
 
-using JuMP
-using Clp
+"""
+function run_battery_opt(el_price, weight=1, prnt=false)
 
-
-# battery storage optimization problem
+operational battery storage optimization problem
+"""
 function run_battery_opt(el_price, weight=1, prnt=false)
   num_periods = size(el_price,2); # number of periods, 1day, one week, etc.
   num_hours = size(el_price,1); # hours per period (24 per day, 48 per 2days)
@@ -96,7 +96,11 @@ end # run_battery_opt()
 
  ###
 
+"""
+function run_gas_opt(el_price, weight=1, country = "", prnt=false)
 
+operational gas turbine optimization problem
+"""
 function run_gas_opt(el_price, weight=1, country = "", prnt=false)
   
   num_periods = size(el_price,2); # number of periods, 1day, one week, etc.
@@ -162,8 +166,11 @@ function run_gas_opt(el_price, weight=1, country = "", prnt=false)
 end # run_gas_opt()
 
 
-######## Wrapper Function for type of optimization problem input #####
+"""
+function run_opt(problem_type,el_price,weight=1,country="",prnt=false)
 
+Wrapper function for type of optimization problem
+"""
 function run_opt(problem_type,el_price,weight=1,country="",prnt=false)
 
   if problem_type == "battery"
