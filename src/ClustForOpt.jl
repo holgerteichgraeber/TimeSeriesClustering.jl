@@ -11,9 +11,18 @@ module ClustForOpt
 using Reexport
 using Distances
 using PyPlot
+using Clustering
+using JLD2
+using FileIO
+using PyCall
+using TimeWarp
 @reexport using DataFrames
+ #TODO how to make PyPlot, PyCall, and TimeWarp optional? -> only import when needed
+
 
 export run_opt,
+       run_clust,
+       get_sup_kw_args,
        get_EUR_to_USD,
        load_pricedata,
        plot_clusters,
@@ -32,8 +41,9 @@ export run_opt,
        find_medoids,
        resize_medoids
 
-include(joinpath("utils",".juliarc.jl"))
 include(joinpath("utils","optim_problems.jl"))
+include(joinpath("clust_algorithms","run_clust.jl"))
+include(joinpath("utils",".juliarc.jl"))
 include(joinpath("utils","utils.jl"))
 include(joinpath("utils","utils_plots.jl"))
 include(joinpath("clust_algorithms","exact_kmedoids.jl"))

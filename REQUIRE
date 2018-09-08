@@ -3,4 +3,8 @@ Reexport
 Distances
 PyPlot
 DataFrames
+Clustering
+JLD2
+FileIO
+PyCall
 

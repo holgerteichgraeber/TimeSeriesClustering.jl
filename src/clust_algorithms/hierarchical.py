@@ -1,11 +1,7 @@
 # coding: utf-8
 
 import numpy as np
-from sklearn import metrics
-from sklearn.cluster import KMeans
-from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
-import pdb
 
 
 # note that the input of el_resh is reverse of the julia convention
