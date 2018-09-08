@@ -30,6 +30,7 @@ k-shape clustering | `<kshape>` | `<centroid>`
 
 ## Example use of `run_clust()`
 n\_init is chosen small (3) as an example for the function to run fast, the partitional clustering methods should usually be initialized with higher numbers to get close to the globally best solution.
+
 ```julia
 using ClustForOpt
 
