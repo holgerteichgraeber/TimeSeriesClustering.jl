@@ -39,6 +39,7 @@ run the file `src/clustering_algorithms/runfiles/cluster_gen_dbaclust_parallel.j
 
 
 ### k-shape
+run the file `src/clustering_algorithms/runfiles/cluster_gen_kshape.py` on multiple cores. Then use `src/results_analysis/kshape_res_to_jld2.jl` to generate jld2 file. Then proceed with result analysis similar to the general workflow.
 
 
 
