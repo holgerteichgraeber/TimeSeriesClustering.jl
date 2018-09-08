@@ -9,6 +9,7 @@ include(joinpath(pwd(),"runfiles","cluster_gen_kmedoids_medoid.jl"))
 include(joinpath(pwd(),"runfiles","cluster_gen_kmedoids_exact_medoid.jl"))
 include(joinpath(pwd(),"runfiles","cluster_gen_hierarchical_centroid.jl"))
 include(joinpath(pwd(),"runfiles","cluster_gen_hierarchical_medoid.jl"))
+include(joinpath(pwd(),"runfiles","cluster_gen_dbaclust_centroid.jl"))
 
 cd(wor_dir) # change working directory to old previous file's dir
 
