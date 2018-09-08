@@ -28,7 +28,7 @@ n_clust_max = n_k
 
 
 
-n_kshape =1000
+n_init =1000
 iterations=1000
 
 # create directory where data is saved
@@ -42,7 +42,7 @@ end
 df = DataFrame()
 df[:n_clust_min]=n_clust_min
 df[:n_clust_max]=n_clust_max
-df[:n_kshape]=n_kshape
+df[:n_init]=n_init
 df[:iterations]=iterations
 df[:region]=region
 
@@ -118,7 +118,7 @@ end #k=1:n_k
   ########
  ###### 
  ###
-  # TODO: eliminate n_kshape, substitue num_conv -> make cost and iter Dicts as well  - there must be zeros in revenue (now solved) and in cost -> which leads to the 0/0 pair in the plot
+  # TODO: eliminate n_init, substitue num_conv -> make cost and iter Dicts as well  - there must be zeros in revenue (now solved) and in cost -> which leads to the 0/0 pair in the plot
   centers = Dict{Tuple{Int,Int},Array}()
   clustids = Dict{Tuple{Int,Int},Array}()
   cost = Dict{Int,Array}()
@@ -127,7 +127,7 @@ end #k=1:n_k
   revenue = Dict{String,Dict}() 
   for i=1:length(problem_type_ar)
     revenue[problem_type_ar[i]] = Dict{Int,Array}() # could do this one as well: []
-# zeros(length(n_clust_ar),n_kshape)
+# zeros(length(n_clust_ar),n_init)
   end
 
    # iterate through settings

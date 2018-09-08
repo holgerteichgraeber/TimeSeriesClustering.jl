@@ -18,7 +18,7 @@ end
 
 n_clust_min=param[:n_clust_min][1]
 n_clust_max=param[:n_clust_max][1]
-n_kmedeoids=param[:n_kmedeoids][1]
+n_init=param[:n_init][1]
 iterations=param[:iterations][1]
 region=param[:region][1]
 

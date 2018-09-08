@@ -51,7 +51,7 @@ for region_ in regions
 
     n_clust_min=param[:n_clust_min][1]
     n_clust_max=param[:n_clust_max][1]
-    n_kmeans=param[:n_kmeans][1]
+    n_init=param[:n_init][1]
     iterations=param[:iterations][1]
     region=param[:region][1]
 
@@ -96,7 +96,7 @@ for region_ in regions
 
     n_clust_min=param[:n_clust_min][1]
     n_clust_max=param[:n_clust_max][1]
-    n_kmeans=param[:n_kmeans][1]
+    n_init=param[:n_init][1]
     iterations=param[:iterations][1]
     region=param[:region][1]
 
@@ -138,7 +138,7 @@ for region_ in regions
 
     n_clust_min=param[:n_clust_min][1]
     n_clust_max=param[:n_clust_max][1]
-    n_kmedeoids=param[:n_kmedeoids][1]
+    n_init=param[:n_init][1]
     iterations=param[:iterations][1]
     region=param[:region][1]
 
@@ -203,7 +203,7 @@ for region_ in regions
 
     n_clust_min=param[:n_clust_min][1]
     n_clust_max=param[:n_clust_max][1]
-    n_hier=param[:n_hier][1]
+    n_init=param[:n_init][1]
     iterations=param[:iterations][1]
     region=param[:region][1]
 
@@ -315,7 +315,7 @@ for region_ in regions
 
     n_clust_min=param[:n_clust_min][1]
     n_clust_max=param[:n_clust_max][1]
-    n_kshape=param[:n_kshape][1]
+    n_init=param[:n_init][1]
     iterations=param[:iterations][1]
     region=param[:region][1]
 
