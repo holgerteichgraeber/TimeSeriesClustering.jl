@@ -1,14 +1,10 @@
 # this file generates the plots for the framework figure in Teichgraeber et al. (2018)
-
-CLUST_FOR_OPT=ENV["CLUST_FOR_OPT"]
-push!(LOAD_PATH, normpath(joinpath(CLUST_FOR_OPT,"src"))) #adds the location of ClustForOpt to the LOAD_PATH
 using ClustForOpt
 using JLD2 # Much faster than JLD (50s vs 20min)
 using FileIO
 
 using PyPlot
 using DataFrames
-plt = PyPlot
 
 region = "GER"
 
