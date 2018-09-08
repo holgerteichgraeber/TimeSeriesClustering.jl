@@ -28,6 +28,36 @@ hierarchical clustering with medoid representation | `<hierarchical>` | `<medoid
 DTW barycenter averaging (DBA) clustering | `<dbaclust>` | `<centroid>`
 k-shape clustering | `<kshape>` | `<centroid>`
 
+## Example use of `run_clust()`
+n\_init is chosen small (3) as an example for the function to run fast, the partitional clustering methods should usually be initialized with higher numbers to get close to the globally best solution.
+```julia
+using ClustForOpt
+
+ # default kmeans + centroid
+run_clust("GER","battery";n_init=3)
+
+ #  kmeans + medoid
+run_clust("GER","battery";representation="medoid",n_init=3)
+ 
+ #  kmedoids + medoid (partitional)
+run_clust("GER","battery";method="kmedoids",representation="medoid",n_init=3) 
+
+ # kmedoids + medoid (exact)
+using Gurobi
+env = Gurobi.Env()
+run_clust("GER","battery";method="kmedoids_exact",representation="medoid",n_init=3,gurobi_env=env) 
+
+ #  hierarchical + centroid 
+run_clust("GER","battery";method="hierarchical",representation="centroid",n_init=1) 
+
+ #  hierarchical + medoid 
+run_clust("GER","battery";method="hierarchical",representation="medoid",n_init=1) 
+
+ #  dbaclust + centroid (single core, for parallel runs, use parallel version)
+run_clust("GER","battery";method="dbaclust",representation="centroid",n_init=3,iterations=50,rad_sc_min=0,rad_sc_max=1,inner_iterations=30)
+
+```
+
 ## General workflow
 
 Run clustering method with the respective optimization problem first: `run_clust()`. 
