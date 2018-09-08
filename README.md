@@ -61,16 +61,16 @@ run_clust("GER","battery";method="dbaclust",representation="centroid",n_init=3,i
 
 ## General workflow
 
-Run clustering method with the respective optimization problem first: `run_clust()`. 
+Run clustering method with the respective optimization problem first: [run\_clust()](src/clust_algorithms/run_clust.jl). 
 This will generate a jld2 file with resulting clusters, cluster assignments, and optimization problem outcomes. 
 Then, use result analysis files to analyze and interpret clustering and optimization results from folder `src/results_analysis`.
 
 ### Parallel implementation of DBA clustering
-run the file `src/clustering_algorithms/runfiles/cluster_gen_dbaclust_parallel.jl` on multiple cores (julia currently only allows parallelization through pmap on one node). Then use `src/results_analysis/dbaclust_res_to_jld2.jl` to generate jld2 file. Then proceed with result analysis similar to the general workflow.
+run the file [cluster\_gen\_dbaclust\_parallel.jl](src/clustering_algorithms/runfiles/cluster_gen_dbaclust_parallel.jl) on multiple cores (julia currently only allows parallelization through pmap on one node). Then use [dbaclust\_res\_to\_jld2.jl](src/results_analysis/dbaclust_res_to_jld2.jl) to generate jld2 file. Then proceed with result analysis similar to the general workflow.
 
 
 ### k-shape
-run the file `src/clustering_algorithms/runfiles/cluster_gen_kshape.py` on multiple cores. Then use `src/results_analysis/kshape_res_to_jld2.jl` to generate jld2 file. Then proceed with result analysis similar to the general workflow.
+run the file [cluster\_gen\_kshape.py](src/clustering_algorithms/runfiles/cluster_gen_kshape.py) on multiple cores. Then use [kshape\_res\_to\_jld2.jl](src/results_analysis/kshape_res_to_jld2.jl) to generate jld2 file. Then proceed with result analysis similar to the general workflow.
 
 
 
