@@ -10,8 +10,11 @@ This package is not officielly registered. Install using:
 Pkg.clone("https://github.com/holgerteichgraeber/ClustForOpt.jl.git") 
 ```
 
-Then, seperately install [TimeWarp.jl](https://github.com/ahwillia/TimeWarp.jl) 
+Then, seperately install [TimeWarp.jl](https://github.com/holgerteichgraeber/TimeWarp.jl) using 
 
+```julia
+Pkg.clone("https://github.com/holgerteichgraeber/TimeWarp.jl.git") 
+```
 
 ## Supported clustering methods
 
@@ -66,11 +69,11 @@ This will generate a jld2 file with resulting clusters, cluster assignments, and
 Then, use result analysis files to analyze and interpret clustering and optimization results from folder `src/results_analysis`.
 
 ### Parallel implementation of DBA clustering
-run the file [cluster\_gen\_dbaclust\_parallel.jl](src/clustering_algorithms/runfiles/cluster_gen_dbaclust_parallel.jl) on multiple cores (julia currently only allows parallelization through pmap on one node). Then use [dbaclust\_res\_to\_jld2.jl](src/results_analysis/dbaclust_res_to_jld2.jl) to generate jld2 file. Then proceed with result analysis similar to the general workflow.
+run the file [cluster\_gen\_dbaclust\_parallel.jl](src/clust_algorithms/runfiles/cluster_gen_dbaclust_parallel.jl) on multiple cores (julia currently only allows parallelization through pmap on one node). Then use [dbaclust\_res\_to\_jld2.jl](src/results_analysis/dbaclust_res_to_jld2.jl) to generate jld2 file. Then proceed with result analysis similar to the general workflow.
 
 
 ### k-shape
-run the file [cluster\_gen\_kshape.py](src/clustering_algorithms/runfiles/cluster_gen_kshape.py) on multiple cores. Then use [kshape\_res\_to\_jld2.jl](src/results_analysis/kshape_res_to_jld2.jl) to generate jld2 file. Then proceed with result analysis similar to the general workflow.
+run the file [cluster\_gen\_kshape.py](src/clust_algorithms/runfiles/cluster_gen_kshape.py) on multiple cores. Then use [kshape\_res\_to\_jld2.jl](src/results_analysis/kshape_res_to_jld2.jl) to generate jld2 file. Then proceed with result analysis similar to the general workflow.
 
 
 
