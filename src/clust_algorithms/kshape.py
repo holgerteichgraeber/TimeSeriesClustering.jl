@@ -1,4 +1,5 @@
 # This is a slightly modified copy of https://github.com/holgerteichgraeber/kshape/tree/master/kshape/core.py
+# Special thanks to https://github.com/Mic92/kshape for providing the initial code for the implementation of the kshape method
 
 import sys
 import math

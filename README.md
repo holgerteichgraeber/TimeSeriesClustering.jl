@@ -1,5 +1,7 @@
 # ClustForOpt 
 
+[![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE.md)
+
 julia implementation of using different clustering methods for finding representative perdiods for the optimization of energy systems. 
 
 ## Installation
