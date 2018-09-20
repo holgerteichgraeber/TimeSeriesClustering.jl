@@ -6,7 +6,7 @@
  #
  #####################
 
-module ClustForOpt
+module ClustForOpt_priv
 
 using Reexport
 using Distances
