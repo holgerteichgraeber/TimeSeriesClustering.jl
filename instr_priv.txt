@@ -1,0 +1,5 @@
+## These are instructions for the private repo:
+rename ClustForOpt.jl to ClustForOpt_priv.jl
+
+Documentation:
+https://medium.com/@bilalbayasut/github-how-to-make-a-fork-of-public-repository-private-6ee8cacaf9d3
