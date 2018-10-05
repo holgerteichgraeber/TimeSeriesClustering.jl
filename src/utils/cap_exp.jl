@@ -30,8 +30,8 @@ r = 0.07 # real discount rate
 
  # load input data
 
-d= readtable("/home/hteich/.julia/v0.6/ClustForOpt_priv/data/texas_merrick/demand.txt",separator=' ')[:DEM] # MW
-d=reshape(d,(size(d)[1],1))
+de= readtable("/home/hteich/.julia/v0.6/ClustForOpt_priv/data/texas_merrick/demand.txt",separator=' ')[:DEM] # MW
+d=reshape(de,(size(de)[1],1))
  # load growth
 d=1.486*d
 d=d/1000 # GW

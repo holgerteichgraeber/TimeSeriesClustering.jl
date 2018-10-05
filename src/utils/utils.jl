@@ -18,15 +18,15 @@ end
 """
 function load_pricedata(region::String)
 
-Loads price data from either GER or CA  
+Loads price data from either GER or CA    
 """
 function load_pricedata(region::String)
   wor_dir = pwd()
   cd(dirname(@__FILE__)) # change working directory to current file
-  if region =="CA"
+  if region =="CA" #\$/MWh
     region_str = ""
     region_data = normpath(joinpath(pwd(),"..","..","data","el_prices","ca_2015_orig.txt"))
-  elseif region == "GER"
+  elseif region == "GER" #EUR/MWh
     region_str = "GER_"
     region_data = normpath(joinpath(pwd(),"..","..","data","el_prices","GER_2015_elPrice.txt"))
   else
@@ -35,9 +35,84 @@ function load_pricedata(region::String)
   data_orig = Array(readtable(region_data, separator = '\t', header = false))
   data_orig_daily = reshape(data_orig,24,365)
   cd(wor_dir) # change working directory to old previous file's dir
-  return data_orig_daily
+  return Dict("elprice"=>data_orig_daily)
 end #load_pricedata
 
+"""
+function load_capacity_expansion_data(region::String)
+
+outputs one dict with the following keys. They each contain a 24x365 array:
+eldemand [GW]
+solar availability [-]
+wind availability [-]
+"""
+function load_capacity_expansion_data(region::String)
+  wor_dir = pwd()
+  cd(dirname(@__FILE__)) # change working directory to current file
+  
+  
+  output_dict = Dict{String,Array}()  
+  
+  if region == "TX"
+    # Texas system data from Merrick (Energy Economics) and Merrick (MS thesis) 
+    #demand - [GW]
+    demand= readtable(normpath(joinpath(pwd(),"..","..","data","texas_merrick","demand.txt")),separator=' ')[:DEM] # MW
+    demand=reshape(demand,(size(demand)[1],1))
+     # load growth (Merrick assumption)
+    demand=1.486*demand
+    demand=demand/1000 # GW
+    demand = reshape(demand,24,365)
+    # solar availability factor
+    solar= readtable(normpath(joinpath(pwd(),"..","..","data","texas_merrick","TexInsolationFactorV1.txt")),separator=' ')[:solar_61]
+    solar=reshape(solar,(size(solar)[1],1))
+    solar = solar/1000
+    solar = reshape(solar,24,365)
+   
+   # wind availability factor
+    wind= readtable("/home/hteich/.julia/v0.6/ClustForOpt_priv/data/texas_merrick/windfactor2.txt",separator=' ')[:Wind_61]
+    wind=reshape(wind,(size(wind)[1],1))
+    wind = reshape(wind,24,365)
+    
+    output_dict["eldemand"] = demand
+    output_dict["solar"] = solar
+    output_dict["wind"] = wind
+  else
+    error("region "*region*" not implemented.")
+  end # region
+  
+  cd(wor_dir) # change working directory to old previous file's dir
+  return output_dict 
+
+ # TODO - add CA data
+ # TODO - add multiple nodes data
+end
+
+"""
+function load_input_data(application::String,region::String)
+
+wrapper function to call capacity expansion data and price data
+
+applications:
+- DAM - electricity day ahead market prices
+- CEP - capacity expansion problem data
+
+potential outputs:
+- elprice [electricity price]
+- wind
+- solar 
+- eldemand [electricity demand]
+  
+  
+"""
+function load_input_data(application::String,region::String)
+  if application == "DAM"
+    return load_pricedata(region)
+  elseif application == "CEP"
+    return load_capacity_expansion_data(region)
+  else
+    error("application "*application*" not defined")
+  end
+end
 
   """
 function sort_centers(centers::Array,weights::Array)
@@ -52,6 +127,13 @@ function sort_centers(centers::Array,weights::Array)
   centers_sorted = centers[:,i_w]
   return centers_sorted, weights_sorted
 end # function
+
+
+function z_normalize(data::Dict;scope="full")
+ #TODO make the other z-normalize function data::Array
+
+end
+
 
 """
 function z_normalize(data;scope="full")
