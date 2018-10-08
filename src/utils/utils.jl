@@ -1,5 +1,62 @@
 #
 
+abstract type InputData end
+"""
+struct FullInputData <: InputData 
+  region::String 
+  N::Int
+  el_price::Array
+  el_demand::Array
+  solar::Array
+  wind::Array
+"""
+struct FullInputData <: InputData 
+  region::String
+  N::Int
+  el_price::Array
+  el_demand::Array
+  solar::Array
+  wind::Array
+ # constructor
+  FullInputData(region,N;el_price=[],el_demand=[],solar=[],wind=[])=new(region,N,el_price,el_demand,solar,wind)
+end
+
+
+struct ClustInputData <: InputData 
+  region::String
+  K::Int
+  T::Int
+  el_price::Array
+  el_demand::Array
+  solar::Array
+  wind::Array
+  mean::Array
+  sdv::Array
+ # constructor
+  FullInputData(region,K,T;el_price=[],el_demand=[],solar=[],wind=[],mean=zeros(T),sdv=ones(T))=new(region,K,T,el_price,el_demand,solar,wind,mean,sdv)
+end
+
+
+"""
+function iterate_input_data(data::InputData)
+
+returns the input data that is defined in this struct as an iterable object  
+"""
+function iterate_input_data(data::InputData)
+  output_dict = Dict{String,Array}()
+  !isempty(data.el_price) &&  output_dict["el_price"]=data.el_price
+  !isempty(data.el_demand) &&  output_dict["el_demand"]=data.el_demand
+  !isempty(data.wind) &&  output_dict["wind"]=data.wind
+  !isempty(data.solar) &&  output_dict["solar"]=data.solar
+  return output_dict
+end
+
+
+function full_to_clust_input_data(data::FullInputData)
+
+   return ClustInputData(region,K,T)
+end
+
 """
 function get_EUR_to_USD(region::String)
 
@@ -128,10 +185,18 @@ function sort_centers(centers::Array,weights::Array)
   return centers_sorted, weights_sorted
 end # function
 
-
+"""
+function z_normalize(data::Dict;scope="full")
+"""
 function z_normalize(data::Dict;scope="full")
  #TODO make the other z-normalize function data::Array
-
+ data_norm = Dict{String,Array}() 
+ # TODO - work with data structures - e.g. the output of z_normalize shoudl be an immutable
+ # read through dict, save keys
+ for (k,v) in data
+   data_norm[k] = z_normalize(v,scope=scope)
+ end
+ # return dict
 end
 
 
@@ -143,7 +208,7 @@ z-normalize data with mean and sdv by hour
 data: input format: (1st dimension: 24 hours, 2nd dimension: # of days)
 scope: "full": one mean and sdv for the full data set; "hourly": univariate scaling: each hour is scaled seperately; "sequence": sequence based scaling
 """
-function z_normalize(data;scope="full")
+function z_normalize(data::Array;scope="full")
   if scope == "sequence"
     seq_mean = zeros(size(data)[2])
     seq_sdv = zeros(size(data)[2])
@@ -172,7 +237,7 @@ function z_normalize(data;scope="full")
     hourly_mean = mean(data)*ones(size(data)[1])
     hourly_sdv = std(data)*ones(size(data)[1])
     data_norm = (data-hourly_mean[1])/hourly_sdv[1]
-    return data_norm, hourly_mean, hourly_sdv
+    return data_norm, hourly_mean, hourly_sdv #TODO change the output here to an immutable struct with three fields - use struct - "composite type"
   else
     error("scope _ ",scope," _ not defined.")
   end
@@ -186,7 +251,7 @@ normalized data: input format: (1st dimension: 24 hours, 2nd dimension: # of day
 hourly_mean ; 24 hour vector with hourly means
 hourly_sdv; 24 hour vector with hourly standard deviations
 """
-function undo_z_normalize(data_norm, mn, sdv; idx=[])
+function undo_z_normalize(data_norm::Array, mn::Array, sdv::Array; idx=[])
   if size(data_norm,1) == size(mn,1) # hourly - even if idx is provided, doesn't matter if it is hourly
     data = data_norm .* sdv + mn * ones(size(data_norm)[2])'
     return data
