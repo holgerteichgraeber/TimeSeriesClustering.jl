@@ -13,12 +13,24 @@ struct FullInputData <: InputData
 struct FullInputData <: InputData 
   region::String
   N::Int
-  el_price::Array
-  el_demand::Array
-  solar::Array
-  wind::Array
+  data::Dict{String,Array}
  # constructor
-  FullInputData(region,N;el_price=[],el_demand=[],solar=[],wind=[])=new(region,N,el_price,el_demand,solar,wind)
+  function FullInputData(region::String,
+                         N::Int;
+                         el_price::Array=[],
+                         el_demand::Array=[],
+                         solar::Array=[],
+                         wind::Array=[]
+                         )
+    dt = Dict{String,Array}() 
+    !isempty(el_price) && (dt["el_price"]=el_price)
+    !isempty(el_demand) &&  (dt["el_demand"]=el_demand)
+    !isempty(wind) && (dt["wind"]=wind)
+    !isempty(solar) && (dt["solar"]=solar)
+    # TODO: Check dimensionality of N and supplied input data streams Nx1
+    isempty(dt) && error("Need to provide at least one input data stream") 
+    new(region,N,dt)
+  end
 end
 
 
@@ -26,35 +38,83 @@ struct ClustInputData <: InputData
   region::String
   K::Int
   T::Int
-  el_price::Array
-  el_demand::Array
-  solar::Array
-  wind::Array
-  mean::Array
-  sdv::Array
- # constructor
-  FullInputData(region,K,T;el_price=[],el_demand=[],solar=[],wind=[],mean=zeros(T),sdv=ones(T))=new(region,K,T,el_price,el_demand,solar,wind,mean,sdv)
+  data::Dict{String,Array}
+  mean::Dict{String,Array}
+  sdv::Dict{String,Array}
+ # constructor 1
+  function ClustInputData(region::String,
+                          K::Int,
+                          T::Int;
+                          el_price::Array=[],
+                          el_demand::Array=[],
+                          solar::Array=[],
+                          wind::Array=[],
+                          mean::Dict{String,Array}=Dict{String,Array}(),
+                          sdv::Dict{String,Array}=Dict{String,Array}()
+                          )
+    dt = Dict{String,Array}() 
+    mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
+    if !isempty(el_price) 
+      dt["el_price"]=el_price
+      if !mean_sdv_provided
+        mean["el_price"]=zeros(T)
+        sdv["el_price"]=ones(T)
+      end
+    end
+    if !isempty(el_demand)
+      dt["el_demand"]=el_demand
+      if !mean_sdv_provided
+        mean["el_demand"]=zeros(T)
+        sdv["el_demand"]=ones(T)
+      end
+    end 
+    if !isempty(wind) 
+      dt["wind"]=wind
+      if !mean_sdv_provided
+        mean["wind"]=zeros(T)
+        sdv["wind"]=ones(T)
+      end
+    end
+    if !isempty(solar) 
+      dt["solar"]=solar
+      if !mean_sdv_provided
+        mean["solar"]=zeros(T)
+        sdv["solar"]=ones(T)
+      end
+    end
+    isempty(dt) && error("Need to provide at least one input data stream")
+    # TODO: Check dimensionality of K T and supplied input data streams KxT
+    new(region,K,T,dt,mean,sdv)
+  end
+ # constructor 2
+  function ClustInputData(region::String,
+                          K::Int,
+                          T::Int,
+                          data::Dict{String,Array};
+                          mean::Dict{String,Array}=Dict{String,Array}(),
+                          sdv::Dict{String,Array}=Dict{String,Array}()
+                          )
+    isempty(data) && error("Need to provide at least one input data stream")
+    mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
+    if !mean_sdv_provided
+      for (k,v) in data
+        mean[k]=zeros(T)
+        sdv[k]=ones(T)
+      end
+    end
+    # TODO check if right keywords are used
+    new(region,K,T,data,mean,sdv)
+  end
 end
 
 
-"""
-function iterate_input_data(data::InputData)
 
-returns the input data that is defined in this struct as an iterable object  
-"""
-function iterate_input_data(data::InputData)
-  output_dict = Dict{String,Array}()
-  !isempty(data.el_price) &&  output_dict["el_price"]=data.el_price
-  !isempty(data.el_demand) &&  output_dict["el_demand"]=data.el_demand
-  !isempty(data.wind) &&  output_dict["wind"]=data.wind
-  !isempty(data.solar) &&  output_dict["solar"]=data.solar
-  return output_dict
-end
-
-
-function full_to_clust_input_data(data::FullInputData)
-
-   return ClustInputData(region,K,T)
+function full_to_clust_input_data(data::FullInputData,K,T)
+   data_reshape = Dict{String,Array}()
+   for (k,v) in data.data
+      data_reshape[k] =  reshape(v,T,K)
+   end
+   return ClustInputData(data.region,K,T,data_reshape)
 end
 
 """
@@ -90,9 +150,10 @@ function load_pricedata(region::String)
     error("Region ",region," not defined.")
   end
   data_orig = Array(readtable(region_data, separator = '\t', header = false))
-  data_orig_daily = reshape(data_orig,24,365)
+  data_full = FullInputData(region,size(data_orig)[1];el_price=data_orig)
+  data_reshape =  full_to_clust_input_data(data_full,365,24)
   cd(wor_dir) # change working directory to old previous file's dir
-  return Dict("elprice"=>data_orig_daily)
+  return data_reshape, data_full
 end #load_pricedata
 
 """
@@ -107,38 +168,35 @@ function load_capacity_expansion_data(region::String)
   wor_dir = pwd()
   cd(dirname(@__FILE__)) # change working directory to current file
   
-  
-  output_dict = Dict{String,Array}()  
-  
+  N=nothing # initialize 
+  demand=nothing
+  solar=nothing
+  wind=nothing  
   if region == "TX"
     # Texas system data from Merrick (Energy Economics) and Merrick (MS thesis) 
     #demand - [GW]
-    demand= readtable(normpath(joinpath(pwd(),"..","..","data","texas_merrick","demand.txt")),separator=' ')[:DEM] # MW
+    demand= Array(readtable(normpath(joinpath(pwd(),"..","..","data","texas_merrick","demand.txt")),separator=' ')[:DEM]) # MW
     demand=reshape(demand,(size(demand)[1],1))
      # load growth (Merrick assumption)
     demand=1.486*demand
     demand=demand/1000 # GW
-    demand = reshape(demand,24,365)
+    N=size(demand)[1]
     # solar availability factor
-    solar= readtable(normpath(joinpath(pwd(),"..","..","data","texas_merrick","TexInsolationFactorV1.txt")),separator=' ')[:solar_61]
+    solar= Array(readtable(normpath(joinpath(pwd(),"..","..","data","texas_merrick","TexInsolationFactorV1.txt")),separator=' ')[:solar_61])
     solar=reshape(solar,(size(solar)[1],1))
     solar = solar/1000
-    solar = reshape(solar,24,365)
-   
    # wind availability factor
-    wind= readtable("/home/hteich/.julia/v0.6/ClustForOpt_priv/data/texas_merrick/windfactor2.txt",separator=' ')[:Wind_61]
+    wind= Array(readtable("/home/hteich/.julia/v0.6/ClustForOpt_priv/data/texas_merrick/windfactor2.txt",separator=' ')[:Wind_61])
     wind=reshape(wind,(size(wind)[1],1))
-    wind = reshape(wind,24,365)
-    
-    output_dict["eldemand"] = demand
-    output_dict["solar"] = solar
-    output_dict["wind"] = wind
   else
     error("region "*region*" not implemented.")
   end # region
   
+  data_full = FullInputData(region,N;el_demand=demand,solar=solar,wind=wind)
+  data_reshape =  full_to_clust_input_data(data_full,365,24)
+  
   cd(wor_dir) # change working directory to old previous file's dir
-  return output_dict 
+  return data_reshape,data_full 
 
  # TODO - add CA data
  # TODO - add multiple nodes data
@@ -162,13 +220,19 @@ potential outputs:
   
 """
 function load_input_data(application::String,region::String)
+  ret=nothing
   if application == "DAM"
-    return load_pricedata(region)
+    ret=load_pricedata(region)
   elseif application == "CEP"
-    return load_capacity_expansion_data(region)
+    ret= load_capacity_expansion_data(region)
   else
     error("application "*application*" not defined")
   end
+  #check if output is of the right format
+  if typeof(ret) != Tuple{ClustInputData,FullInputData}
+    error("Output from load_input_data needs to be of ClustInputData,FullInputData") 
+  end
+  return ret
 end
 
   """
@@ -188,15 +252,12 @@ end # function
 """
 function z_normalize(data::Dict;scope="full")
 """
-function z_normalize(data::Dict;scope="full")
- #TODO make the other z-normalize function data::Array
+function z_normalize(data::ClustInputData;scope="full")
  data_norm = Dict{String,Array}() 
- # TODO - work with data structures - e.g. the output of z_normalize shoudl be an immutable
- # read through dict, save keys
- for (k,v) in data
+ for (k,v) in data.data
    data_norm[k] = z_normalize(v,scope=scope)
  end
- # return dict
+ return ClustInputData(data.region,data.K,data.T,data_norm     ) 
 end
 
 
