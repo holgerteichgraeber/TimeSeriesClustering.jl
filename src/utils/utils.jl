@@ -253,11 +253,13 @@ end # function
 function z_normalize(data::Dict;scope="full")
 """
 function z_normalize(data::ClustInputData;scope="full")
- data_norm = Dict{String,Array}() 
+ data_norm = Dict{String,Array}()
+ mean= Dict{String,Array}()
+ sdv= Dict{String,Array}()
  for (k,v) in data.data
-   data_norm[k] = z_normalize(v,scope=scope)
+   data_norm[k],mean[k],sdv[k] = z_normalize(v,scope=scope)
  end
- return ClustInputData(data.region,data.K,data.T,data_norm     ) 
+ return ClustInputData(data.region,data.K,data.T,data_norm;mean=mean,sdv=sdv) 
 end
 
 
