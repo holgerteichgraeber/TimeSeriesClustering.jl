@@ -1,5 +1,6 @@
 #
 
+ ### Data structures ###
 abstract type InputData end
 """
 struct FullInputData <: InputData 
@@ -41,7 +42,7 @@ struct ClustInputData <: InputData
   data::Dict{String,Array}
   mean::Dict{String,Array}
   sdv::Dict{String,Array}
- # constructor 1
+ # constructor 1: provide data individually
   function ClustInputData(region::String,
                           K::Int,
                           T::Int;
@@ -86,7 +87,7 @@ struct ClustInputData <: InputData
     # TODO: Check dimensionality of K T and supplied input data streams KxT
     new(region,K,T,dt,mean,sdv)
   end
- # constructor 2
+ # constructor 2 : provide data as dict
   function ClustInputData(region::String,
                           K::Int,
                           T::Int,
@@ -105,7 +106,64 @@ struct ClustInputData <: InputData
     # TODO check if right keywords are used
     new(region,K,T,data,mean,sdv)
   end
+  # constructor 3: Convert ClustInputDataMerged to ClustInputData
+  function ClustInputData(data::ClustInputDataMerged)
+    data_dict=Dict{String,Array}()
+    i=0
+    for (k,v) in data.data
+      i+=1
+      data_dict[k] = data.data[(1+data.T*(i-1)):(data.T*i),:]
+    end
+    new(data.region,data.K,data.T,data_dict,mean,sdv)
+  end
+
 end
+
+struct ClustInputDataMerged <: InputData
+  region::String
+  K::Int
+  T::Int
+  data::Array
+  data_type::Array{String}
+  mean::Dict{String,Array}
+  sdv::Dict{String,Array}
+  #constructor 1: convert ClustInputData into merged format
+  function ClustInputDataMerged(data::ClustInputData)
+    n_datasets = length(keys(data.data))
+    data_merged= zeros(T*n_datasets,K)
+    data_type=String[]
+    i=0
+    for (k,v) in data
+      i+=1
+      data_merged[(1+data.T*(i-1)):(data.T*i),:] = v 
+      push!(data_type,k)
+    end
+    new(data.region,data.K,data.T,data_merged,data_type,data.mean,data.sdv)
+  end
+  #constructor 2: create ClustInputDataMerged like default constructor
+  # use case: after clustering, save results
+  function ClustInputDataMerged(
+    region::String,
+    K::Int,
+    T::Int,
+    data::Array,
+    data_type::Array{String},
+    mean::Dict{String,Array},
+    sdv::Dict{String,Array}
+    )
+    new(
+       region::String,
+       K::Int,
+       T::Int,
+       data::Array,
+       data_type::Array{String},
+       mean::Dict{String,Array},
+       sdv::Dict{String,Array}
+    )
+  end
+end
+
+ #### Constructors ###
 
 
 
