@@ -15,25 +15,7 @@ struct FullInputData <: InputData
   region::String
   N::Int
   data::Dict{String,Array}
- # constructor
-  function FullInputData(region::String,
-                         N::Int;
-                         el_price::Array=[],
-                         el_demand::Array=[],
-                         solar::Array=[],
-                         wind::Array=[]
-                         )
-    dt = Dict{String,Array}() 
-    !isempty(el_price) && (dt["el_price"]=el_price)
-    !isempty(el_demand) &&  (dt["el_demand"]=el_demand)
-    !isempty(wind) && (dt["wind"]=wind)
-    !isempty(solar) && (dt["solar"]=solar)
-    # TODO: Check dimensionality of N and supplied input data streams Nx1
-    isempty(dt) && error("Need to provide at least one input data stream") 
-    new(region,N,dt)
-  end
 end
-
 
 struct ClustInputData <: InputData 
   region::String
@@ -42,8 +24,67 @@ struct ClustInputData <: InputData
   data::Dict{String,Array}
   mean::Dict{String,Array}
   sdv::Dict{String,Array}
- # constructor 1: provide data individually
-  function ClustInputData(region::String,
+
+end
+
+struct ClustInputDataMerged <: InputData
+  region::String
+  K::Int
+  T::Int
+  data::Array
+  data_type::Array{String}
+  mean::Dict{String,Array}
+  sdv::Dict{String,Array}
+end
+
+ #### Constructors for data structures###
+
+ # need to come afterwards because of cyclic argument between ClustInputData and ClustInputDataMerged Constructors
+
+"""
+  function FullInputData(region::String,
+                         N::Int;
+                         el_price::Array=[],
+                         el_demand::Array=[],
+                         solar::Array=[],
+                         wind::Array=[]
+                         )
+Constructor for FullInputData with optional data input
+"""
+function FullInputData(region::String,
+                       N::Int;
+                       el_price::Array=[],
+                       el_demand::Array=[],
+                       solar::Array=[],
+                       wind::Array=[]
+                       )
+  dt = Dict{String,Array}() 
+  !isempty(el_price) && (dt["el_price"]=el_price)
+  !isempty(el_demand) &&  (dt["el_demand"]=el_demand)
+  !isempty(wind) && (dt["wind"]=wind)
+  !isempty(solar) && (dt["solar"]=solar)
+  # TODO: Check dimensionality of N and supplied input data streams Nx1
+  isempty(dt) && error("Need to provide at least one input data stream") 
+  FullInputData(region,N,dt)
+end
+
+
+
+"""
+constructor 1 for ClustInputData: provide data individually
+
+function ClustInputData(region::String,
+                          K::Int,
+                          T::Int;
+                          el_price::Array=[],
+                          el_demand::Array=[],
+                          solar::Array=[],
+                          wind::Array=[],
+                          mean::Dict{String,Array}=Dict{String,Array}(),
+                          sdv::Dict{String,Array}=Dict{String,Array}()
+                          )
+"""
+function ClustInputData(region::String,
                           K::Int,
                           T::Int;
                           el_price::Array=[],
@@ -85,89 +126,62 @@ struct ClustInputData <: InputData
     end
     isempty(dt) && error("Need to provide at least one input data stream")
     # TODO: Check dimensionality of K T and supplied input data streams KxT
-    new(region,K,T,dt,mean,sdv)
-  end
- # constructor 2 : provide data as dict
-  function ClustInputData(region::String,
-                          K::Int,
-                          T::Int,
-                          data::Dict{String,Array};
-                          mean::Dict{String,Array}=Dict{String,Array}(),
-                          sdv::Dict{String,Array}=Dict{String,Array}()
-                          )
-    isempty(data) && error("Need to provide at least one input data stream")
-    mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
-    if !mean_sdv_provided
-      for (k,v) in data
-        mean[k]=zeros(T)
-        sdv[k]=ones(T)
-      end
-    end
-    # TODO check if right keywords are used
-    new(region,K,T,data,mean,sdv)
-  end
-  # constructor 3: Convert ClustInputDataMerged to ClustInputData
-  function ClustInputData(data::ClustInputDataMerged)
-    data_dict=Dict{String,Array}()
-    i=0
-    for (k,v) in data.data
-      i+=1
-      data_dict[k] = data.data[(1+data.T*(i-1)):(data.T*i),:]
-    end
-    new(data.region,data.K,data.T,data_dict,mean,sdv)
-  end
-
+    ClustInputData(region,K,T,dt,mean,sdv)
 end
 
-struct ClustInputDataMerged <: InputData
-  region::String
-  K::Int
-  T::Int
-  data::Array
-  data_type::Array{String}
-  mean::Dict{String,Array}
-  sdv::Dict{String,Array}
-  #constructor 1: convert ClustInputData into merged format
-  function ClustInputDataMerged(data::ClustInputData)
-    n_datasets = length(keys(data.data))
-    data_merged= zeros(T*n_datasets,K)
-    data_type=String[]
-    i=0
+ 
+"""
+constructor 2 for ClustInputData: provide data as dict
+
+function ClustInputData(region::String,
+                        K::Int,
+                        T::Int,
+                        data::Dict{String,Array};
+                        mean::Dict{String,Array}=Dict{String,Array}(),
+                        sdv::Dict{String,Array}=Dict{String,Array}()
+                        )
+"""
+function ClustInputData(region::String,
+                        K::Int,
+                        T::Int,
+                        data::Dict{String,Array};
+                        mean::Dict{String,Array}=Dict{String,Array}(),
+                        sdv::Dict{String,Array}=Dict{String,Array}()
+                        )
+  isempty(data) && error("Need to provide at least one input data stream")
+  mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
+  if !mean_sdv_provided
     for (k,v) in data
-      i+=1
-      data_merged[(1+data.T*(i-1)):(data.T*i),:] = v 
-      push!(data_type,k)
+      mean[k]=zeros(T)
+      sdv[k]=ones(T)
     end
-    new(data.region,data.K,data.T,data_merged,data_type,data.mean,data.sdv)
   end
-  #constructor 2: create ClustInputDataMerged like default constructor
-  # use case: after clustering, save results
-  function ClustInputDataMerged(
-    region::String,
-    K::Int,
-    T::Int,
-    data::Array,
-    data_type::Array{String},
-    mean::Dict{String,Array},
-    sdv::Dict{String,Array}
-    )
-    new(
-       region::String,
-       K::Int,
-       T::Int,
-       data::Array,
-       data_type::Array{String},
-       mean::Dict{String,Array},
-       sdv::Dict{String,Array}
-    )
-  end
+  # TODO check if right keywords are used
+  ClustInputData(region,K,T,data,mean,sdv)
 end
 
- #### Constructors ###
+"""
+constructor 3: Convert ClustInputDataMerged to ClustInputData
 
+function ClustInputData(data::ClustInputDataMerged)
+"""
+function ClustInputData(data::ClustInputDataMerged)
+  data_dict=Dict{String,Array}()
+  i=0
+  for (k,v) in data.data
+    i+=1
+    data_dict[k] = data.data[(1+data.T*(i-1)):(data.T*i),:]
+  end
+  ClustInputData(data.region,data.K,data.T,data_dict,mean,sdv)
+end
 
-
-function full_to_clust_input_data(data::FullInputData,K,T)
+"""
+constructor 4: Convert FullInputData to ClustInputData
+function ClustInputData(data::FullInputData,K,T)
+"""
+function ClustInputData(data::FullInputData,
+                                  K::Int,
+                                  T::Int)
    data_reshape = Dict{String,Array}()
    for (k,v) in data.data
       data_reshape[k] =  reshape(v,T,K)
@@ -175,6 +189,27 @@ function full_to_clust_input_data(data::FullInputData,K,T)
    return ClustInputData(data.region,K,T,data_reshape)
 end
 
+"""
+constructor 1: convert ClustInputData into merged format
+
+function ClustInputDataMerged(data::ClustInputData)
+"""
+function ClustInputDataMerged(data::ClustInputData)
+  n_datasets = length(keys(data.data))
+  data_merged= zeros(data.T*n_datasets,data.K)
+  data_type=String[]
+  i=0
+  for (k,v) in data.data
+    i+=1
+    data_merged[(1+data.T*(i-1)):(data.T*i),:] = v 
+    push!(data_type,k)
+  end
+  ClustInputDataMerged(data.region,data.K,data.T,data_merged,data_type,data.mean,data.sdv)
+end
+
+
+ #### Other Functions ####  
+  
 """
 function get_EUR_to_USD(region::String)
 
@@ -209,7 +244,7 @@ function load_pricedata(region::String)
   end
   data_orig = Array(readtable(region_data, separator = '\t', header = false))
   data_full = FullInputData(region,size(data_orig)[1];el_price=data_orig)
-  data_reshape =  full_to_clust_input_data(data_full,365,24)
+  data_reshape =  ClustInputData(data_full,365,24)
   cd(wor_dir) # change working directory to old previous file's dir
   return data_reshape, data_full
 end #load_pricedata
@@ -251,7 +286,7 @@ function load_capacity_expansion_data(region::String)
   end # region
   
   data_full = FullInputData(region,N;el_demand=demand,solar=solar,wind=wind)
-  data_reshape =  full_to_clust_input_data(data_full,365,24)
+  data_reshape =  ClustInputData(data_full,365,24)
   
   cd(wor_dir) # change working directory to old previous file's dir
   return data_reshape,data_full 
