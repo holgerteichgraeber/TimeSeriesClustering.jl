@@ -47,11 +47,11 @@ export run_opt,
        find_medoids,
        resize_medoids
 
+include(joinpath("utils","utils.jl"))
+include(joinpath("utils",".juliarc.jl"))
+include(joinpath("utils","utils_plots.jl"))
 include(joinpath("utils","optim_problems.jl"))
 include(joinpath("clust_algorithms","run_clust.jl"))
-include(joinpath("utils",".juliarc.jl"))
-include(joinpath("utils","utils.jl"))
-include(joinpath("utils","utils_plots.jl"))
 include(joinpath("clust_algorithms","exact_kmedoids.jl"))
 
 end # module ClustForOpt

@@ -13,7 +13,70 @@ include(joinpath(pwd(),"runfiles","cluster_gen_dbaclust_centroid.jl"))
 
 cd(wor_dir) # change working directory to old previous file's dir
 
+
 """
+"""
+function run_clust(
+      data::ClustInputData;
+      norm_op::String="zscore",
+      norm_scope::String="full",
+      method::String="kmeans",
+      representation::String="centroid",
+      n_clust_ar::Array=collect(1:9),
+      n_init::Int=100,
+      iterations::Int=300,
+      save::String="",
+      kwargs...
+    )
+
+    check_kw_args(norm_op,norm_scope,method,representation)    
+    # TODO: implement other methods with generic method call in for loops
+    if method!="kmeans" || representation !="centroid"
+       error("Any method other than kmeans centroid not implemented yet. TODO")
+    end
+    # normalize
+    # TODO: implement 0-1 normalization and add as a choice to runclust
+    data_norm = z_normalize(data;scope=norm_scope)
+    
+     # initialize dictionaries of the loaded data (key: number of clusters, n_init)
+    centers = Dict{Tuple{Int,Int},Array}()
+    clustids = Dict{Tuple{Int,Int},Array}()
+    cost = zeros(length(n_clust_ar),n_init)
+    iter =  zeros(length(n_clust_ar),n_init)
+    weights = Dict{Tuple{Int,Int},Array}()
+
+    # clustering
+
+    for n_clust_it=1:length(n_clust_ar)
+      n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts
+        for i = 1:n_init
+ # TODO: implement other clustering methods 
+           centers[n_clust,i],weights[n_clust,i],clustids[n_clust,i],cost[n_clust,i],iter[n_clust,i] = 
+              run_clust_kmeans_centroid(data_norm,n_clust,iterations) 
+        end
+    end
+  
+    # find best
+    ind_mincost = findmin(cost,2)[2]  # along dimension 2
+    ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
+    cost_best = zeros(size(cost,1))
+    ind_mincost_2 = zeros(size(cost,1))
+    for i=1:size(cost,1)
+        cost_best[i]=cost[ind_mincost[i]] 
+        ~,ind_mincost_2[i]=ind2sub(size(cost),ind_mincost[i])
+    end
+
+    # save best results as ClustInputData
+      # an array that contains 9 ClustInputData, one for each k
+    # put into clustResult struct
+      # one struct contains all initial runs for all 9 k
+    # save in save file 
+
+end
+
+
+"""
+TODO: Get rid of this one
 function run_clust(
       region::String,
       opt_problem::Array{String};
@@ -28,7 +91,7 @@ function run_clust(
 
 Wrapper function that calls the specific clustering methods. Saves results as jld2 file in a newly created folder outfiles, and also returns results from clustering. 
 """
-function run_clust(
+function run_clust_old(
       region::String,
       opt_problems::Array{String};
       norm_op::String="zscore",
@@ -41,7 +104,7 @@ function run_clust(
       kwargs...
     )
 
-    check_kw_args(region,opt_problems,norm_op,norm_scope,method,representation)    
+    check_kw_args(norm_op,norm_scope,method,representation)    
     
     # function call to the respective function (method + representation)
     fun_name = Symbol("run_clust_"*method*"_"*representation)
@@ -50,6 +113,7 @@ end
 
 
 """
+TODO: GET RID OF THIS ONE
 function run_clust(
     region::String,
     opt_problem::String;
@@ -58,7 +122,7 @@ function run_clust(
 
 Wrapper function for run_clust to allow for one input argument only for the optimization problem type.
 """
-function run_clust(
+function run_clust_old(
       region::String,
       opt_problem::String;
       kwargs ...
@@ -89,8 +153,6 @@ check_kw_args(region,opt_problems,norm_op,norm_scope,method,representation)
 checks if the arguments supplied for run_clust are supported
 """
 function check_kw_args(
-      region::String,
-      opt_problems::Array{String},
       norm_op::String,
       norm_scope::String,
       method::String,
@@ -98,18 +160,6 @@ function check_kw_args(
     )
     check_ok = true 
     error_string = "The following keyword arguments / combinations are not currently supported: \n"
-    # region
-    if !(region in sup_kw_args["region"])
-       check_ok=false
-       error_string = error_string * "region $region is not supported \n"
-    end
-    # opt_problems
-    for o in opt_problems
-        if !(o in sup_kw_args["opt_problems"])
-           check_ok=false
-           error_string = error_string * "optimization problem $o is not supported \n"
-        end
-    end
     # norm_op
     if !(norm_op in sup_kw_args["norm_op"])
        check_ok=false

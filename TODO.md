@@ -6,4 +6,4 @@ Generally, TODOs are signified by TODO within the code. The following list provi
 
 * Sort utils.jl into seperate files: utils for loading data, clustering, etc... 
 
-*
+* implement 0-1 normalization in run_clust

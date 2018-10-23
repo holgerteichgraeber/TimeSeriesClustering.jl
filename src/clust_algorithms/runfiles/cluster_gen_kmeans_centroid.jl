@@ -1,5 +1,40 @@
 
 function run_clust_kmeans_centroid(
+    data_norm::ClustInputData,
+    n_clust::Int,
+    iterations::Int
+    )
+    centers,weights,clustids,cost,iter =[],[],[],0,0 
+    if n_clust ==1
+        centers_norm = mean(data_norm.data,2) # should be 0 due to normalization
+        clustids = ones(Int,size(data_norm.data,2))
+        centers = undo_z_normalize(centers_norm,data.mean,data.sdv)          
+        cost = sum(pairwise(SqEuclidean(),centers_norm,data_norm.data)) #same as sum((seq_norm-repmat(mean(seq_norm,2),1,size(seq,2))).^2)
+        iter = 1
+
+    else
+        results = kmeans(data_norm.data,n_clust;maxiter=iterations)
+
+        # save clustering results
+        clustids = results.assignments
+        centers_norm = results.centers
+        centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv)    
+        cost = results.totalcost
+        iter = results.iterations
+    end
+
+    # calculate weights
+    weights = zeros(n_clust) 
+    for j=1:length(clustids)
+        weights[clustids[j]] +=1
+    end
+    weights =  weights /length(clustids)
+ 
+    return centers,weights,clustids,cost,iter  
+
+end
+
+function run_clust_kmeans_centroid(
       region::String,
       opt_problems::Array{String},
       norm_op::String,

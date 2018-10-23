@@ -22,6 +22,7 @@ struct ClustInputData <: InputData
   K::Int
   T::Int
   data::Dict{String,Array}
+  weights::Array{Float64}
   mean::Dict{String,Array}
   sdv::Dict{String,Array}
 
@@ -33,8 +34,19 @@ struct ClustInputDataMerged <: InputData
   T::Int
   data::Array
   data_type::Array{String}
+  weights::Array{Float64} 
   mean::Dict{String,Array}
   sdv::Dict{String,Array}
+end
+
+struct ClustResult 
+  results::Array{ClustInputData}
+  best_ids::Array{Tuple{Int,Int}}
+  centers::Dict{Tuple{Int,Int},Array}
+  weights::Dict{Tuple{Int,Int},Array}
+  clustids::Dict{Tuple{Int,Int},Array}
+  cost::Array
+  iter::Array
 end
 
  #### Constructors for data structures###
@@ -91,6 +103,7 @@ function ClustInputData(region::String,
                           el_demand::Array=[],
                           solar::Array=[],
                           wind::Array=[],
+                          weights::Array{Float64}=ones(K),
                           mean::Dict{String,Array}=Dict{String,Array}(),
                           sdv::Dict{String,Array}=Dict{String,Array}()
                           )
@@ -126,7 +139,7 @@ function ClustInputData(region::String,
     end
     isempty(dt) && error("Need to provide at least one input data stream")
     # TODO: Check dimensionality of K T and supplied input data streams KxT
-    ClustInputData(region,K,T,dt,mean,sdv)
+    ClustInputData(region,K,T,dt,weights,mean,sdv)
 end
 
  
@@ -144,7 +157,8 @@ function ClustInputData(region::String,
 function ClustInputData(region::String,
                         K::Int,
                         T::Int,
-                        data::Dict{String,Array};
+                        data::Dict{String,Array},
+                        weights::Array{Float64};
                         mean::Dict{String,Array}=Dict{String,Array}(),
                         sdv::Dict{String,Array}=Dict{String,Array}()
                         )
@@ -157,7 +171,7 @@ function ClustInputData(region::String,
     end
   end
   # TODO check if right keywords are used
-  ClustInputData(region,K,T,data,mean,sdv)
+  ClustInputData(region,K,T,data,weights,mean,sdv)
 end
 
 """
@@ -172,7 +186,7 @@ function ClustInputData(data::ClustInputDataMerged)
     i+=1
     data_dict[k] = data.data[(1+data.T*(i-1)):(data.T*i),:]
   end
-  ClustInputData(data.region,data.K,data.T,data_dict,mean,sdv)
+  ClustInputData(data.region,data.K,data.T,data_dict,data.weights,data.mean,data.sdv)
 end
 
 """
@@ -186,7 +200,7 @@ function ClustInputData(data::FullInputData,
    for (k,v) in data.data
       data_reshape[k] =  reshape(v,T,K)
    end
-   return ClustInputData(data.region,K,T,data_reshape)
+   return ClustInputData(data.region,K,T,data_reshape,ones(K))
 end
 
 """
@@ -204,7 +218,7 @@ function ClustInputDataMerged(data::ClustInputData)
     data_merged[(1+data.T*(i-1)):(data.T*i),:] = v 
     push!(data_type,k)
   end
-  ClustInputDataMerged(data.region,data.K,data.T,data_merged,data_type,data.mean,data.sdv)
+  ClustInputDataMerged(data.region,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv)
 end
 
 
@@ -352,7 +366,7 @@ function z_normalize(data::ClustInputData;scope="full")
  for (k,v) in data.data
    data_norm[k],mean[k],sdv[k] = z_normalize(v,scope=scope)
  end
- return ClustInputData(data.region,data.K,data.T,data_norm;mean=mean,sdv=sdv) 
+ return ClustInputData(data.region,data.K,data.T,data_norm,data.weights;mean=mean,sdv=sdv) 
 end
 
 
