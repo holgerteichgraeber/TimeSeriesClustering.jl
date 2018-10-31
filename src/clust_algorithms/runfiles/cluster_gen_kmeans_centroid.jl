@@ -1,6 +1,6 @@
 
 function run_clust_kmeans_centroid(
-    data_norm::ClustInputData,
+    data_norm::ClustInputDataMerged,
     n_clust::Int,
     iterations::Int
     )
@@ -8,7 +8,7 @@ function run_clust_kmeans_centroid(
     if n_clust ==1
         centers_norm = mean(data_norm.data,2) # should be 0 due to normalization
         clustids = ones(Int,size(data_norm.data,2))
-        centers = undo_z_normalize(centers_norm,data.mean,data.sdv)          
+        centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv)          
         cost = sum(pairwise(SqEuclidean(),centers_norm,data_norm.data)) #same as sum((seq_norm-repmat(mean(seq_norm,2),1,size(seq,2))).^2)
         iter = 1
 

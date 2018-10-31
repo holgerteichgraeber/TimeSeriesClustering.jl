@@ -2,6 +2,8 @@
 
  ### Data structures ###
 abstract type InputData end
+abstract type ClustResult end
+
 """
 struct FullInputData <: InputData 
   region::String 
@@ -39,14 +41,23 @@ struct ClustInputDataMerged <: InputData
   sdv::Dict{String,Array}
 end
 
-struct ClustResult 
-  results::Array{ClustInputData}
-  best_ids::Array{Tuple{Int,Int}}
+struct ClustResultAll <: ClustResult 
+  best_results::Array{ClustInputData}
+  best_ids::Array{Array}
+  best_cost::Array
+  n_clust_ar::Array
   centers::Dict{Tuple{Int,Int},Array}
   weights::Dict{Tuple{Int,Int},Array}
   clustids::Dict{Tuple{Int,Int},Array}
   cost::Array
   iter::Array
+end
+
+ # TODO: not used yet, but maybe best to implement this one later for users who just want to use clustering but do not care about the locally converged solutions
+struct ClustResultBest <: ClustResult
+  best_results::Array{ClustInputData}
+  best_cost::Array
+  best_ids::Array{Tuple{Int,Int}}
 end
 
  #### Constructors for data structures###
@@ -204,7 +215,32 @@ function ClustInputData(data::FullInputData,
 end
 
 """
-constructor 1: convert ClustInputData into merged format
+constructor 1: construct ClustInputDataMerged
+"""
+function ClustInputDataMerged(region::String,
+                        K::Int,
+                        T::Int,
+                        data::Array,
+                        data_type::Array{String},
+                        weights::Array{Float64};
+                        mean::Dict{String,Array}=Dict{String,Array}(),
+                        sdv::Dict{String,Array}=Dict{String,Array}()
+                        )
+  mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
+  if !mean_sdv_provided
+    for dt in data_type
+      mean[dt]=zeros(T)
+      sdv[dt]=ones(T)
+    end
+  end
+
+  ClustInputDataMerged(region,K,T,data,data_type,weights,mean,sdv)
+end
+
+
+
+"""
+constructor 2: convert ClustInputData into merged format
 
 function ClustInputDataMerged(data::ClustInputData)
 """

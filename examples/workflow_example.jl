@@ -4,8 +4,12 @@ using ClustForOpt_priv
 # load data
 input_data,~ = load_input_data("CEP","TX")
   
+ # run clustering 
+clust_res = run_clust(input_data;n_init=10) # default k-means 
+
+
  # normalize data
-data_normalized = z_normalize(input_data)
+ #data_normalized = z_normalize(input_data)
 
  # mkdir outfiles
 

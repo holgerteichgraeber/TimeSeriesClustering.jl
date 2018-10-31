@@ -37,7 +37,8 @@ function run_clust(
     # normalize
     # TODO: implement 0-1 normalization and add as a choice to runclust
     data_norm = z_normalize(data;scope=norm_scope)
-    
+    data_norm_merged = ClustInputDataMerged(data_norm)
+
      # initialize dictionaries of the loaded data (key: number of clusters, n_init)
     centers = Dict{Tuple{Int,Int},Array}()
     clustids = Dict{Tuple{Int,Int},Array}()
@@ -48,15 +49,16 @@ function run_clust(
     # clustering
 
     for n_clust_it=1:length(n_clust_ar)
-      n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts
+      n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts; n_clust_it is used for indexing Arrays
         for i = 1:n_init
  # TODO: implement other clustering methods 
-           centers[n_clust,i],weights[n_clust,i],clustids[n_clust,i],cost[n_clust,i],iter[n_clust,i] = 
-              run_clust_kmeans_centroid(data_norm,n_clust,iterations) 
+           centers[n_clust,i],weights[n_clust,i],clustids[n_clust,i],cost[n_clust_it,i],iter[n_clust_it,i] = 
+              run_clust_kmeans_centroid(data_norm_merged,n_clust,iterations) 
         end
     end
   
     # find best
+ # TODO: write as function 
     ind_mincost = findmin(cost,2)[2]  # along dimension 2
     ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
     cost_best = zeros(size(cost,1))
@@ -68,10 +70,28 @@ function run_clust(
 
     # save best results as ClustInputData
       # an array that contains 9 ClustInputData, one for each k
-    # put into clustResult struct
-      # one struct contains all initial runs for all 9 k
+    best_results = ClustInputData[]  
+    best_weights = Array[]
+    best_ids = Array[]
+    for i=1:length(n_clust_ar)
+        n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts
+        i_mincost = ind_mincost_2[i] # minimum cost index at cluster numbered i
+        # save in merged format as array 
+        b_merged = ClustInputDataMerged(data_norm_merged.region,data_norm_merged.K,data_norm_merged.T,centers[n_clust,i_mincost],data_norm_merged.data_type,weights[n_clust,i_mincost])   
+        # transfer into ClustInputData format
+        b = ClustInputData(b_merged)
+        push!(best_results,b)
+        #save best weights
+        push!(best_weights,weights[n_clust,i_mincost])
+        # save best clust ids
+        push!(best_ids,clustids[n_clust,i_mincost])
+    end
+    # save all locally converged solutions and the best into a struct 
+    clust_result = ClustResultAll(b,best_ids,cost_best,n_clust_ar,centers,weights,clustids,cost,iter) 
     # save in save file 
+    #TODO
 
+    return clust_result
 end
 
 
