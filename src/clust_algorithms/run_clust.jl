@@ -74,20 +74,18 @@ function run_clust(
     best_weights = Array[]
     best_ids = Array[]
     for i=1:length(n_clust_ar)
-        n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts
+        n_clust = n_clust_ar[i] # use for indexing Dicts
         i_mincost = ind_mincost_2[i] # minimum cost index at cluster numbered i
         # save in merged format as array 
-        b_merged = ClustInputDataMerged(data_norm_merged.region,data_norm_merged.K,data_norm_merged.T,centers[n_clust,i_mincost],data_norm_merged.data_type,weights[n_clust,i_mincost])   
+        b_merged = ClustInputDataMerged(data_norm_merged.region,n_clust_ar[i],data_norm_merged.T,centers[n_clust,i_mincost],data_norm_merged.data_type,weights[n_clust,i_mincost])   
         # transfer into ClustInputData format
         b = ClustInputData(b_merged)
         push!(best_results,b)
-        #save best weights
-        push!(best_weights,weights[n_clust,i_mincost])
         # save best clust ids
         push!(best_ids,clustids[n_clust,i_mincost])
     end
     # save all locally converged solutions and the best into a struct 
-    clust_result = ClustResultAll(b,best_ids,cost_best,n_clust_ar,centers,weights,clustids,cost,iter) 
+    clust_result = ClustResultAll(best_results,best_ids,cost_best,n_clust_ar,centers,data_norm_merged.data_type,weights,clustids,cost,iter) 
     # save in save file 
     #TODO
 

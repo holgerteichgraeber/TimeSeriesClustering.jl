@@ -47,6 +47,7 @@ struct ClustResultAll <: ClustResult
   best_cost::Array
   n_clust_ar::Array
   centers::Dict{Tuple{Int,Int},Array}
+  data_type::Array{String}
   weights::Dict{Tuple{Int,Int},Array}
   clustids::Dict{Tuple{Int,Int},Array}
   cost::Array
@@ -193,7 +194,7 @@ function ClustInputData(data::ClustInputDataMerged)
 function ClustInputData(data::ClustInputDataMerged)
   data_dict=Dict{String,Array}()
   i=0
-  for (k,v) in data.data
+  for (k,v) in data.mean
     i+=1
     data_dict[k] = data.data[(1+data.T*(i-1)):(data.T*i),:]
   end
@@ -450,6 +451,22 @@ function z_normalize(data::Array;scope="full")
 end # function z_normalize
 
 """
+function undo_z_normalize(data_norm_merged::Array,mn::Dict{String,Array},sdv::Dict{String,Array};idx=[])
+"""
+function undo_z_normalize(data_norm_merged::Array,mn::Dict{String,Array},sdv::Dict{String,Array};idx=[])
+  T = div(size(data_norm_merged)[1],length(keys(mn))) # number of time steps in one period. div() is integer division like in c++, yields integer (instead of float as in normal division)
+  0 != rem(size(data_norm_merged)[1],length(keys(mn))) && error("dimension mismatch") # rem() checks the remainder. If not zero, throw error.
+  data_merged = zeros(size(data_norm_merged))
+  i=0
+  for (attr,mn_a) in mn
+    i+=1
+    data_merged[(1+T*(i-1)):(T*i),:]=undo_z_normalize(data_norm_merged[(1+T*(i-1)):(T*i),:],mn_a,sdv[attr];idx=idx)
+  end
+  return data_merged
+end
+
+
+"""
 function undo_z_normalize(data_norm, mn, sdv; idx=[])
 
 undo z-normalization data with mean and sdv by hour
@@ -458,7 +475,7 @@ hourly_mean ; 24 hour vector with hourly means
 hourly_sdv; 24 hour vector with hourly standard deviations
 """
 function undo_z_normalize(data_norm::Array, mn::Array, sdv::Array; idx=[])
-  if size(data_norm,1) == size(mn,1) # hourly - even if idx is provided, doesn't matter if it is hourly
+  if size(data_norm,1) == size(mn,1) # hourly and full- even if idx is provided, doesn't matter if it is hourly
     data = data_norm .* sdv + mn * ones(size(data_norm)[2])'
     return data
   elseif !isempty(idx) && size(data_norm,2) == maximum(idx) # sequence based
