@@ -11,3 +11,5 @@ Generally, TODOs are signified by TODO within the code. The following list provi
 * implement 0-1 normalization in run_clust
 
 * save ClustResults as jld2 
+
+* include time step length del_t in data struct? 

@@ -4,11 +4,15 @@
 function run_battery_opt(el_price, weight=1, prnt=false)
 
 operational battery storage optimization problem
+runs every day seperately and adds results in the end
 """
-function run_battery_opt(el_price, weight=1, prnt=false)
-  num_periods = size(el_price,2); # number of periods, 1day, one week, etc.
-  num_hours = size(el_price,1); # hours per period (24 per day, 48 per 2days)
-
+function run_battery_opt(data)
+ #TODO: weight get num periods and num_hours from struct
+  prnt=false
+  num_periods = data.K # number of periods, 1day, one week, etc.
+  num_hours = data.T # hours per period (24 per day, 48 per 2days)
+  el_price = data.data["el_price"]
+  weight = data.weights
   # time steps
   del_t = 1; # hour
 
@@ -75,23 +79,8 @@ function run_battery_opt(el_price, weight=1, prnt=false)
     stor[:,i] = getvalue(Stor_lev)
   end
 
-  # plots
-  if(prnt)
-    figure()
-    for i=1:num_periods
-      plt.plot(stor[:,i], label=string("stor lev: ", i))
-      plt.legend()
-    end
 
-    figure()
-    for i=1:num_periods
-      plt.plot(E_in_arr[:,i],label=string("E_in: ",i))
-      plt.plot(E_out_arr[:,i], label=string("E_out: ",i))
-      plt.legend()
-    end
-  end # prnt
-
-  return obj
+  return sum(obj)
 end # run_battery_opt()
 
  ###
@@ -100,6 +89,7 @@ end # run_battery_opt()
 function run_gas_opt(el_price, weight=1, country = "", prnt=false)
 
 operational gas turbine optimization problem
+runs every day seperately and adds results in the end
 """
 function run_gas_opt(el_price, weight=1, country = "", prnt=false)
   
@@ -171,12 +161,15 @@ function run_opt(problem_type,el_price,weight=1,country="",prnt=false)
 
 Wrapper function for type of optimization problem
 """
-function run_opt(problem_type,el_price,weight=1,country="",prnt=false)
+function run_opt(problem_type::String,
+                 data::ClustInputData;
+                 first_stage_vars::Dict=Dict(),
+                 kwargs...)
 
   if problem_type == "battery"
-    return run_battery_opt(el_price, weight, prnt)
+    return run_battery_opt(data)
   elseif problem_type == "gas_turbine"
-    return run_gas_opt(el_price,weight,country,prnt) 
+    return run_gas_opt(data) 
   else
     error("optimization problem_type ",problem_type," does not exist")
   end

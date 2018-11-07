@@ -61,6 +61,14 @@ struct ClustResultBest <: ClustResult
   best_ids::Array{Tuple{Int,Int}}
 end
 
+struct OptResult
+  status::String
+  obj::Float64
+  desVar::Dict
+  opVar::Dict
+  add_results::Dict
+end
+
  #### Constructors for data structures###
 
  # need to come afterwards because of cyclic argument between ClustInputData and ClustInputDataMerged Constructors
