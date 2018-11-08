@@ -28,7 +28,6 @@ function run_clust_kmeans_centroid(
     for j=1:length(clustids)
         weights[clustids[j]] +=1
     end
-    weights =  weights /length(clustids)
  
     return centers,weights,clustids,cost,iter  
 

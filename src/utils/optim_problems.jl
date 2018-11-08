@@ -6,8 +6,7 @@ function run_battery_opt(el_price, weight=1, prnt=false)
 operational battery storage optimization problem
 runs every day seperately and adds results in the end
 """
-function run_battery_opt(data)
- #TODO: weight get num periods and num_hours from struct
+function run_battery_opt(data::ClustInputData)
   prnt=false
   num_periods = data.K # number of periods, 1day, one week, etc.
   num_hours = data.T # hours per period (24 per day, 48 per 2days)
@@ -63,24 +62,29 @@ function run_battery_opt(data)
   # initial storage level
   @constraint(m,Stor_lev[1] == Stor_init*E_battery)
   @constraint(m,Stor_lev[t_max+1] >= Stor_lev[1])
-
+  s=:Optimal
   for i =1:num_periods
     #objective
     @objective(m, Max, sum((E_out[t] - E_in[t])*el_price[t,i] for t=1:t_max) )
     status = solve(m)
-
+    if status != :Optimal
+      s=:NotSolved
+    end
     if weight ==1
       obj[i] = getobjectivevalue(m)
     else
-      obj[i] = getobjectivevalue(m) * weight[i] * 365
+      obj[i] = getobjectivevalue(m) * weight[i] 
     end
     E_in_arr[:,i] = getvalue(E_in)'
     E_out_arr[:,i] = getvalue(E_out)
     stor[:,i] = getvalue(Stor_lev)
   end
-
-
-  return sum(obj)
+  op_vars= Dict()
+  op_vars["E_out"] = E_out_arr
+  op_vars["E_in"] = E_in_arr
+  op_vars["Stor_level"] = stor
+  res = OptResult(s,sum(obj),Dict(),op_vars,Dict())
+  return res
 end # run_battery_opt()
 
  ###
@@ -91,11 +95,14 @@ function run_gas_opt(el_price, weight=1, country = "", prnt=false)
 operational gas turbine optimization problem
 runs every day seperately and adds results in the end
 """
-function run_gas_opt(el_price, weight=1, country = "", prnt=false)
+function run_gas_opt(data::ClustInputData)
   
-  num_periods = size(el_price,2); # number of periods, 1day, one week, etc.
-  num_hours = size(el_price,1); # hours per period (24 per day, 48 per 2days)
 
+  prnt=false
+  num_periods = data.K # number of periods, 1day, one week, etc.
+  num_hours = data.T # hours per period (24 per day, 48 per 2days)
+  el_price = data.data["el_price"]
+  weight = data.weights
   # time steps
   del_t = 1; # hour
 
@@ -103,9 +110,9 @@ function run_gas_opt(el_price, weight=1, country = "", prnt=false)
   # example gas turbine
   P_gt = 100; # MW
   eta_t = 0.6; # 40 % efficiency
-  if country == "GER"
+  if data.region == "GER"
     gas_price = 24.65  # EUR/MWh    7.6$/GJ = 27.36 $/MWh=24.65EUR/MWh with 2015 conversion rate
-  elseif country == "CA"
+  elseif data.region == "CA"
     gas_price  = 14.40   # $/MWh        4$/GJ = 14.4 $/MWh
   end
 
@@ -122,37 +129,27 @@ function run_gas_opt(el_price, weight=1, country = "", prnt=false)
   # hourly energy output
   @variable(m, 0 <= E_out[t=1:t_max] <= P_gt) # MWh
 
+  s=:Optimal
   for i =1:num_periods
     #objective
     @objective(m, Max, sum(E_out[t]*el_price[t,i] - 1/eta_t*E_out[t]*gas_price for t=1:t_max) )
     status = solve(m)
+    if status != :Optimal
+      s=:NotSolved
+    end
 
     if weight ==1
       obj[i] = getobjectivevalue(m)
     else
-      obj[i] = getobjectivevalue(m) * weight[i] * 365
+      obj[i] = getobjectivevalue(m) * weight[i] 
     end
     E_out_arr[:,i] = getvalue(E_out)
   end
 
-  # plots
-  if(prnt)
-    ut = zeros(num_periods)
-    figure()
-    for i=1:num_periods
-        ut[i] = sum(E_out_arr[:,i])/(length(E_out_arr[:,i])*P_gt)
-        plt.plot(ut)
-        plt.title("daily utilization factor")
-    end
-
-    figure()
-    for i=1:5 #num_periods
-      plt.plot(E_out_arr[:,i], label=string("E_out: ",i))
-      plt.legend()
-    end
-  end # prnt
-
-  return obj
+  op_vars= Dict()
+  op_vars["E_out"] = E_out_arr
+  res = OptResult(s,sum(obj),Dict(),op_vars,Dict())
+  return res
 end # run_gas_opt()
 
 

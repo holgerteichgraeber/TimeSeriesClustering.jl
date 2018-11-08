@@ -5,27 +5,23 @@ using ClustForOpt_priv
 input_data,~ = load_input_data("DAM","GER")
   
  # run clustering 
-clust_res = run_clust(input_data;n_init=10) # default k-means 
-
-
- # normalize data
- #data_normalized = z_normalize(input_data)
-
- # mkdir outfiles
-
- # run clust
- 
- # merge data
-
- # cluster data
-
- # de_normalize data
-
- # unmerge?
+clust_res = run_clust(input_data;n_init=10,n_clust_ar=collect(1:9)) # default k-means 
 
  # optimization
 
+opt_res = run_opt("battery",clust_res.best_results[5])
+ #opt_res = run_opt("gas_turbine",clust_res.best_results[5])
 
-
-
-
+ ###
+ # run optimization for all k=1:9
+opt_res_all = []
+obj=[]
+for i=1:9
+  push!(opt_res_all,run_opt("battery", clust_res.best_results[i]))
+  push!(obj,opt_res_all[i].obj)
+end
+ # run reference case
+opt_res_full = run_opt("battery",input_data)
+ #using PyPlot
+ # figure()
+ # plot(obj/opt_res_full.obj)

@@ -1,4 +1,5 @@
 # Some example runs of the clustering methods and optimization problems
+ # TODO: Update this file. This is the old ClustForOpt
  # saves results as jld2 file, which can be imported and analyzed by subsequent functions
 
 using ClustForOpt
