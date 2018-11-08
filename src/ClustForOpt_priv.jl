@@ -47,7 +47,9 @@ export run_opt,
        find_medoids,
        resize_medoids
 
+include(joinpath("utils","datastructs.jl"))
 include(joinpath("utils","utils.jl"))
+include(joinpath("utils","load_data.jl"))
 include(joinpath("utils",".juliarc.jl"))
 include(joinpath("utils","utils_plots.jl"))
 include(joinpath("utils","optim_problems.jl"))

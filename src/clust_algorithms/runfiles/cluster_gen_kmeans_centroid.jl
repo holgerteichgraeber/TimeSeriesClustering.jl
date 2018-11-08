@@ -1,29 +1,36 @@
-
+"""
+function run_clust_kmeans_centroid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int
+    )
+"""
 function run_clust_kmeans_centroid(
     data_norm::ClustInputDataMerged,
     n_clust::Int,
     iterations::Int
     )
     centers,weights,clustids,cost,iter =[],[],[],0,0 
+    # if only one cluster
     if n_clust ==1
         centers_norm = mean(data_norm.data,2) # should be 0 due to normalization
         clustids = ones(Int,size(data_norm.data,2))
         centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids) # need to provide idx in case that sequence-based normalization is used          
         cost = sum(pairwise(SqEuclidean(),centers_norm,data_norm.data)) #same as sum((seq_norm-repmat(mean(seq_norm,2),1,size(seq,2))).^2)
         iter = 1
-
+    # kmeans() in Clustering.jl is implemented for k>=2
     else
         results = kmeans(data_norm.data,n_clust;maxiter=iterations)
 
         # save clustering results
         clustids = results.assignments
         centers_norm = results.centers
-        centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv)    
+        centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)    
         cost = results.totalcost
         iter = results.iterations
     end
 
-    # calculate weights
+    # calculate weights: absolute weights >1
     weights = zeros(n_clust) 
     for j=1:length(clustids)
         weights[clustids[j]] +=1
@@ -33,6 +40,9 @@ function run_clust_kmeans_centroid(
 
 end
 
+"""
+OLD
+"""
 function run_clust_kmeans_centroid(
       region::String,
       opt_problems::Array{String},

@@ -15,6 +15,23 @@ cd(wor_dir) # change working directory to old previous file's dir
 
 
 """
+function run_clust(
+      data::ClustInputData;
+      norm_op::String="zscore",
+      norm_scope::String="full",
+      method::String="kmeans",
+      representation::String="centroid",
+      n_clust_ar::Array=collect(1:9),
+      n_init::Int=100,
+      iterations::Int=300,
+      save::String="",
+      kwargs...
+    )
+
+norm_op: "zscore", "01"(not implemented yet)
+norm_scope: "full","sequence","hourly"
+method: "kmeans",...
+representation: "centroid","medoid"
 """
 function run_clust(
       data::ClustInputData;
@@ -94,6 +111,7 @@ end
 
 
 """
+OLD
 TODO: Get rid of this one
 function run_clust(
       region::String,
