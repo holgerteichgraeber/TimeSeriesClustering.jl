@@ -52,8 +52,8 @@ include(joinpath("utils","utils.jl"))
 include(joinpath("utils","load_data.jl"))
 include(joinpath("utils",".juliarc.jl"))
 include(joinpath("utils","utils_plots.jl"))
-include(joinpath("utils","optim_problems.jl"))
-include(joinpath("clust_algorithms","run_clust.jl"))
-include(joinpath("clust_algorithms","exact_kmedoids.jl"))
+include(joinpath("optim_problems","run_opt.jl"))
+include(joinpath("clustering","run_clust.jl"))
+include(joinpath("clustering","exact_kmedoids.jl"))
 
 end # module ClustForOpt

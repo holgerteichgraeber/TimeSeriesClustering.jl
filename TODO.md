@@ -19,3 +19,5 @@ Generally, TODOs are signified by TODO within the code. The following list provi
 * update runfiles folder in cluster_algorithms. Put all of them in cluster_algorithms folder, get rid of runfiles folder.
 
 * update results_analysis folder. Get rid or put into seperate package?
+
+* ClustResults - only one k

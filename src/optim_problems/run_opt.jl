@@ -1,7 +1,7 @@
 # optimization problems
 
 """
-function run_battery_opt(el_price, weight=1, prnt=false)
+function run_battery_opt(data::ClustInputData)
 
 operational battery storage optimization problem
 runs every day seperately and adds results in the end
