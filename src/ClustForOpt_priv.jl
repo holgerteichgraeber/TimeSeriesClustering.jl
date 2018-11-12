@@ -12,6 +12,7 @@ using Distances
 #using PyPlot
 using Clustering
 using JLD2
+#TESt
 #using FileIO
 #using PyCall
 #TODO Update TimeWarp
