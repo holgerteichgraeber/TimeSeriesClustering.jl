@@ -1,11 +1,13 @@
 # This file exemplifies the workflow from data input to optimization result generation
+#QUESTION using ClustForOpt_priv.col in module Main conflicts with an existing identifier., using ClustForOpt_priv.cols in module Main conflicts with an existing identifier.
+
 using ClustForOpt_priv
 
 # load data
 input_data,~ = load_input_data("DAM","GER")
-  
- # run clustering 
-clust_res = run_clust(input_data;n_init=10,n_clust_ar=collect(1:9)) # default k-means 
+
+ # run clustering
+clust_res = run_clust(input_data;n_init=10,n_clust_ar=collect(1:9)) # default k-means
 
  # optimization
 

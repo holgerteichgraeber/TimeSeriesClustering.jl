@@ -5,9 +5,11 @@
  # Analyzing clustering techniques as input for energy systems optimization
  #
  #####################
-
+#TODO Remove after finishing Development
 module ClustForOpt_priv
 
+
+#TODO less packages
 using Reexport
 using Distances
 using PyPlot
@@ -15,9 +17,13 @@ using Clustering
 using JLD2
 using FileIO
 using PyCall
-using TimeWarp
+#TODO Update TimeWarp
+#using TimeWarp
 using JuMP
 using Clp
+using CSV
+using Statistics
+using LinearAlgebra
 @reexport using DataFrames
  #TODO how to make PyPlot, PyCall, and TimeWarp optional? -> only import when needed
 
@@ -27,7 +33,7 @@ export run_opt,
        get_sup_kw_args,
        InputData,
        FullInputData,
-       ClustInputData, 
+       ClustInputData,
        ClustInputDataMerged,
        get_EUR_to_USD,
        load_input_data,
@@ -41,6 +47,7 @@ export run_opt,
        plot_k_rev_subplot,
        plot_SSE_rev,
        sort_centers,
+       #TODO Move to private Git
        cols,
        col,
        calc_SSE,

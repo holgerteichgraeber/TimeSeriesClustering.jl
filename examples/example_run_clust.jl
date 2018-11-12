@@ -9,20 +9,21 @@ run_clust("GER","battery";n_init=3)
 
  #  kmeans + medoid run
 run_clust("GER","battery";representation="medoid",n_init=3)
- 
+
  #  kmedoids + medoid run (partitional)
-run_clust("GER","battery";method="kmedoids",representation="medoid",n_init=3) 
+run_clust("GER","battery";method="kmedoids",representation="medoid",n_init=3)
 
  # kmedoids + medoid run (exact)
+ #QUESTION Shall we force the usage of Gurobi
 using Gurobi
 env = Gurobi.Env()
-run_clust("GER","battery";method="kmedoids_exact",representation="medoid",n_init=3,gurobi_env=env) 
+run_clust("GER","battery";method="kmedoids_exact",representation="medoid",n_init=3,gurobi_env=env)
 
- #  hierarchical + centroid run 
-run_clust("GER","battery";method="hierarchical",representation="centroid",n_init=1) 
+ #  hierarchical + centroid run
+run_clust("GER","battery";method="hierarchical",representation="centroid",n_init=1)
 
- #  hierarchical + medoid run 
-run_clust("GER","battery";method="hierarchical",representation="medoid",n_init=1) 
+ #  hierarchical + medoid run
+run_clust("GER","battery";method="hierarchical",representation="medoid",n_init=1)
 
  # dbaclust + centroid run
  #iterations=100

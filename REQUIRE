@@ -1,4 +1,8 @@
 julia 0.6-
+Gurobi
+CSV
+LinearAlgebra
+Statistics
 Reexport
 Distances
 PyPlot
