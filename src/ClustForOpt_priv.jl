@@ -5,7 +5,6 @@
  # Analyzing clustering techniques as input for energy systems optimization
  #
  #####################
-#TODO Remove after finishing Development
 module ClustForOpt_priv
 
 
