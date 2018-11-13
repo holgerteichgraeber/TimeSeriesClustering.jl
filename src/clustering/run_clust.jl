@@ -45,7 +45,6 @@ function run_clust(
       save::String="",
       kwargs...
     )
-
     check_kw_args(norm_op,norm_scope,method,representation)
     # TODO: implement other methods with generic method call in for loops
     if method!="kmeans" || representation !="centroid"
