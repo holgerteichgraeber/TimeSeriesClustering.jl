@@ -1,4 +1,4 @@
-  
+
 """
 function get_EUR_to_USD(region::String)
 
@@ -17,9 +17,9 @@ end
 
   """
 function sort_centers(centers::Array,weights::Array)
- 
-  centers: hours x days e.g.[24x9] 
-  weights: days [e.g. 9], unsorted 
+
+  centers: hours x days e.g.[24x9]
+  weights: days [e.g. 9], unsorted
    sorts the centers by weights from largest to smallest
   """
 function sort_centers(centers::Array,weights::Array)
@@ -40,7 +40,7 @@ function z_normalize(data::ClustInputData;scope="full")
  for (k,v) in data.data
    data_norm[k],mean[k],sdv[k] = z_normalize(v,scope=scope)
  end
- return ClustInputData(data.region,data.K,data.T,data_norm,data.weights;mean=mean,sdv=sdv) 
+ return ClustInputData(data.region,data.K,data.T,data_norm,data.weights;mean=mean,sdv=sdv)
 end
 
 
@@ -56,7 +56,7 @@ function z_normalize(data::Array;scope="full")
   if scope == "sequence"
     seq_mean = zeros(size(data)[2])
     seq_sdv = zeros(size(data)[2])
-    data_norm = zeros(size(data)) 
+    data_norm = zeros(size(data))
     for i=1:size(data)[2]
       seq_mean[i] = mean(data[:,i])
       seq_sdv[i] = std(data[:,i])
@@ -68,7 +68,7 @@ function z_normalize(data::Array;scope="full")
   elseif scope == "hourly"
     hourly_mean = zeros(size(data)[1])
     hourly_sdv = zeros(size(data)[1])
-    data_norm = zeros(size(data)) 
+    data_norm = zeros(size(data))
     for i=1:size(data)[1]
       hourly_mean[i] = mean(data[i,:])
       hourly_sdv[i] = std(data[i,:])
@@ -80,21 +80,21 @@ function z_normalize(data::Array;scope="full")
   elseif scope == "full"
     hourly_mean = mean(data)*ones(size(data)[1])
     hourly_sdv = std(data)*ones(size(data)[1])
-    data_norm = (data-hourly_mean[1])/hourly_sdv[1]
+    data_norm = (data.-hourly_mean[1])/hourly_sdv[1]
     return data_norm, hourly_mean, hourly_sdv #TODO change the output here to an immutable struct with three fields - use struct - "composite type"
   else
-    error("scope _ ",scope," _ not defined.")
+    @error("scope _ ",scope," _ not defined.")
   end
 end # function z_normalize
 
 """
 function undo_z_normalize(data_norm_merged::Array,mn::Dict{String,Array},sdv::Dict{String,Array};idx=[])
 
-provide idx should usually be done as default within function call in order to enable sequence-based normalization, even though optional. 
+provide idx should usually be done as default within function call in order to enable sequence-based normalization, even though optional.
 """
 function undo_z_normalize(data_norm_merged::Array,mn::Dict{String,Array},sdv::Dict{String,Array};idx=[])
   T = div(size(data_norm_merged)[1],length(keys(mn))) # number of time steps in one period. div() is integer division like in c++, yields integer (instead of float as in normal division)
-  0 != rem(size(data_norm_merged)[1],length(keys(mn))) && error("dimension mismatch") # rem() checks the remainder. If not zero, throw error.
+  0 != rem(size(data_norm_merged)[1],length(keys(mn))) && @error("dimension mismatch") # rem() checks the remainder. If not zero, throw error.
   data_merged = zeros(size(data_norm_merged))
   i=0
   for (attr,mn_a) in mn
@@ -119,18 +119,18 @@ function undo_z_normalize(data_norm::Array, mn::Array, sdv::Array; idx=[])
     return data
   elseif !isempty(idx) && size(data_norm,2) == maximum(idx) # sequence based
     # we obtain mean and sdv for each day, but need mean and sdv for each centroid - take average mean and sdv for each cluster
-    summed_mean = zeros(size(data_norm,2)) 
+    summed_mean = zeros(size(data_norm,2))
     summed_sdv = zeros(size(data_norm,2))
     for k=1:size(data_norm,2)
       mn_temp = mn[idx.==k]
       sdv_temp = sdv[idx.==k]
-      summed_mean[k] = sum(mn_temp)/length(mn_temp) 
+      summed_mean[k] = sum(mn_temp)/length(mn_temp)
       summed_sdv[k] = sum(sdv_temp)/length(sdv_temp)
     end
     data = data_norm * Diagonal(summed_sdv) +  ones(size(data_norm,1)) * summed_mean'
     return data
   elseif isempty(idx)
-    error("no idx provided in undo_z_normalize")
+    @error("no idx provided in undo_z_normalize")
   end
 end
 
@@ -159,23 +159,23 @@ calculates Sum of Squared Errors between cluster representations and the data
 """
 function calc_SSE(data::Array,centers::Array,assignments::Array)
   k=size(centers,2) # number of clusters
-  n_periods =size(data,2)  
+  n_periods =size(data,2)
   SSE_sum = zeros(k)
   for i=1:n_periods
     SSE_sum[assignments[i]] += sqeuclidean(data[:,i],centers[:,assignments[i]])
-  end 
+  end
   return sum(SSE_sum)
-end # calc_SSE 
+end # calc_SSE
 
 """
 function find_medoids(data::Array,centers::Array,assignments::Array)
 
 Given the data and cluster centroids and their respective assignments, this function finds
-the medoids that are closest to the cluster center. 
+the medoids that are closest to the cluster center.
 """
 function find_medoids(data::Array,centers::Array,assignments::Array)
   k=size(centers,2) #number of clusters
-  n_periods =size(data,2)  
+  n_periods =size(data,2)
   SSE=Float64[]
   for i=1:k
     push!(SSE,Inf)
@@ -195,14 +195,14 @@ function resize_medoids(data::Array,centers::Array,weights::Array,assignments::A
 
 Takes in centers (typically medoids) and normalizes them such that for all clusters the average of the cluster is the same as the average of the respective original data that belongs to that cluster.
 
-In order to use this method of the resize function, add assignments to the function call (e.g. clustids[5,1]).  
+In order to use this method of the resize function, add assignments to the function call (e.g. clustids[5,1]).
 """
 function resize_medoids(data::Array,centers::Array,weights::Array,assignments::Array)
     new_centers = zeros(centers)
     for k=1:size(centers)[2] # number of clusters
        is_in_k = assignments.==k
        n = sum(is_in_k)
-       new_centers[:,k]=resize_medoids(reshape(data[:,is_in_k],:,n),reshape(centers[:,k] , : ,1),[1.0])# reshape is used for the side case with only one vector, so that resulting vector is 24x1 instead of 24-element 
+       new_centers[:,k]=resize_medoids(reshape(data[:,is_in_k],:,n),reshape(centers[:,k] , : ,1),[1.0])# reshape is used for the side case with only one vector, so that resulting vector is 24x1 instead of 24-element
     end
     return new_centers
 end
@@ -222,7 +222,6 @@ function resize_medoids(data::Array,centers::Array,weights::Array)
     end
     mu_clust *= size(data)[2]
     mu_data_mu_clust = mu_data/mu_clust
-    new_centers = centers* mu_data_mu_clust 
-    return new_centers 
+    new_centers = centers* mu_data_mu_clust
+    return new_centers
 end
-

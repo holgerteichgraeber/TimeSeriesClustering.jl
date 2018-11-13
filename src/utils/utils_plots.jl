@@ -4,10 +4,10 @@ function subplot_clusters(centers::Array,weights::Array,axis::Any;region::String
 """
 function subplot_clusters(centers::Array,weights::Array,axis::Any;region::String="GER",sorting::Bool=true,descr::String="",linestyle="-")
    if sorting
-     centers,weights = sort_centers(centers,weights) 
-   end 
+     centers,weights = sort_centers(centers,weights)
+   end
    for i=1:size(centers,2) # number of clusters
-     axis["plot"](centers[:,i],color=cols[i],label=string(descr,": ","w=",round(weights[i]*100,2),"\%"),linestyle=linestyle )
+     axis["plot"](centers[:,i],color=cols[i],label=string(descr,": ","w=",round(weights[i]*100,digits=2),"%"),linestyle=linestyle)
    end
    ylim(-20,60)
 end #function
@@ -15,16 +15,16 @@ end #function
 
   """
 function plot_clusters(centers::Array,weights::Array,region::String;sorting::Bool=true,descr::String="")
-  centers: hours x days e.g.[24x9] 
+  centers: hours x days e.g.[24x9]
 
   """
 function plot_clusters(centers::Array,weights::Array;region::String="GER",sorting::Bool=true,descr::String="")
    if sorting
-     centers,weights = sort_centers(centers,weights) 
-   end 
+     centers,weights = sort_centers(centers,weights)
+   end
    figure()
    for i=1:size(centers,2) # number of clusters
-     plot(centers[:,i],color=cols[i],label=string("w=",round(weights[i]*100,2),"\%") )
+     plot(centers[:,i],color=cols[i],label=string("w=",round(weights[i]*100,digits=2),"%") )
    end
    ylim(-20,60)
    xlabel("hour")
@@ -33,7 +33,7 @@ function plot_clusters(centers::Array,weights::Array;region::String="GER",sortin
    elseif region == "CA"
      ylabel("USD/MWh")
    else
-     error("region not defined: $region")
+     @error("region not defined: $region")
    end
    title(descr)
    legend()
@@ -44,7 +44,7 @@ end #function
 
   """
 function plot_k_rev(range_k::Array,methods::Array{Dict,1},descr::String; save::Bool=true)
-  The array rev contains Dicts with:  
+  The array rev contains Dicts with:
     key: name of feature
     features:
       name ( of method)
@@ -74,7 +74,7 @@ end #plot_k_rev
 """
 plot within subfigure
   plot_k_rev(range_k::Array,rev::Array{Dict,1},region::String)
-  The array rev contains Dicts with:  
+  The array rev contains Dicts with:
     key: name of feature
     features:
       name ( of method)
@@ -117,7 +117,7 @@ function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Arra
     ii= length(range_k)-i+1
     if typeof(cost_rev_clouds["rev"]) == Array{Array{Float64,1},1} # exceptional case for kshape
       plot(cost_rev_clouds["cost"][ii],cost_rev_clouds["rev"][ii]/rev_365,".",label=string("k=",range_k[ii]),color=cols[i],alpha=0.2)
-    else # normal case 
+    else # normal case
       plot(cost_rev_clouds["cost"][ii,:],cost_rev_clouds["rev"][ii,:]/rev_365,".",label=string("k=",range_k[ii]),color=cols[i],alpha=0.2)
     end
   end
@@ -125,7 +125,7 @@ function plot_SSE_rev(range_k::Array,cost_rev_clouds::Dict,cost_rev_points::Arra
     for j=1:length(range_k)
       if j==1
         plot(cost_rev_points[i]["cost"][j,:],cost_rev_points[i]["rev"][j,:]/rev_365,mec=cost_rev_points[i]["mec"],marker=cost_rev_points[i]["marker"],mew=cost_rev_points[i]["mew"],markerfacecolor="none",linestyle="none",label=cost_rev_points[i]["label"])
-      else 
+      else
         plot(cost_rev_points[i]["cost"][j,:],cost_rev_points[i]["rev"][j,:]/rev_365,mec=cost_rev_points[i]["mec"],marker=cost_rev_points[i]["marker"],mew=cost_rev_points[i]["mew"],markerfacecolor="none",linestyle="none",label=nothing)  # nothing instead of None # mew: markeredgewidth
       end # if
     end
