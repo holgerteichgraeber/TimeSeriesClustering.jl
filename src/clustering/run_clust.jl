@@ -81,7 +81,7 @@ function run_clust(
     ind_mincost_2 = zeros(size(cost,1))
     for i=1:size(cost,1)
         cost_best[i]=cost[ind_mincost[i]]
-        ~,ind_mincost_2[i]=Tuple(ind_mincost[i])
+        ind_mincost_2[i]=CartesianIndices(cost)[ind_mincost[i]][2]
     end
 
     # save best results as ClustInputData
