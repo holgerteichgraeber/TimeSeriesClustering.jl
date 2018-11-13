@@ -83,7 +83,7 @@ function z_normalize(data::Array;scope="full")
     data_norm = (data.-hourly_mean[1])/hourly_sdv[1]
     return data_norm, hourly_mean, hourly_sdv #TODO change the output here to an immutable struct with three fields - use struct - "composite type"
   else
-    error("scope _ ",scope," _ not defined.")
+    @error("scope _ ",scope," _ not defined.")
   end
 end # function z_normalize
 
@@ -94,7 +94,7 @@ provide idx should usually be done as default within function call in order to e
 """
 function undo_z_normalize(data_norm_merged::Array,mn::Dict{String,Array},sdv::Dict{String,Array};idx=[])
   T = div(size(data_norm_merged)[1],length(keys(mn))) # number of time steps in one period. div() is integer division like in c++, yields integer (instead of float as in normal division)
-  0 != rem(size(data_norm_merged)[1],length(keys(mn))) && error("dimension mismatch") # rem() checks the remainder. If not zero, throw error.
+  0 != rem(size(data_norm_merged)[1],length(keys(mn))) && @error("dimension mismatch") # rem() checks the remainder. If not zero, throw error.
   data_merged = zeros(size(data_norm_merged))
   i=0
   for (attr,mn_a) in mn
@@ -130,7 +130,7 @@ function undo_z_normalize(data_norm::Array, mn::Array, sdv::Array; idx=[])
     data = data_norm * Diagonal(summed_sdv) +  ones(size(data_norm,1)) * summed_mean'
     return data
   elseif isempty(idx)
-    error("no idx provided in undo_z_normalize")
+    @error("no idx provided in undo_z_normalize")
   end
 end
 

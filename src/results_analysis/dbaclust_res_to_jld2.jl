@@ -17,7 +17,7 @@ param=DataFrame()
 try
   param = readtable(joinpath("outfiles_jld2",string("parameters_dtw_",region_,".txt")))
 catch
-  error("No input file parameters.txt exists in folder outfiles.")
+  @error("No input file parameters.txt exists in folder outfiles.")
 end
 
 n_clust_min=param[:n_clust_min][1]
@@ -30,7 +30,7 @@ iterations=param[:iterations][1]
 inner_iterations=param[:inner_iterations][1]
 region=param[:region][1]
 if region != region_
-  error("wrong region")
+  @error("wrong region")
 end
 
 n_clust_ar = collect(n_clust_min:n_clust_max)

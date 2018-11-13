@@ -73,7 +73,7 @@ function run_battery_opt(data::ClustInputData)
     if weight ==1
       obj[i] = getobjectivevalue(m)
     else
-      obj[i] = getobjectivevalue(m) * weight[i] 
+      obj[i] = getobjectivevalue(m) * weight[i]
     end
     E_in_arr[:,i] = getvalue(E_in)'
     E_out_arr[:,i] = getvalue(E_out)
@@ -96,7 +96,7 @@ operational gas turbine optimization problem
 runs every day seperately and adds results in the end
 """
 function run_gas_opt(data::ClustInputData)
-  
+
 
   prnt=false
   num_periods = data.K # number of periods, 1day, one week, etc.
@@ -141,7 +141,7 @@ function run_gas_opt(data::ClustInputData)
     if weight ==1
       obj[i] = getobjectivevalue(m)
     else
-      obj[i] = getobjectivevalue(m) * weight[i] 
+      obj[i] = getobjectivevalue(m) * weight[i]
     end
     E_out_arr[:,i] = getvalue(E_out)
   end
@@ -166,9 +166,9 @@ function run_opt(problem_type::String,
   if problem_type == "battery"
     return run_battery_opt(data)
   elseif problem_type == "gas_turbine"
-    return run_gas_opt(data) 
+    return run_gas_opt(data)
   else
-    error("optimization problem_type ",problem_type," does not exist")
+    @error("optimization problem_type ",problem_type," does not exist")
   end
 
 end # run_opt

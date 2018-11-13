@@ -13,7 +13,7 @@ function load_pricedata(region::String)
     region_str = "GER_"
     region_data = normpath(joinpath(pwd(),"..","..","data","el_prices","GER_2015_elPrice.csv"))
   else
-    error("Region ",region," not defined.")
+    @error("Region ",region," not defined.")
   end
   data_orig = CSV.read(region_data, separator = '\t', header = true)[Symbol(region)][:]
   data_full = FullInputData(region,size(data_orig)[1];el_price=data_orig)
@@ -55,7 +55,7 @@ function load_capacity_expansion_data(region::String)
     wind= CSV.read("/home/hteich/.julia/v0.6/ClustForOpt_priv/data/texas_merrick/windfactor2.txt",separator=' ')[:Wind_61][:]
     wind=reshape(wind,(size(wind)[1],1))
   else
-    error("region "*region*" not implemented.")
+    @error("region "*region*" not implemented.")
   end # region
 
   data_full = FullInputData(region,N;el_demand=demand,solar=solar,wind=wind)
@@ -92,11 +92,11 @@ function load_input_data(application::String,region::String)
   elseif application == "CEP"
     ret= load_capacity_expansion_data(region)
   else
-    error("application "*application*" not defined")
+    @error("application "*application*" not defined")
   end
   #check if output is of the right format
   if typeof(ret) != Tuple{ClustInputData,FullInputData}
-    error("Output from load_input_data needs to be of ClustInputData,FullInputData")
+    @error("Output from load_input_data needs to be of ClustInputData,FullInputData")
   end
   return ret
 end
