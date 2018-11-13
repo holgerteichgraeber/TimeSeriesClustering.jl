@@ -1,5 +1,5 @@
 util_path = normpath(joinpath(dirname(@__FILE__),".."))
-unshift!(PyVector(pyimport("sys")["path"]), util_path) # add util path to search path ### unshift!(PyVector(pyimport("sys")["path"]), "") # add current path to search path
+pushfirst!(PyVector(pyimport("sys")["path"]), util_path) # add util path to search path ### pushfirst!(PyVector(pyimport("sys")["path"]), "") # add current path to search path
 @pyimport hierarchical
 
 function run_clust_hierarchical_centroid(
@@ -41,7 +41,7 @@ function run_clust_hierarchical_centroid(
     # normalized clustering hourly
     seq_norm, hourly_mean, hourly_sdv = z_normalize(seq,scope="full")
 
-     
+
     problem_type_ar = ["battery", "gas_turbine"]
 
 
@@ -52,12 +52,12 @@ function run_clust_hierarchical_centroid(
     cost = zeros(length(n_clust_ar),n_init)
     iter =  zeros(length(n_clust_ar),n_init)
     weights = Dict{Tuple{Int,Int},Array}()
-    revenue = Dict{String,Array}() 
+    revenue = Dict{String,Array}()
     for i=1:length(problem_type_ar)
       revenue[problem_type_ar[i]] = zeros(length(n_clust_ar),n_init)
     end
 
-     
+
      # iterate through settings
     for n_clust_it=1:length(n_clust_ar)
       n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts
@@ -67,29 +67,29 @@ function run_clust_hierarchical_centroid(
           # save clustering results
           centers_norm_SSE = []
           clustids[n_clust,i] = results["labels"]+1
-         
+
           # calculate weights
-          weights[n_clust,i] = zeros(n_clust) 
+          weights[n_clust,i] = zeros(n_clust)
           for j=1:length(clustids[n_clust,i])
               weights[n_clust,i][clustids[n_clust,i][j]] +=1
           end
           weights[n_clust,i] =  weights[n_clust,i] /length(clustids[n_clust,i])
-          
-          centers_norm = results["centers"]' # transpose back 
-          centers_ = undo_z_normalize(centers_norm,hourly_mean,hourly_sdv)    
+
+          centers_norm = results["centers"]' # transpose back
+          centers_ = undo_z_normalize(centers_norm,hourly_mean,hourly_sdv)
           centers[n_clust,i]=centers_
           centers_norm_SSE=centers_norm
           SSE = calc_SSE(seq_norm,centers_norm_SSE,clustids[n_clust,i])
           cost[n_clust_it,i] = SSE
           iter[n_clust_it,i] = 1
            ##########################
-          
+
 
           # run opt
           for ii=1:length(problem_type_ar)
             revenue[problem_type_ar[ii]][n_clust_it,i]=sum(run_opt(problem_type_ar[ii],(centers[n_clust,i]),weights[n_clust,i],region,false))
-          end 
-      
+          end
+
         end
     end
 
@@ -102,7 +102,7 @@ function run_clust_hierarchical_centroid(
                      "iter"=>iter,
                      "weights"=>weights,
                      "revenue"=>revenue )
-                      
+
     save(string(joinpath("outfiles","aggregated_results_hier_"),"centroid","_",region,".jld2"),save_dict)
     println("hier data revenue calculated + saved.")
     return save_dict
