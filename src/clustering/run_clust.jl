@@ -211,7 +211,7 @@ function check_kw_args(
        check_ok=false
        error_string = error_string * "the combination of method $method and representation $representation is not supported \n"
     elseif method == "dbaclust"
-       info("dbaclust can be run in parallel using src/clust_algorithms/runfiles/cluster_gen_dbaclust_parallel.jl")
+       @info("dbaclust can be run in parallel using src/clust_algorithms/runfiles/cluster_gen_dbaclust_parallel.jl")
     elseif method =="kshape"
        check_ok=false
        error_string = error_string * "kshape is implemented in python and should be run individually: src/clust_algorithms/runfiles/cluster_gen_kshape.py \n"

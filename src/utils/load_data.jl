@@ -41,18 +41,18 @@ function load_capacity_expansion_data(region::String)
   if region == "TX"
     # Texas system data from Merrick (Energy Economics) and Merrick (MS thesis)
     #demand - [GW]
-    demand= Array(readtable(normpath(joinpath(pwd(),"..","..","data","texas_merrick","demand.txt")),separator=' ')[:DEM]) # MW
+    demand= CSV.read(normpath(joinpath(pwd(),"..","..","data","texas_merrick","demand.txt")),separator=' ')[:DEM][:] # MW
     demand=reshape(demand,(size(demand)[1],1))
      # load growth (Merrick assumption)
     demand=1.486*demand
     demand=demand/1000 # GW
     N=size(demand)[1]
     # solar availability factor
-    solar= Array(readtable(normpath(joinpath(pwd(),"..","..","data","texas_merrick","TexInsolationFactorV1.txt")),separator=' ')[:solar_61])
+    solar= CSV.read(normpath(joinpath(pwd(),"..","..","data","texas_merrick","TexInsolationFactorV1.txt")),separator=' ')[:solar_61][:]
     solar=reshape(solar,(size(solar)[1],1))
     solar = solar/1000
    # wind availability factor
-    wind= Array(readtable("/home/hteich/.julia/v0.6/ClustForOpt_priv/data/texas_merrick/windfactor2.txt",separator=' ')[:Wind_61])
+    wind= CSV.read("/home/hteich/.julia/v0.6/ClustForOpt_priv/data/texas_merrick/windfactor2.txt",separator=' ')[:Wind_61][:]
     wind=reshape(wind,(size(wind)[1],1))
   else
     error("region "*region*" not implemented.")
