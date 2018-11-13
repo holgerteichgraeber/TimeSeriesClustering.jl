@@ -149,7 +149,7 @@ function FullInputData(region::String,
   !isempty(wind) && (dt["wind"]=wind)
   !isempty(solar) && (dt["solar"]=solar)
   # TODO: Check dimensionality of N and supplied input data streams Nx1
-  isempty(dt) && error("Need to provide at least one input data stream")
+  isempty(dt) && @error("Need to provide at least one input data stream")
   FullInputData(region,N,dt)
 end
 
@@ -210,7 +210,7 @@ function ClustInputData(region::String,
         sdv["solar"]=ones(T)
       end
     end
-    isempty(dt) && error("Need to provide at least one input data stream")
+    isempty(dt) && @error("Need to provide at least one input data stream")
     # TODO: Check dimensionality of K T and supplied input data streams KxT
     ClustInputData(region,K,T,dt,weights,mean,sdv)
 end
@@ -235,7 +235,7 @@ function ClustInputData(region::String,
                         mean::Dict{String,Array}=Dict{String,Array}(),
                         sdv::Dict{String,Array}=Dict{String,Array}()
                         )
-  isempty(data) && error("Need to provide at least one input data stream")
+  isempty(data) && @error("Need to provide at least one input data stream")
   mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
   if !mean_sdv_provided
     for (k,v) in data

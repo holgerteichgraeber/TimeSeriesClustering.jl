@@ -172,7 +172,7 @@ function run_opt(problem_type::String,
                  first_stage_vars::Dict=Dict(),
                  kwargs...)
   if findall(problem_type.==["battery","gas","cep"])==[]
-    error("optimization problem_type ",problem_type," does not exist")
+    @error("optimization problem_type ",problem_type," does not exist")
   else
     fun_name = Symbol("run_"*problem_type*"_opt")
     @eval $fun_name($data;$kwargs...)

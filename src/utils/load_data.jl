@@ -28,7 +28,7 @@ function load_timeseries_data( application::String,
               dt[dataname*"-"*string(column[1])]=column[2]
               newnum=length(column[2])
               if newnum!=num && num!=0
-                  error("The TimeSeries have different lengths!")
+                  @error("The TimeSeries have different lengths!")
               else
                   num=newnum
               end

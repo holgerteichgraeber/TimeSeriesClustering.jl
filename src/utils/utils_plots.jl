@@ -33,7 +33,7 @@ function plot_clusters(centers::Array,weights::Array;region::String="GER",sortin
    elseif region == "CA"
      ylabel("USD/MWh")
    else
-     error("region not defined: $region")
+     @error("region not defined: $region")
    end
    title(descr)
    legend()

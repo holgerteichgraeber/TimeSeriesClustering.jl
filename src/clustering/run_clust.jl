@@ -48,7 +48,7 @@ function run_clust(
     check_kw_args(norm_op,norm_scope,method,representation)
     # TODO: implement other methods with generic method call in for loops
     if method!="kmeans" || representation !="centroid"
-       error("Any method other than kmeans centroid not implemented yet. TODO")
+       @error("Any method other than kmeans centroid not implemented yet. TODO")
     end
     # normalize
     # TODO: implement 0-1 normalization and add as a choice to runclust

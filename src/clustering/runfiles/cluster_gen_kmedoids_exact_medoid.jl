@@ -9,7 +9,7 @@ function run_clust_kmedoids_exact_medoid(
       gurobi_env=0
     )
    
-    (typeof(gurobi_env)==Int) && error("Please provide a gurobi_env (Gurobi Environment). See test file for example")
+    (typeof(gurobi_env)==Int) && @error("Please provide a gurobi_env (Gurobi Environment). See test file for example")
 
     n_clust_min = minimum(n_clust_ar)
     n_clust_max = maximum(n_clust_ar)

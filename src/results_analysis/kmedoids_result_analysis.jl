@@ -13,7 +13,7 @@ param=DataFrame()
 try
   param = readtable(joinpath("outfiles",string("parameters_kmedoids_",region,".txt")))
 catch
-  error("No input file parameters.txt exists in folder outfiles.")
+  @error("No input file parameters.txt exists in folder outfiles.")
 end
 
 n_clust_min=param[:n_clust_min][1]
