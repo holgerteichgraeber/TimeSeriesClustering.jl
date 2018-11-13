@@ -1,4 +1,13 @@
 # optimization problems
+"""
+function run_cep_opt(data::ClustInputData)
+
+capacity expansion optimization problem
+"""
+#TODO CEP Opt
+function run_cep_opt(tsdata::ClustInputData)
+  setup_cep_opt_sets(tsdata)
+end
 
 """
 function run_battery_opt(data::ClustInputData)
@@ -10,7 +19,7 @@ function run_battery_opt(data::ClustInputData)
   prnt=false
   num_periods = data.K # number of periods, 1day, one week, etc.
   num_hours = data.T # hours per period (24 per day, 48 per 2days)
-  el_price = data.data["el_price"]
+  el_price = data.data["el_price-$(data.region)"]
   weight = data.weights
   # time steps
   del_t = 1; # hour
@@ -73,7 +82,7 @@ function run_battery_opt(data::ClustInputData)
     if weight ==1
       obj[i] = getobjectivevalue(m)
     else
-      obj[i] = getobjectivevalue(m) * weight[i] 
+      obj[i] = getobjectivevalue(m) * weight[i]
     end
     E_in_arr[:,i] = getvalue(E_in)'
     E_out_arr[:,i] = getvalue(E_out)
@@ -96,7 +105,7 @@ operational gas turbine optimization problem
 runs every day seperately and adds results in the end
 """
 function run_gas_opt(data::ClustInputData)
-  
+
 
   prnt=false
   num_periods = data.K # number of periods, 1day, one week, etc.
@@ -141,7 +150,7 @@ function run_gas_opt(data::ClustInputData)
     if weight ==1
       obj[i] = getobjectivevalue(m)
     else
-      obj[i] = getobjectivevalue(m) * weight[i] 
+      obj[i] = getobjectivevalue(m) * weight[i]
     end
     E_out_arr[:,i] = getvalue(E_out)
   end
@@ -162,13 +171,10 @@ function run_opt(problem_type::String,
                  data::ClustInputData;
                  first_stage_vars::Dict=Dict(),
                  kwargs...)
-
-  if problem_type == "battery"
-    return run_battery_opt(data)
-  elseif problem_type == "gas_turbine"
-    return run_gas_opt(data) 
-  else
+  if findall(problem_type.==["battery","gas","cep"])==[]
     error("optimization problem_type ",problem_type," does not exist")
+  else
+    fun_name = Symbol("run_"*problem_type*"_opt")
+    @eval $fun_name($data;$kwargs...)
   end
-
 end # run_opt

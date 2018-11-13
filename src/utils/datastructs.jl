@@ -3,20 +3,20 @@ abstract type InputData end
 abstract type ClustResult end
 
 """
-struct FullInputData <: InputData 
+struct FullInputData <: InputData
   region::String
   N::Int
   data::Dict{String,Array}
 end
 """
-struct FullInputData <: InputData 
+struct FullInputData <: InputData
   region::String
   N::Int
   data::Dict{String,Array}
 end
 
 """
-struct ClustInputData <: InputData 
+struct ClustInputData <: InputData
   region::String
   K::Int
   T::Int
@@ -28,7 +28,7 @@ end
 
 weights: this is the absolute weight. E.g. for a year of 365 days, sum(weights)=365
 """
-struct ClustInputData <: InputData 
+struct ClustInputData <: InputData
   region::String
   K::Int
   T::Int
@@ -44,7 +44,7 @@ struct ClustInputDataMerged <: InputData
   T::Int
   data::Array
   data_type::Array{String}
-  weights::Array{Float64} 
+  weights::Array{Float64}
   mean::Dict{String,Array}
   sdv::Dict{String,Array}
 end
@@ -55,12 +55,12 @@ struct ClustInputDataMerged <: InputData
   T::Int
   data::Array
   data_type::Array{String}
-  weights::Array{Float64} 
+  weights::Array{Float64}
   mean::Dict{String,Array}
   sdv::Dict{String,Array}
 end
 """
-struct ClustResultAll <: ClustResult 
+struct ClustResultAll <: ClustResult
   best_results::Array{ClustInputData}
   best_ids::Array{Array}
   best_cost::Array
@@ -73,7 +73,7 @@ struct ClustResultAll <: ClustResult
   iter::Array
 end
 """
-struct ClustResultAll <: ClustResult 
+struct ClustResultAll <: ClustResult
   best_results::Array{ClustInputData}
   best_ids::Array{Array}
   best_cost::Array
@@ -109,7 +109,19 @@ struct OptResult
   opVar::Dict{String,Array}
   add_results::Dict
 end
-
+"""
+struct CEPData
+    nodes::DataFrame        nodes x installed capacity of different tech
+    fixprices::DataFrame    tech x [EUR, CO2]
+    varprices::DataFrame    tech x [EUR, CO2]
+    techs::DataFrame        tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
+"""
+struct CEPData
+    nodes::DataFrame
+    fixprices::DataFrame
+    varprices::DataFrame
+    techs::DataFrame
+end
  #### Constructors for data structures###
 
  # need to come afterwards because of cyclic argument between ClustInputData and ClustInputDataMerged Constructors
@@ -131,13 +143,13 @@ function FullInputData(region::String,
                        solar::Array=[],
                        wind::Array=[]
                        )
-  dt = Dict{String,Array}() 
+  dt = Dict{String,Array}()
   !isempty(el_price) && (dt["el_price"]=el_price)
   !isempty(el_demand) &&  (dt["el_demand"]=el_demand)
   !isempty(wind) && (dt["wind"]=wind)
   !isempty(solar) && (dt["solar"]=solar)
   # TODO: Check dimensionality of N and supplied input data streams Nx1
-  isempty(dt) && error("Need to provide at least one input data stream") 
+  isempty(dt) && error("Need to provide at least one input data stream")
   FullInputData(region,N,dt)
 end
 
@@ -168,9 +180,9 @@ function ClustInputData(region::String,
                           mean::Dict{String,Array}=Dict{String,Array}(),
                           sdv::Dict{String,Array}=Dict{String,Array}()
                           )
-    dt = Dict{String,Array}() 
+    dt = Dict{String,Array}()
     mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
-    if !isempty(el_price) 
+    if !isempty(el_price)
       dt["el_price"]=el_price
       if !mean_sdv_provided
         mean["el_price"]=zeros(T)
@@ -183,15 +195,15 @@ function ClustInputData(region::String,
         mean["el_demand"]=zeros(T)
         sdv["el_demand"]=ones(T)
       end
-    end 
-    if !isempty(wind) 
+    end
+    if !isempty(wind)
       dt["wind"]=wind
       if !mean_sdv_provided
         mean["wind"]=zeros(T)
         sdv["wind"]=ones(T)
       end
     end
-    if !isempty(solar) 
+    if !isempty(solar)
       dt["solar"]=solar
       if !mean_sdv_provided
         mean["solar"]=zeros(T)
@@ -203,7 +215,7 @@ function ClustInputData(region::String,
     ClustInputData(region,K,T,dt,weights,mean,sdv)
 end
 
- 
+
 """
 constructor 2 for ClustInputData: provide data as dict
 
@@ -310,7 +322,7 @@ function ClustInputDataMerged(data::ClustInputData)
   i=0
   for (k,v) in data.data
     i+=1
-    data_merged[(1+data.T*(i-1)):(data.T*i),:] = v 
+    data_merged[(1+data.T*(i-1)):(data.T*i),:] = v
     push!(data_type,k)
   end
   ClustInputDataMerged(data.region,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv)

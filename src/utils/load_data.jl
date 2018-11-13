@@ -1,96 +1,66 @@
-normpath(joinpath(dirname(@__FILE__),"..","..","data"))
 """
-function load_pricedata(region::String)
+function load_timeseriesdata(application::String, region::String, K-#Periods, T-#Segments)
 
-Loads price data from either GER or CA
-"""
-function load_pricedata(region::String)
-  wor_dir = pwd()
-  cd(dirname(@__FILE__)) # change working directory to current file
-  if region =="CA" #\$/MWh
-    region_data = normpath(joinpath(pwd(),"..","..","data","el_prices","ca_2015_orig.csv"))
-  elseif region == "GER" #EUR/MWh
-    region_data = normpath(joinpath(pwd(),"..","..","data","el_prices","GER_2015_elPrice.csv"))
-  else
-    error("Region ",region," not defined.")
-  end
-  data_orig = CSV.read(region_data, separator = '\t', header = true)[Symbol(region)][:]
-  data_full = FullInputData(region,size(data_orig)[1];el_price=data_orig)
-  data_reshape =  ClustInputData(data_full,365,24)
-  cd(wor_dir) # change working directory to old previous file's dir
-  return data_reshape, data_full
-end #load_pricedata
-
-"""
-function load_timeseriesdata(application::String, region::String)
-
+Loading from .csv files in a the folder ../ClustForOpt/data/{application}/{region}/TS
+Timestamp-column has to be called Timestamp
+Other columns have to be called with the location/node name
+for application:
+- DAM Day Ahead Market
+- CEP Capacity Expansion Problem
 and regions:
 - GER Germany
 - CA California
 - TX Texas
 """
-function load_timeseriesdata(application::String, region::String)
+function load_timeseries_data( application::String,
+                              region::String;
+                              K=365,
+                              T=24
+                              )
   dt = Dict{String,Array}()
-  data_path=normpath(joinpath(dirname(@__FILE__),"..","..","data",application,region))https://juliadocs.github.io/Julia-Cheat-Sheet/
+  num=0
+  data_path=normpath(joinpath(dirname(@__FILE__),"..","..","data",application,region,"TS"))
   for fulldataname in readdir(data_path)
       dataname=split(fulldataname,".")[1]
-      if split(dataname,"_")[1]=="ts"
-          data_df=CSV.read("$data_path/$fulldataname")
-          for col in eachcol(data_df)
-            dt[Symbol(split(dataname,"_")[2:end]*col[1])]=col[2]
-            size=size(col[2])
+      data_df=CSV.read(joinpath(data_path,fulldataname);allowmissing=:none)
+      for column in eachcol(data_df)
+          if findall([:Timestamp,:time,:Time,:Zeit].==(column[1]))==[]
+              dt[dataname*"-"*string(column[1])]=column[2]
+              newnum=length(column[2])
+              if newnum!=num && num!=0
+                  error("The TimeSeries have different lengths!")
+              else
+                  num=newnum
+              end
           end
       end
   end
-  data_full =  FullInputData(region, size, dt)
-  data_reshape =  ClustInputData(data_full,365,24)
-  return data_reshape, data_full
-end #load_pricedata
-
-#TODO State Data
-function load_statedata(region::String)
-  data_full = Dict{String,Array}()
-  data_path=normpath(joinpath(dirname(@__FILE__),"..","..","data",application,region))
-  for fulldataname in readdir(data_path)
-      dataname=split(fulldataname,".")[1]
-      if split(dataname,"_")[1]!="ts"
-          data_df=CSV.read("$data_path/$fulldataname")
-          for col in eachcol(anscombe)
-            data_full[Symbol(split(dataname,"_")[2:end]*col[1])]=col[2]
-          end
-      end
-  end
-  data_reshape =  ClustInputData(dt,365,24)
+  data_full =  FullInputData(region, num, dt)
+  data_reshape =  ClustInputData(data_full,K,T)
   return data_reshape, data_full
 end #load_pricedata
 
 """
-function load_input_data(application::String,region::String)
+function load_cepdata(region::String)
 
-wrapper function to call capacity expansion data and price data
+Loading from .csv files in a the folder ../ClustForOpt/data/CEP/{region}/
 
-applications:
-- DAM - electricity day ahead market prices
-- CEP - capacity expansion problem data
+Follow instructions for the CSV-Files:
+    nodes       nodes x installed capacity of different tech
+    fixprices   tech x [EUR, CO2]
+    varprices   tech x [EUR, CO2]
+    techs       tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
 
-potential outputs:
-- elprice [electricity price]
-- wind
-- solar
-- eldemand [electricity demand]
+for regions:
+- GER Germany
+- CA California
+- TX Texas
 """
-function load_input_data(application::String,region::String)
-  ret=nothing
-  if application == "DAM"
-    ret=load_timeseriesdata(application, region)
-  elseif application == "CEP"
-    ret=load_timeseriesdata(application, region)
-  else
-    error("application "*application*" not defined")
-  end
-  #check if output is of the right format
-  if typeof(ret) != Tuple{ClustInputData,FullInputData}
-    error("Output from load_input_data needs to be of ClustInputData,FullInputData")
-  end
-  return ret
-end
+function load_cep_data(region::String)
+  data_path=normpath(joinpath(dirname(@__FILE__),"..","..","data","CEP",region))
+  nodes=CSV.read(joinpath(data_path,"nodes.csv"),allowmissing=:none)
+  fixprices=CSV.read(joinpath(data_path,"fixprices.csv"),allowmissing=:none)
+  varprices=CSV.read(joinpath(data_path,"varprices.csv"),allowmissing=:none)
+  techs=CSV.read(joinpath(data_path,"techs.csv"),allowmissing=:none)
+  return CEPData(nodes,fixprices,varprices,techs)
+end #load_pricedata

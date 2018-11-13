@@ -5,9 +5,10 @@
  # Analyzing clustering techniques as input for energy systems optimization
  #
  #####################
-module ClustForOpt_priv
+ #TODO other way of including module
+#module ClustForOpt_priv
 
-using Reexport
+#using Reexport
 using Distances
 #using PyPlot
 using Clustering
@@ -22,10 +23,24 @@ using LinearAlgebra
 using CSV
 using JuMP
 using Clp
-@reexport using DataFrames
+using Gurobi
+#@reexport
+using DataFrames
  #TODO how to make PyPlot, PyCall, and TimeWarp optional? -> only import when needed
 
 
+
+
+include(joinpath("utils","datastructs.jl"))
+include(joinpath("utils","utils.jl"))
+include(joinpath("utils","load_data.jl"))
+include(joinpath("utils",".juliarc.jl"))
+include(joinpath("utils","utils_plots.jl"))
+include(joinpath("optim_problems","run_opt.jl"))
+include(joinpath("clustering","run_clust.jl"))
+include(joinpath("clustering","exact_kmedoids.jl"))
+
+"""
 export run_opt,
        run_clust,
        get_sup_kw_args,
@@ -50,14 +65,5 @@ export run_opt,
        calc_SSE,
        find_medoids,
        resize_medoids
-
-include(joinpath("utils","datastructs.jl"))
-include(joinpath("utils","utils.jl"))
-include(joinpath("utils","load_data.jl"))
-include(joinpath("utils",".juliarc.jl"))
-include(joinpath("utils","utils_plots.jl"))
-include(joinpath("optim_problems","run_opt.jl"))
-include(joinpath("clustering","run_clust.jl"))
-include(joinpath("clustering","exact_kmedoids.jl"))
-
 end # module ClustForOpt
+"""
