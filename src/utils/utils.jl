@@ -225,3 +225,20 @@ function resize_medoids(data::Array,centers::Array,weights::Array)
     new_centers = centers* mu_data_mu_clust
     return new_centers
 end
+
+#TODO Explain functions
+function findvalindf(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::Symbol)
+    return df[findfirst(isequal(reference), df[column_of_reference]),value_to_return]
+end
+
+function findvalindf(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::String)
+    return df[findfirst(isequal(reference), df[column_of_reference]),Symbol(value_to_return)]
+end
+
+function mapsetindf(df::DataFrame,column_of_reference::Symbol,reference::String,set_to_return::Symbol)
+    return Symbol.(df[df[column_of_reference].==reference,set_to_return])
+end
+
+function mapsetsindf(df::DataFrame,column_of_reference::Symbol,reference::String,column_of_reference2::Symbol,reference2::String,value_to_return::Symbol)
+    return df[(in)(mapsetindf(df,column_of_reference2,reference2,value_to_return)),findall(mapsetindf(df,column_of_reference,reference,value_to_return)),value_to_return]
+end

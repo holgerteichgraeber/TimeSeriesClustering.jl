@@ -117,6 +117,7 @@ struct CEPData
     techs::DataFrame        tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
 """
 struct CEPData
+    region::String
     nodes::DataFrame
     fixprices::DataFrame
     varprices::DataFrame

@@ -56,11 +56,12 @@ for regions:
 - CA California
 - TX Texas
 """
-function load_cep_data(region::String)
+function load_cep_data(region::String
+                        )
   data_path=normpath(joinpath(dirname(@__FILE__),"..","..","data","CEP",region))
   nodes=CSV.read(joinpath(data_path,"nodes.csv"),allowmissing=:none)
   fixprices=CSV.read(joinpath(data_path,"fixprices.csv"),allowmissing=:none)
   varprices=CSV.read(joinpath(data_path,"varprices.csv"),allowmissing=:none)
   techs=CSV.read(joinpath(data_path,"techs.csv"),allowmissing=:none)
-  return CEPData(nodes,fixprices,varprices,techs)
+  return CEPData(region,nodes,fixprices,varprices,techs)
 end #load_pricedata
