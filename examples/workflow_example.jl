@@ -12,14 +12,14 @@ cep_input_data_GER=load_cep_data("GER")
 ts_clust_res = run_clust(ts_input_data;n_init=10,n_clust_ar=collect(1:9)) # default k-means
 
  # optimization
-using Cbc
+#using Cbc
 #opt_res = run_opt("battery",clust_res.best_results[5])
 opt_res = run_cep_opt(ts_clust_res.best_results[5],cep_input_data_GER;solver=GurobiSolver(),co2limit=1e9)
  #opt_res = run_opt("gas_turbine",clust_res.best_results[5])
 
  ###
  # run optimization for all k=1:9
-opt_res_all = []
+opt_res_all = [
 obj=[]
 for i=1:9
   push!(opt_res_all,run_opt("battery", clust_res.best_results[i]))

@@ -116,13 +116,12 @@ function run_cep_opt(tsdata::ClustInputData,cepdata::CEPData)
 capacity expansion optimization problem
 """
 #TODO CEP
-function run_cep_opt(tsdata::ClustInputData,cepdata::CEPData,solver=CbcSolver(),co2limit=Inf)
+function run_cep_opt(tsdata::ClustInputData,cepdata::CEPData;solver=CbcSolver(),co2limit=Inf)
   @info("Setting Up CEP 🔌 ⛅")
   set=setup_cep_opt_sets(tsdata,cepdata)
   cep_model=setup_cep_opt_model(tsdata,cepdata,set,solver,co2limit)
   @info("Solving ⏳")
-  solve_cep_opt_model(cep_model, co2limit)
-  return 1
+  return solve_cep_opt_model(cep_model, co2limit)
 end
 """
 function run_battery_opt(data::ClustInputData)
