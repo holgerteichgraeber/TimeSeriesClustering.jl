@@ -15,6 +15,10 @@ function setup_cep_opt_sets(tsdata::ClustInputData,cepdata::CEPData)
   set[:impact]=String.(names(cepdata.fixprices))[2:end]
   set[:account]=["fix","var"]
   set[:exist]=["ex","new"]
+  #QUESTION How to integrate different secotors?
+  set[:sector]=unique(cepdata.techs[:sector])
+  #Different set: set[:sector]=unique(cepdata.techs[:sector]) .. CAP[node,tech,sector]
+  #Or specific variables for each sector ELCAP, HEATCAP
   set[:time_k]=1:tsdata.K
   set[:time_t]=1:tsdata.T
   return set
@@ -25,6 +29,10 @@ setting up the capacity expansion model with  the time series (tsdata), capacity
 """
 function setup_cep_opt_model(tsdata::ClustInputData,cepdata::CEPData, set::Dict,solver,co2limit)
   ##### Extract data #####
+  #nodes: nodes x installed capacity of different tech
+  #fixprices   tech x impact[EUR, CO2]
+  #varprices   tech x impact[EUR, CO2]
+  #techs       tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
   nodes=cepdata.nodes
   fixprices=cepdata.fixprices
   varprices=cepdata.varprices
@@ -35,55 +43,56 @@ function setup_cep_opt_model(tsdata::ClustInputData,cepdata::CEPData, set::Dict,
   ## VARIABLES ##
   # Cost
   @variable(cep, COST[account=set[:account],impact=set[:impact],tech=set[:tech]])
-  #for the time being...
-  @constraint(cep, [impact=set[:impact],tech=set[:tech_fossil]], COST["fix",impact,tech]==0)
-  #@constraint(cep, [account=set[:account],tech=set[:tech]], COST[account,"CO2",tech]==0)
-  #TODO Include Slack into CEP
-  #@variable(cep, SLACK[t=set[:time_t], k=set[:time_k]]>=0)
-  # New Capacity
+  # Capacity
   @variable(cep, CAP[tech=set[:tech],exist=set[:exist],node=set[:nodes]]>=0)
   # Assign the existing capacity from the nodes table
   @constraint(cep, [node=set[:nodes], tech=set[:tech]], CAP[tech,"ex",node]==findvalindf(nodes,:nodes,node,tech))
   # Generation #
-  @variable(cep, GEN[tech=set[:tech], t=set[:time_t], k=set[:time_k], node=set[:nodes]])
+  @variable(cep, GEN[sector=set[:sector], tech=set[:tech], t=set[:time_t], k=set[:time_k], node=set[:nodes]])
+  #TODO Include Slack into CEP
+  #@variable(cep, SLACK[t=set[:time_t], k=set[:time_k]]>=0)
 
   ## GENERAL ##
   # Limit new capacities (for the time being)
   @constraint(cep, [node=set[:nodes], tech=set[:tech_fossil]], CAP[tech,"new",node]==0)
 
   ## FOSSIL POWER PLANTS ##
-  # Cost
-  @constraint(cep, [impact=set[:impact], tech=set[:tech_fossil]], COST["var",impact,tech]==8760/(set[:time_t][end]*set[:time_k][end])*sum(GEN[tech,t,k,node]/findvalindf(techs,:tech,tech,:effic)*findvalindf(varprices,:tech,tech,impact) for node=set[:nodes], t=set[:time_t], k=set[:time_k]))
-  @constraint(cep, [impact=set[:impact], tech=set[:tech_fossil]], COST["fix",impact,tech]==0)
-  # Generation: Sum the generation of all the plants of one technology together to the generation of this technology at this node
-  @constraint(cep, [node=set[:nodes], tech=set[:tech_fossil], t=set[:time_t], k=set[:time_k]], 0 <=GEN[tech, t, k, node])
-  @constraint(cep, [node=set[:nodes], tech=set[:tech_fossil], t=set[:time_t], k=set[:time_k]],     GEN[tech, t, k, node] <=sum(CAP[tech,exist,node] for exist=set[:exist]))
+  # COST["var",impact,tech] = Δt ⋅ ΣGEN["el",-t-,-k-,-node-]/η ⋅ varprices[tech,impact] ∀ impact, tech_fossil
+  @constraint(cep, [impact=set[:impact], tech=set[:tech_fossil]], COST["var",impact,tech]==8760/(set[:time_t][end]*set[:time_k][end])*sum(GEN["el",tech,t,k,node]/findvalindf(techs,:tech,tech,:effic)*findvalindf(varprices,:tech,tech,impact) for node=set[:nodes], t=set[:time_t], k=set[:time_k]))
+  # COST["fix",impact,tech] = ΣCAP[tech,"new",-node-] ⋅ fixprices[tech,impact] ∀ impact, tech_fossil
+  @constraint(cep, [impact=set[:impact], tech=set[:tech_fossil]], COST["fix",impact,tech]==sum(CAP[tech,"new",node] for node=set[:nodes])*findvalindf(fixprices,:tech,tech,impact))
+  # 0 ≤ GEN["el",tech, t, k, node] ≤ ΣCAP[tech,-exist-,node] ∀ node, tech_fossil, t, k
+  @constraint(cep, [node=set[:nodes], tech=set[:tech_fossil], t=set[:time_t], k=set[:time_k]], 0 <=GEN["el",tech, t, k, node])
+  @constraint(cep, [node=set[:nodes], tech=set[:tech_fossil], t=set[:time_t], k=set[:time_k]],     GEN["el",tech, t, k, node] <=sum(CAP[tech,exist,node] for exist=set[:exist]))
 
   ## RENEWABLES ##
-  # Cost
-  @constraint(cep, [impact=set[:impact], tech=set[:tech_renewable]], COST["var",impact,tech]==sum(GEN[tech,t,k,node]*findvalindf(varprices,:tech,tech,Symbol(impact)) for node=set[:nodes], t=set[:time_t], k=set[:time_k]))
+  # COST["var",impact,tech] = Δt ⋅ ΣGEN["el",-t-,-k-,-node-]/η ⋅ varprices[tech,impact] ∀ impact, tech_renewable
+  @constraint(cep, [impact=set[:impact], tech=set[:tech_renewable]], COST["var",impact,tech]==sum(GEN["el",tech,t,k,node]*findvalindf(varprices,:tech,tech,Symbol(impact)) for node=set[:nodes], t=set[:time_t], k=set[:time_k]))
+  # COST["fix",impact,tech] = ΣCAP[tech,"new",-node-] ⋅ fixprices[tech,impact] ∀ impact, tech_renewable
   @constraint(cep, [impact=set[:impact], tech=set[:tech_renewable]], COST["fix",impact,tech]==sum(CAP[tech,"new",node] for node=set[:nodes])*findvalindf(fixprices,:tech,tech,impact))
-  #Availability
-  @constraint(cep, [node=set[:nodes], tech=set[:tech_renewable],   t=set[:time_t], k=set[:time_k]], GEN[tech,t,k,node] <=sum(CAP[tech,exist,node] for exist=set[:exist])*ts[tech*"-"*node][t,k])
-  #@constraint(cep, [node=set[:nodes], tech=["ror","bio","geo"], time=set[:time]], GEN[tech,time,node] <=sum(CAP[tech,exist,node] for exist=set[:exist]))
+  # 0 ≤ GEN["el",tech, t, k, node] ≤ ΣCAP[tech,-exist-,node]*ts[tech-node,t,k] ∀ node, tech_renewable, t, k
+  @constraint(cep, [node=set[:nodes], tech=set[:tech_renewable], t=set[:time_t], k=set[:time_k]], 0 <=GEN["el",tech, t, k, node])
+  @constraint(cep, [node=set[:nodes], tech=set[:tech_renewable], t=set[:time_t], k=set[:time_k]], GEN["el",tech,t,k,node] <=sum(CAP[tech,exist,node] for exist=set[:exist])*ts[tech*"-"*node][t,k])
 
   ## STORAGE ##
-  # Cost
+  # COST["var",impact,tech] = 0 ∀ impact, tech_storage
   @constraint(cep, [account=set[:account], tech=set[:tech_storage], impact=set[:impact]], COST[account,impact,tech]==0)
-  #
-  @constraint(cep, [node=set[:nodes], tech=set[:tech_storage], t=set[:time_t], k=set[:time_k]], GEN[tech,t,k,node]==0)
+  # GEN["el",tech, t, k, node] = 0 ∀ node, tech_storage, t, k
+  @constraint(cep, [node=set[:nodes], tech=set[:tech_storage], t=set[:time_t], k=set[:time_k]], GEN["el",tech,t,k,node]==0)
 
   ## DEMAND ##
-  #TODO Include Slack to avoid infeasability pos and neg?
-  @constraint(cep, [t=set[:time_t], k=set[:time_k]], sum(GEN[tech,t,k,node] for node=set[:nodes], tech=set[:tech]) == sum(ts["el_demand-"*node][t,k] for node=set[:nodes]))
+  # ΣGEN["el",-tech-,t,k,-node-] = Σts[el_demand-node,t,k] ∀ t,k
+  @constraint(cep, [t=set[:time_t], k=set[:time_k]], sum(GEN["el",tech,t,k,node] for node=set[:nodes], tech=set[:tech]) == sum(ts["el_demand-"*node][t,k] for node=set[:nodes]))
 
   ## EMISSIONS ##
   if !isinf(co2limit)
+    # ΣCOST[-account-,"CO2",-tech-] ≤ co2limit
     @constraint(cep, sum(COST[account,"CO2",tech] for account=set[:account], tech=set[:tech])<=co2limit)
   end
 
   ## OBJECTIVE ##
-  @objective(cep, Min, sum(COST["fix","EUR",tech] for tech=set[:tech])+sum(COST["var","EUR",tech] for tech=set[:tech]))
+  # min ΣCOST[-account-,"EUR",-tech-] st. obove
+  @objective(cep, Min, sum(COST[account,"EUR",tech] for account=set[:account], tech=set[:tech]))
   return cep
 end
 """
@@ -91,14 +100,14 @@ function solve_cep_opt_model(cep)
 setting up the capacity expansion model with  the time series (tsdata), capacity expansion model data (cepdata) and the sets (set) and returning the cep model
 """
 function solve_cep_opt_model(cep_model,co2limit::Float64)
-  @time status=solve(cep)
-  @info("Solved: "*status)
+  @time status=solve(cep_model)
   result=Dict()
   result[:cost]=getvalue(cep_model[:COST])
-  #result[:cap]=getvalue(CAP)
-  #result[:gen]=getvalue(GEN)
-  result[:objective]=getobjectivevalue(cep)
-  #result[:co2limit]=co2limit
+  result[:cap]=getvalue(cep_model[:CAP])
+  result[:gen]=getvalue(cep_model[:GEN])
+  result[:objective]=getobjectivevalue(cep_model)
+  result[:co2limit]=co2limit
+  @info("Solved: "*String(status)*" min COST[EUR]: $(result[:objective]) s.t. CO₂-Emissions ≤ $co2limit")
   return result
 end
 """
@@ -107,11 +116,13 @@ function run_cep_opt(tsdata::ClustInputData,cepdata::CEPData)
 capacity expansion optimization problem
 """
 #TODO CEP
-function run_cep_opt(tsdata::ClustInputData,cepdata::CEPData;solver=CbcSolver(),co2limit=Inf)
+function run_cep_opt(tsdata::ClustInputData,cepdata::CEPData,solver=CbcSolver(),co2limit=Inf)
   @info("Setting Up CEP 🔌 ⛅")
   set=setup_cep_opt_sets(tsdata,cepdata)
   cep_model=setup_cep_opt_model(tsdata,cepdata,set,solver,co2limit)
-  return result=solve_cep_opt_model(cep_model, co2limit)
+  @info("Solving ⏳")
+  solve_cep_opt_model(cep_model, co2limit)
+  return 1
 end
 """
 function run_battery_opt(data::ClustInputData)
