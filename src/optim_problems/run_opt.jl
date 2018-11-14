@@ -84,21 +84,21 @@ function setup_cep_opt_model(tsdata::ClustInputData,cepdata::CEPData, set::Dict,
 
   ## OBJECTIVE ##
   @objective(cep, Min, sum(COST["fix","EUR",tech] for tech=set[:tech])+sum(COST["var","EUR",tech] for tech=set[:tech]))
-#  return cep
-#end
-#"""
-#function solve_cep_opt_model(cep)
-#setting up the capacity expansion model with  the time series (tsdata), capacity expansion model data (cepdata) and the sets (set) and #returning the cep model
-#"""
-#function solve_cep_opt_model(cep_model)
+  return cep
+end
+"""
+function solve_cep_opt_model(cep)
+setting up the capacity expansion model with  the time series (tsdata), capacity expansion model data (cepdata) and the sets (set) and returning the cep model
+"""
+function solve_cep_opt_model(cep_model,co2limit::Float64)
   @time status=solve(cep)
   @info("Solved: "*status)
   result=Dict()
-  result[:cost]=getvalue(COST)
-  result[:cap]=getvalue(CAP)
-  result[:gen]=getvalue(GEN)
+  result[:cost]=getvalue(cep_model[:COST])
+  #result[:cap]=getvalue(CAP)
+  #result[:gen]=getvalue(GEN)
   result[:objective]=getobjectivevalue(cep)
-  result[:co2limit]=co2limit
+  #result[:co2limit]=co2limit
   return result
 end
 """
@@ -110,8 +110,8 @@ capacity expansion optimization problem
 function run_cep_opt(tsdata::ClustInputData,cepdata::CEPData;solver=CbcSolver(),co2limit=Inf)
   @info("Setting Up CEP 🔌 ⛅")
   set=setup_cep_opt_sets(tsdata,cepdata)
-  #cep_model=setup_cep_opt_model(tsdata,cepdata,set,solver,co2limit)
-  return result=setup_cep_opt_model(tsdata,cepdata,set,solver,co2limit)
+  cep_model=setup_cep_opt_model(tsdata,cepdata,set,solver,co2limit)
+  return result=solve_cep_opt_model(cep_model, co2limit)
 end
 """
 function run_battery_opt(data::ClustInputData)
