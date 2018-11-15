@@ -285,10 +285,20 @@ function run_opt(problem_type::String,
                  tsdata::ClustInputData;
                  first_stage_vars::Dict=Dict(),
                  kwargs...)
+<<<<<<< HEAD
   if findall(problem_type.==["battery","gas","cep"])==[]
     @error("optimization problem_type ",problem_type," does not exist")
   else
     fun_name = Symbol("run_"*problem_type*"_opt")
     @eval $fun_name($tsdata;$kwargs...)
+=======
+
+  if problem_type == "battery"
+    return run_battery_opt(data)
+  elseif problem_type == "gas_turbine"
+    return run_gas_opt(data)
+  else
+    @error("optimization problem_type ",problem_type," does not exist")
+>>>>>>> master
   end
 end # run_opt
