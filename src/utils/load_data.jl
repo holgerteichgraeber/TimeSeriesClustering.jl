@@ -1,24 +1,41 @@
 """
-function load_pricedata(region::String)
-
-Loads price data from either GER or CA
+function load_timeseriesdata(application::String, region::String, K-#Periods, T-#Segments)
+Loading from .csv files in a the folder ../ClustForOpt/data/{application}/{region}/TS
+Timestamp-column has to be called Timestamp
+Other columns have to be called with the location/node name
+for application:
+- DAM Day Ahead Market
+- CEP Capacity Expansion Problem
+and regions:
+- GER Germany
+- CA California
+- TX Texas
 """
-function load_pricedata(region::String)
-  wor_dir = pwd()
-  cd(dirname(@__FILE__)) # change working directory to current file
-  if region =="CA" #\$/MWh
-    region_str = ""
-    region_data = normpath(joinpath(pwd(),"..","..","data","el_prices","ca_2015_orig.csv"))
-  elseif region == "GER" #EUR/MWh
-    region_str = "GER_"
-    region_data = normpath(joinpath(pwd(),"..","..","data","el_prices","GER_2015_elPrice.csv"))
-  else
-    @error("Region ",region," not defined.")
+function load_timeseries_data( application::String,
+                              region::String;
+                              K=365,
+                              T=24
+                              )
+  dt = Dict{String,Array}()
+  num=0
+  data_path=normpath(joinpath(dirname(@__FILE__),"..","..","data",application,region,"TS"))
+  for fulldataname in readdir(data_path)
+      dataname=split(fulldataname,".")[1]
+      data_df=CSV.read(joinpath(data_path,fulldataname);allowmissing=:none)
+      for column in eachcol(data_df)
+          if findall([:Timestamp,:time,:Time,:Zeit].==(column[1]))==[]
+              dt[dataname*"-"*string(column[1])]=column[2]
+              newnum=length(column[2])
+              if newnum!=num && num!=0
+                  @error("The TimeSeries have different lengths!")
+              else
+                  num=newnum
+              end
+          end
+      end
   end
-  data_orig = CSV.read(region_data, separator = '\t', header = true)[Symbol(region)][:]
-  data_full = FullInputData(region,size(data_orig)[1];el_price=data_orig)
-  data_reshape =  ClustInputData(data_full,365,24)
-  cd(wor_dir) # change working directory to old previous file's dir
+  data_full =  FullInputData(region, num, dt)
+  data_reshape =  ClustInputData(data_full,K,T)
   return data_reshape, data_full
 end #load_pricedata
 
