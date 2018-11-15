@@ -109,7 +109,20 @@ struct OptResult
   opVar::Dict{String,Array}
   add_results::Dict
 end
-
+"""
+struct CEPData
+    nodes::DataFrame        nodes x installed capacity of different tech
+    fixprices::DataFrame    tech x [EUR, CO2]
+    varprices::DataFrame    tech x [EUR, CO2]
+    techs::DataFrame        tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
+"""
+struct CEPData
+    region::String
+    nodes::DataFrame
+    fixprices::DataFrame
+    varprices::DataFrame
+    techs::DataFrame
+end
  #### Constructors for data structures###
 
  # need to come afterwards because of cyclic argument between ClustInputData and ClustInputDataMerged Constructors

@@ -45,7 +45,6 @@ function run_clust(
       save::String="",
       kwargs...
     )
-
     check_kw_args(norm_op,norm_scope,method,representation)
     # TODO: implement other methods with generic method call in for loops
     if method!="kmeans" || representation !="centroid"
@@ -82,7 +81,7 @@ function run_clust(
     ind_mincost_2 = zeros(size(cost,1))
     for i=1:size(cost,1)
         cost_best[i]=cost[ind_mincost[i]]
-        # linear to cartesian indice (get column value [2] in order to get the initial starting point of interest. i is the row value already.) 
+        # linear to cartesian indice (get column value [2] in order to get the initial starting point of interest. i is the row value already.)
         ind_mincost_2[i]=CartesianIndices(cost)[ind_mincost[i]][2]
     end
 
