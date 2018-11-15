@@ -19,14 +19,14 @@ opt_res = run_cep_opt(ts_clust_res.best_results[5],cep_input_data_GER;solver=Gur
 
  ###
  # run optimization for all k=1:9
-opt_res_all = [
-obj=[]
-for i=1:9
-  push!(opt_res_all,run_opt("battery", clust_res.best_results[i]))
-  push!(obj,opt_res_all[i].obj)
-end
+#opt_res_all = [
+#obj=[]
+#for i=1:9
+#  push!(opt_res_all,run_opt("battery", clust_res.best_results[i]))
+#  push!(obj,opt_res_all[i].obj)
+#end
  # run reference case
-opt_res_full = run_opt("battery",input_data)
+#opt_res_full = run_opt("battery",input_data)
  #using PyPlot
  # figure()
  # plot(obj/opt_res_full.obj)
