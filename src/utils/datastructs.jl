@@ -105,7 +105,7 @@ end
 struct OptResult
   status::Symbol
   obj::Float64
-  var::Dict{String,Any}
+  var::Any
   add_results::Dict
 end
 """
@@ -130,8 +130,8 @@ mutable struct Scenario
 """
 mutable struct Scenario
   name::String
-  clust_res::ClustResultAll
-  opt_res::Dict{Symbol,Any}
+  clust_res::Any
+  opt_res::Any
 end
  #### Constructors for data structures###
 
@@ -143,9 +143,9 @@ end
  function Scenario(;clust_res=clust_res::ClustResultAll
                         )
   name=""
-  opt_res=Dict{Symbol,Any}()
+  opt_res=nothing
   Scenario(name,clust_res,opt_res)
- end
+end
 """
   function FullInputData(region::String,
                          N::Int;
