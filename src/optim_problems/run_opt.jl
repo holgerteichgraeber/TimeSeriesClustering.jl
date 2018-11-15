@@ -94,7 +94,7 @@ function setup_cep_opt_model(tsdata::ClustInputData,cepdata::CEPData, set::Dict,
   # min ΣCOST[-account-,"EUR",-tech-] st. obove
   @objective(cep, Min, sum(COST[account,"EUR",tech] for account=set[:account], tech=set[:tech]))
   return cep
-end
+end #setu
 """
 function solve_cep_opt_model(cep)
 setting up the capacity expansion model with  the time series (tsdata), capacity expansion model data (cepdata) and the sets (set) and returning the cep model

@@ -6,9 +6,9 @@
  #
  #####################
  #TODO other way of including module
-#module ClustForOpt_priv
+module ClustForOpt_priv
 
-#using Reexport
+using Reexport
 using Distances
 #using PyPlot
 using Clustering
@@ -24,12 +24,34 @@ using CSV
 using JuMP
 using Clp
 using Gurobi
-#@reexport
+@reexport
 using DataFrames
  #TODO how to make PyPlot, PyCall, and TimeWarp optional? -> only import when needed
 
-
-
+ export run_opt,
+        run_clust,
+        get_sup_kw_args,
+        InputData,
+        FullInputData,
+        ClustInputData,
+        ClustInputDataMerged,
+        get_EUR_to_USD,
+        load_input_data,
+        plot_clusters,
+        subplot_clusters,
+        z_normalize,
+        undo_z_normalize,
+        sakoe_chiba_band,
+        kmedoids_exact,
+        plot_k_rev,
+        plot_k_rev_subplot,
+        plot_SSE_rev,
+        sort_centers,
+        cols,
+        col,
+        calc_SSE,
+        find_medoids,
+        resize_medoids
 
 include(joinpath("utils","datastructs.jl"))
 include(joinpath("utils","utils.jl"))
@@ -40,30 +62,4 @@ include(joinpath("optim_problems","run_opt.jl"))
 include(joinpath("clustering","run_clust.jl"))
 include(joinpath("clustering","exact_kmedoids.jl"))
 
-"""
-export run_opt,
-       run_clust,
-       get_sup_kw_args,
-       InputData,
-       FullInputData,
-       ClustInputData,
-       ClustInputDataMerged,
-       get_EUR_to_USD,
-       load_input_data,
-       plot_clusters,
-       subplot_clusters,
-       z_normalize,
-       undo_z_normalize,
-       sakoe_chiba_band,
-       kmedoids_exact,
-       plot_k_rev,
-       plot_k_rev_subplot,
-       plot_SSE_rev,
-       sort_centers,
-       cols,
-       col,
-       calc_SSE,
-       find_medoids,
-       resize_medoids
 end # module ClustForOpt
-"""
