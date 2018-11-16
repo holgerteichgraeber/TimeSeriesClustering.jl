@@ -109,7 +109,7 @@ struct OptResult
   add_results::Dict
 end
 """
-struct CEPData
+struct CEPData <: ModelInputData
     nodes::DataFrame        nodes x installed capacity of different tech
     fixprices::DataFrame    tech x [EUR, CO2]
     varprices::DataFrame    tech x [EUR, CO2]
