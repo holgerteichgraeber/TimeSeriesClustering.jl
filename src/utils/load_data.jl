@@ -13,8 +13,8 @@ and regions:
 """
 function load_timeseries_data( application::String,
                               region::String;
-                              K=365,
-                              T=24
+                              K=365::Int,
+                              T=24::Int
                               )
   dt = Dict{String,Array}()
   num=0
@@ -43,8 +43,8 @@ function load_cepdata(region::String)
 Loading from .csv files in a the folder ../ClustForOpt/data/CEP/{region}/
 Follow instructions for the CSV-Files:
     nodes       nodes x installed capacity of different tech
-    fixprices   tech x [EUR, CO2]
-    varprices   tech x [EUR, CO2]
+    fix_costs   tech x [EUR, CO2]
+    var_costs   tech x [EUR, CO2]
     techs       tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
 for regions:
 - GER Germany
@@ -60,5 +60,5 @@ function load_cep_data(region::String
   techs=CSV.read(joinpath(data_path,"techs.csv"),allowmissing=:none)
   i=interest_rate
   techs[:annuityfactor]=map(lifetime -> (1+i)^(min(max_years_of_payment,lifetime))*i/((1+i)^(min(max_years_of_payment,lifetime))-1),techs[:lifetime])
-  return CEPData(region,nodes,fixprices,varprices,techs)
+  return CEPData(region,nodes,fix_costs,var_costs,techs)
 end #load_pricedata
