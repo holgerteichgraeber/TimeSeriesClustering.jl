@@ -13,7 +13,7 @@ and regions:
 """
 function load_timeseries_data( application::String,
                               region::String;
-                              K=365,
+                              K::Int=365,
                               T=24
                               )
   dt = Dict{String,Array}()
