@@ -42,10 +42,10 @@ end #load_pricedata
 function load_cepdata(region::String)
 Loading from .csv files in a the folder ../ClustForOpt/data/CEP/{region}/
 Follow instructions for the CSV-Files:
-    nodes       nodes x installed capacity of different tech
-    fix_costs   tech x [EUR, CO2]
-    var_costs   tech x [EUR, CO2]
-    techs       tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
+    nodes       nodes x installed capacity of different tech in MW_el
+    var_costs   tech x [EUR for fossils: in €/MWh_th-fuel for renewables in €/MWh_el, CO2 in kg-CO₂-eq./MWh_el]
+    fix_costs   tech x [EUR in €/MW_el, CO2 in kg-CO₂-eq./MW_el]
+    techs       tech x [categ,sector,lifetime in years,effic in %,fuel]
 for regions:
 - GER Germany
 - CA California

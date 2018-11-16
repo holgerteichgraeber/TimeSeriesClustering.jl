@@ -226,16 +226,38 @@ function resize_medoids(data::Array,centers::Array,weights::Array)
     return new_centers
 end
 
-#TODO Explain functions
+"""
 function findvalindf(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::Symbol)
+  Take DataFrame(df) Look in Column (column_of_reference) for the reference value (reference) and return in same row the value in column (value_to_return)
+"""
+function findvalindf(df::DataFrame,
+                    column_of_reference::Symbol,
+                    reference::String,
+                    value_to_return::Symbol
+                    )
     return df[findfirst(isequal(reference), df[column_of_reference]),value_to_return]
 end
-
+"""
 function findvalindf(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::String)
-    return df[findfirst(isequal(reference), df[column_of_reference]),Symbol(value_to_return)]
+  Take DataFrame(df) Look in Column (column_of_reference) for the reference value (reference) and return corresponding value in column (value_to_return)
+"""
+function findvalindf(df::DataFrame,
+                    column_of_reference::Symbol,
+                    reference::String,
+                    value_to_return::String
+                    )
+    return findvalindf(df,column_of_reference,reference,Symbol(value_to_return))
 end
 
+"""
 function mapsetindf(df::DataFrame,column_of_reference::Symbol,reference::String,set_to_return::Symbol)
+  Take DataFrame(df) Look in Column (column_of_reference) for all cases that match the reference value (reference) and return the corresponding sets in Column (set_to_return)
+"""
+function mapsetindf(df::DataFrame,
+                    column_of_reference::Symbol,
+                    reference::String,
+                    set_to_return::Symbol
+                    )
     return Symbol.(df[df[column_of_reference].==reference,set_to_return])
 end
 
