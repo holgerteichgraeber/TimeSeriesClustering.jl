@@ -12,7 +12,7 @@ function setup_cep_opt_sets(tsdata::ClustInputData,cepdata::CEPData)
       set[Symbol("tech_"*cat)]=cepdata.techs[cepdata.techs[:categ].==cat,:tech]
   end
   set[:tech]=cepdata.techs[:tech]
-  set[:impact]=String.(names(cepdata.fixprices))[2:end]
+  set[:impact]=String.(names(cepdata.fix_costs))[2:end]
   set[:account]=["fix","var"]
   set[:exist]=["ex","new"]
   #QUESTION How to integrate different secotors?
@@ -30,12 +30,12 @@ setting up the capacity expansion model with  the time series (tsdata), capacity
 function setup_cep_opt_model(tsdata::ClustInputData,cepdata::CEPData, set::Dict,solver,co2limit)
   ##### Extract data #####
   #nodes: nodes x installed capacity of different tech
-  #fixprices   tech x impact[EUR, CO2]
-  #varprices   tech x impact[EUR, CO2]
+  #fix_costs   tech x impact[EUR, CO2]
+  #var_costs   tech x impact[EUR, CO2]
   #techs       tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
   nodes=cepdata.nodes
-  fixprices=cepdata.fixprices
-  varprices=cepdata.varprices
+  fix_costs=cepdata.fix_costs
+  var_costs=cepdata.var_costs
   techs=cepdata.techs
   ts=tsdata.data
   ##### Define the model #####
@@ -57,19 +57,19 @@ function setup_cep_opt_model(tsdata::ClustInputData,cepdata::CEPData, set::Dict,
   @constraint(cep, [node=set[:nodes], tech=set[:tech_fossil]], CAP[tech,"new",node]==0)
 
   ## FOSSIL POWER PLANTS ##
-  # COST["var",impact,tech] = Δt ⋅ ΣGEN["el",-t-,-k-,-node-]/η ⋅ varprices[tech,impact] ∀ impact, tech_fossil
-  @constraint(cep, [impact=set[:impact], tech=set[:tech_fossil]], COST["var",impact,tech]==8760/(set[:time_t][end]*set[:time_k][end])*sum(GEN["el",tech,t,k,node]/findvalindf(techs,:tech,tech,:effic)*findvalindf(varprices,:tech,tech,impact) for node=set[:nodes], t=set[:time_t], k=set[:time_k]))
-  # COST["fix",impact,tech] = ΣCAP[tech,"new",-node-] ⋅ fixprices[tech,impact] ∀ impact, tech_fossil
-  @constraint(cep, [impact=set[:impact], tech=set[:tech_fossil]], COST["fix",impact,tech]==sum(CAP[tech,"new",node] for node=set[:nodes])*findvalindf(fixprices,:tech,tech,impact))
+  # COST["var",impact,tech] = Δt ⋅ ΣGEN["el",-t-,-k-,-node-]/η ⋅ var_costs[tech,impact] ∀ impact, tech_fossil
+  @constraint(cep, [impact=set[:impact], tech=set[:tech_fossil]], COST["var",impact,tech]==8760/(set[:time_t][end]*set[:time_k][end])*sum(GEN["el",tech,t,k,node]/findvalindf(techs,:tech,tech,:effic)*findvalindf(var_costs,:tech,tech,impact) for node=set[:nodes], t=set[:time_t], k=set[:time_k]))
+  # COST["fix",impact,tech] = ΣCAP[tech,"new",-node-] ⋅ fix_costs[tech,impact] ∀ impact, tech_fossil
+  @constraint(cep, [impact=set[:impact], tech=set[:tech_fossil]], COST["fix",impact,tech]==sum(CAP[tech,"new",node] for node=set[:nodes])*findvalindf(fix_costs,:tech,tech,impact))
   # 0 ≤ GEN["el",tech, t, k, node] ≤ ΣCAP[tech,-exist-,node] ∀ node, tech_fossil, t, k
   @constraint(cep, [node=set[:nodes], tech=set[:tech_fossil], t=set[:time_t], k=set[:time_k]], 0 <=GEN["el",tech, t, k, node])
   @constraint(cep, [node=set[:nodes], tech=set[:tech_fossil], t=set[:time_t], k=set[:time_k]],     GEN["el",tech, t, k, node] <=sum(CAP[tech,exist,node] for exist=set[:exist]))
 
   ## RENEWABLES ##
-  # COST["var",impact,tech] = Δt ⋅ ΣGEN["el",-t-,-k-,-node-]/η ⋅ varprices[tech,impact] ∀ impact, tech_renewable
-  @constraint(cep, [impact=set[:impact], tech=set[:tech_renewable]], COST["var",impact,tech]==sum(GEN["el",tech,t,k,node]*findvalindf(varprices,:tech,tech,Symbol(impact)) for node=set[:nodes], t=set[:time_t], k=set[:time_k]))
-  # COST["fix",impact,tech] = ΣCAP[tech,"new",-node-] ⋅ fixprices[tech,impact] ∀ impact, tech_renewable
-  @constraint(cep, [impact=set[:impact], tech=set[:tech_renewable]], COST["fix",impact,tech]==sum(CAP[tech,"new",node] for node=set[:nodes])*findvalindf(fixprices,:tech,tech,impact))
+  # COST["var",impact,tech] = Δt ⋅ ΣGEN["el",-t-,-k-,-node-]/η ⋅ var_costs[tech,impact] ∀ impact, tech_renewable
+  @constraint(cep, [impact=set[:impact], tech=set[:tech_renewable]], COST["var",impact,tech]==sum(GEN["el",tech,t,k,node]*findvalindf(var_costs,:tech,tech,Symbol(impact)) for node=set[:nodes], t=set[:time_t], k=set[:time_k]))
+  # COST["fix",impact,tech] = ΣCAP[tech,"new",-node-] ⋅ fix_costs[tech,impact] ∀ impact, tech_renewable
+  @constraint(cep, [impact=set[:impact], tech=set[:tech_renewable]], COST["fix",impact,tech]==sum(CAP[tech,"new",node] for node=set[:nodes])*findvalindf(fix_costs,:tech,tech,impact))
   # 0 ≤ GEN["el",tech, t, k, node] ≤ ΣCAP[tech,-exist-,node]*ts[tech-node,t,k] ∀ node, tech_renewable, t, k
   @constraint(cep, [node=set[:nodes], tech=set[:tech_renewable], t=set[:time_t], k=set[:time_k]], 0 <=GEN["el",tech, t, k, node])
   @constraint(cep, [node=set[:nodes], tech=set[:tech_renewable], t=set[:time_t], k=set[:time_k]], GEN["el",tech,t,k,node] <=sum(CAP[tech,exist,node] for exist=set[:exist])*ts[tech*"-"*node][t,k])
@@ -213,7 +213,7 @@ end # run_battery_opt()
  ###
 
 """
-function run_gas_opt(cep_price, weight=1, country = "", prnt=false)
+function run_gas_opt(data::ClustInputData)
 
 operational gas turbine optimization problem
 runs every day seperately and adds results in the end

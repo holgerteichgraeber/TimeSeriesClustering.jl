@@ -1,8 +1,8 @@
-tech,categ,sector,lifetime,effic,fuel,annuityfactor
-pv,renewable,el,15,1.0,none,0.09634228760924432
-wind,renewable,el,15,1.0,none,0.09634228760924432
-coal,fossil,el,45,0.3735445544554455,coal,0.06505143508027657
-nuc,fossil,el,40,0.33,nuc,0.06505143508027657
-oil,fossil,el,40,0.34247999999999995,oil,0.06505143508027657
-gas,fossil,el,50,0.3650480769230769,gas,0.06505143508027657
-psp,storage,el,50,0.75,none,0.06505143508027657
+tech,categ,sector,lifetime,effic,fuel
+pv,renewable,el,15,1,none
+wind,renewable,el,15,1,none
+coal,fossil,el,45,0.373544554455445,coal
+nuc,fossil,el,40,0.33,nuc
+oil,fossil,el,40,0.34248,oil
+gas,fossil,el,50,0.365048076923077,gas
+psp,storage,el,50,0.75,none

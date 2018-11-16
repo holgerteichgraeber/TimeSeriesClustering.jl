@@ -52,11 +52,13 @@ for regions:
 - TX Texas
 """
 function load_cep_data(region::String
-                        )
+                        ;interest_rate=0.05,max_years_of_payment=30)
   data_path=normpath(joinpath(dirname(@__FILE__),"..","..","data","CEP",region))
   nodes=CSV.read(joinpath(data_path,"nodes.csv"),allowmissing=:none)
-  fixprices=CSV.read(joinpath(data_path,"fixprices.csv"),allowmissing=:none)
-  varprices=CSV.read(joinpath(data_path,"varprices.csv"),allowmissing=:none)
+  fix_costs=CSV.read(joinpath(data_path,"fix_costs.csv"),allowmissing=:none)
+  var_costs=CSV.read(joinpath(data_path,"var_costs.csv"),allowmissing=:none)
   techs=CSV.read(joinpath(data_path,"techs.csv"),allowmissing=:none)
+  i=interest_rate
+  techs[:annuityfactor]=map(lifetime -> (1+i)^(min(max_years_of_payment,lifetime))*i/((1+i)^(min(max_years_of_payment,lifetime))-1),techs[:lifetime])
   return CEPData(region,nodes,fixprices,varprices,techs)
 end #load_pricedata

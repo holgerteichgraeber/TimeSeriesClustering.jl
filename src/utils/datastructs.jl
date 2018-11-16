@@ -119,8 +119,8 @@ struct CEPData
 struct CEPData
     region::String
     nodes::DataFrame
-    fixprices::DataFrame
-    varprices::DataFrame
+    fix_costs::DataFrame
+    var_costs::DataFrame
     techs::DataFrame
 end
  #### Constructors for data structures###
