@@ -34,12 +34,3 @@ for (name,Scenario) in Scenarios
         push!(Scenario.opt_res,run_cep_opt(tsdata,cep_input_data_GER;solver=GurobiSolver(),co2limit=co2limit))
     end
 end
-
-#TODO Masterthesis from here on
-@time include(normpath(joinpath(dirname(@__FILE__),"..","src","utils","plot_cep.jl")))
-gr(size=(1000,1500),width=1,linecolor=:match,grid=(:y, :black, :dot, 1, 0.9),xticks=plot_prepare_xticks(Scenarios))
-colors=[Stanford[:Yellow] Stanford[:LBlue] Stanford[:Brown] Stanford[:Orange] Stanford[:Grey] Stanford[:DGreen] Stanford[:DBlue]]
-eurplots=plot_groupedbar_ref_and_comp(Scenarios,"Cost EUR";legend=:topleft,color=colors)
-capplots=plot_groupedbar_ref_and_comp(Scenarios,"Cap";color=colors)
-pall=plot(eurplots[1],capplots[1],eurplots[2],capplots[2],eurplots[3],capplots[3],layout=@layout([a b; c d; e f]))
-savefig(pall,"/home/elias/Studium/Julia/ClustPlot/pall.svg")
