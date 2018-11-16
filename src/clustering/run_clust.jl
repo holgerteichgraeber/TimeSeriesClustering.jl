@@ -43,6 +43,7 @@ function run_clust(
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
+      attribute_weights=Dict{String,Any}(),
       kwargs...
     )
     check_kw_args(norm_op,norm_scope,method,representation)
@@ -53,7 +54,8 @@ function run_clust(
     # normalize
     # TODO: implement 0-1 normalization and add as a choice to runclust
     data_norm = z_normalize(data;scope=norm_scope)
-    data_norm_merged = ClustInputDataMerged(data_norm)
+    data_norm_att = attribute_weigh(data_norm,attribute_weights)
+    data_norm_merged = ClustInputDataMerged(data_norm_att)
 
      # initialize dictionaries of the loaded data (key: number of clusters, n_init)
     centers = Dict{Tuple{Int,Int},Array}()
@@ -103,8 +105,7 @@ function run_clust(
     end
     # save all locally converged solutions and the best into a struct
     clust_result = ClustResultAll(best_results,best_ids,cost_best,n_clust_ar,centers,data_norm_merged.data_type,weights,clustids,cost,iter)
-    # save in save file
-    #TODO
+    # TODO save in save file
 
     return clust_result
 end
