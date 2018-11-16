@@ -43,11 +43,13 @@ using Gurobi
         plot_k_rev_subplot,
         plot_SSE_rev,
         sort_centers,
-        cols,
-        col,
         calc_SSE,
         find_medoids,
-        resize_medoids
+        resize_medoids,
+        load_timeseries_data,
+        load_cep_data,
+        run_cep_opt
+
 
 include(joinpath("utils","datastructs.jl"))
 include(joinpath("utils","utils.jl"))
