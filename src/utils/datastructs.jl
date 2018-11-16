@@ -105,8 +105,7 @@ end
 struct OptResult
   status::Symbol
   obj::Float64
-  desVar::Dict{String,Array}
-  opVar::Dict{String,Array}
+  var::Any
   add_results::Dict
 end
 """
@@ -123,10 +122,30 @@ struct CEPData
     var_costs::DataFrame
     techs::DataFrame
 end
+"""
+mutable struct Scenario
+  name::String
+  clust_res::ClustResultAll
+  opt_res::
+"""
+mutable struct Scenario
+  name::String
+  clust_res::Any
+  opt_res::Any
+end
  #### Constructors for data structures###
 
  # need to come afterwards because of cyclic argument between ClustInputData and ClustInputDataMerged Constructors
-
+ """
+   function Scenario(clust_res::ClustResultAll
+ Constructor for FullInputData with optional data input
+ """
+ function Scenario(;clust_res=clust_res::ClustResultAll
+                        )
+  name=""
+  opt_res=nothing
+  Scenario(name,clust_res,opt_res)
+end
 """
   function FullInputData(region::String,
                          N::Int;

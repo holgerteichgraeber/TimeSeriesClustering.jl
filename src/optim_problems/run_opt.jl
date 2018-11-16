@@ -101,14 +101,15 @@ setting up the capacity expansion model with  the time series (tsdata), capacity
 """
 function solve_cep_opt_model(cep_model,co2limit::Float64)
   @time status=solve(cep_model)
-  result=Dict()
-  result[:cost]=getvalue(cep_model[:COST])
-  result[:cap]=getvalue(cep_model[:CAP])
-  result[:gen]=getvalue(cep_model[:GEN])
-  result[:objective]=getobjectivevalue(cep_model)
-  result[:co2limit]=co2limit
-  @info("Solved: "*String(status)*" min COST[EUR]: $(result[:objective]) s.t. CO₂-Emissions ≤ $co2limit")
-  return result
+  objective=getobjectivevalue(cep_model)
+  var=Dict()
+  var["Cost"]=getvalue(cep_model[:COST])
+  var["Cap"]=getvalue(cep_model[:CAP])
+  var["Gen"]=getvalue(cep_model[:GEN])
+  add_results=Dict()
+  add_results["Co2Limit"]=co2limit
+  @info("Solved: "*String(status)*" min COST[EUR]: $objective s.t. CO₂-Emissions ≤ $co2limit")
+  return OptResult(status,objective,var,add_results)
 end
 """
 function run_cep_opt(tsdata::ClustInputData,cepdata::CEPData)
