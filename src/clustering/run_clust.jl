@@ -76,14 +76,13 @@ function run_clust(
 
     # find best
  # TODO: write as function
-    ind_mincost = findmin(cost,dims=2)[2]  # along dimension 2
-    ind_mincost = reshape(ind_mincost,size(ind_mincost,1))
+    ind_mincost = findmin(cost,dims=2)[2]  # along dimension 2, only store indices
     cost_best = zeros(size(cost,1))
     ind_mincost_2 = zeros(size(cost,1))
     for i=1:size(cost,1)
         cost_best[i]=cost[ind_mincost[i]]
         # linear to cartesian indice (get column value [2] in order to get the initial starting point of interest. i is the row value already.) 
-        ind_mincost_2[i]=CartesianIndices(cost)[ind_mincost[i]][2]
+        ind_mincost_2[i]=ind_mincost[i][2]
     end
 
     # save best results as ClustInputData
