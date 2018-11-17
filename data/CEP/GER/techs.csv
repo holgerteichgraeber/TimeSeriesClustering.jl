@@ -5,4 +5,4 @@ coal,fossil,el,45,0.373544554455445,coal
 nuc,fossil,el,40,0.33,nuc
 oil,fossil,el,40,0.34248,oil
 gas,fossil,el,50,0.365048076923077,gas
-psp,storage,el,50,0.75,none
+ph,storage,el,50,0.75,none
