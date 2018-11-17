@@ -22,7 +22,7 @@ function run_clust_kmedoids_medoid(
     iter = results.iterations
 
     weights = calc_weights(clustids,n_clust)
-
+    
     return centers,weights,clustids,cost,iter
 end
 

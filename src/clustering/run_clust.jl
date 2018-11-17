@@ -71,7 +71,12 @@ function run_clust(
            fun_name = Symbol("run_clust_"*method*"_"*representation)
            centers[n_clust,i],weights[n_clust,i],clustids[n_clust,i],cost[n_clust_it,i],iter[n_clust_it,i] =
            @eval $fun_name($data_norm_merged,$n_clust,$iterations;$kwargs...)
-        end
+    
+           # recalculate centers if medoids is used. Recalculate because medoid is not integrally preserving
+          if representation=="medoid"
+            centers[n_clust,i] = resize_medoids(data,centers[n_clust,i],weights[n_clust,i])
+          end
+       end
     end
 
     # find best

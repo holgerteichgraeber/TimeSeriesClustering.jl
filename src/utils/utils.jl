@@ -45,7 +45,7 @@ end
 
 
 """
-function z_normalize(data;scope="full")
+function z_normalize(data::Array;scope="full")
 
 z-normalize data with mean and sdv by hour
 
@@ -211,20 +211,43 @@ end
 """
 function resize_medoids(data::Array,centers::Array,weights::Array)
 
+This is the DEFAULT resize medoids function
+
 Takes in centers (typically medoids) and normalizes them such that the yearly average of the clustered data is the same as the yearly average of the original data.
 """
 function resize_medoids(data::Array,centers::Array,weights::Array)
     mu_data = sum(data)
     mu_clust = 0
+    w_tot=sum(weights)
     for k=1:size(centers)[2]
- # TODO: make weights >1 in this formula below
-      mu_clust += weights[k]*sum(centers[:,k]) # 0<=weights<=1
+      mu_clust += weights[k]/w_tot*sum(centers[:,k]) # weights[k]>=1
     end
     mu_clust *= size(data)[2]
     mu_data_mu_clust = mu_data/mu_clust
     new_centers = centers* mu_data_mu_clust
     return new_centers
 end
+
+"""
+function resize_medoids(data::Array,centers::Array,weights::Array)
+
+This is the DEFAULT resize medoids function
+
+Takes in centers (typically medoids) and normalizes them such that the yearly average of the clustered data is the same as the yearly average of the original data.
+"""
+function resize_medoids(data::ClustInputData,centers::Array,weights::Array)
+    (data.T * length(keys(data.data)) != size(centers,1) ) && @error("dimension missmatch between full input data and centers")
+    centers_res = zeros(size(centers))
+    # go through the attributes within data
+    i=0
+    for (k,v) in data.data
+      i+=1
+      # calculate resized centers for each attribute
+      centers_res[(1+data.T*(i-1)):(data.T*i),:] = resize_medoids(v,centers[(1+data.T*(i-1)):(data.T*i),:],weights)
+    end
+    return centers_res
+end
+
 
 """
     function calc_weights(clustids::Array{Int}, n_clust::Int)
