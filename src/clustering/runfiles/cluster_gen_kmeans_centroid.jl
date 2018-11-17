@@ -30,11 +30,7 @@ function run_clust_kmeans_centroid(
         iter = results.iterations
     end
 
-    # calculate weights: absolute weights >1
-    weights = zeros(n_clust)
-    for j=1:length(clustids)
-        weights[clustids[j]] +=1
-    end
+    weights = calc_weights(clustids,n_clust)
 
     return centers,weights,clustids,cost,iter
 

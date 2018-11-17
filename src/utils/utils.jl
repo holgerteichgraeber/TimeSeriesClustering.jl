@@ -225,3 +225,16 @@ function resize_medoids(data::Array,centers::Array,weights::Array)
     new_centers = centers* mu_data_mu_clust
     return new_centers
 end
+
+"""
+    function calc_weights(clustids::Array{Int}, n_clust::Int)
+
+Calculates weights for clusters, based on clustids that are assigned to a certain cluster. The weights are absolute:    weights[i]>=1
+"""
+function calc_weights(clustids::Array{Int}, n_clust::Int)
+    weights = zeros(n_clust)
+    for j=1:length(clustids)
+        weights[clustids[j]] +=1
+    end
+    return weights
+end
