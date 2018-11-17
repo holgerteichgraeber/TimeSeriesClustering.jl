@@ -1,3 +1,30 @@
+
+function run_clust_kmedoids_exact_medoid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int;
+    gurobi_env=0
+    )
+   
+    (typeof(gurobi_env)==Int) && @error("Please provide a gurobi_env (Gurobi Environment). See test file for example")
+    
+    # TODO: optional in future: pass distance metric as kwargs
+    dist = SqEuclidean()
+    results = kmedoids_exact(data_norm.data,n_clust,gurobi_env;_dist=dist)#;distance_type_ar[dist])
+    clustids = results.assignments
+    centers_norm = results.medoids
+    centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
+    cost = results.totalcost
+    iter = 1
+
+    weights = calc_weights(clustids,n_clust)
+    
+    return centers,weights,clustids,cost,iter
+end
+
+"""
+OLD
+"""
 function run_clust_kmedoids_exact_medoid(
       region::String,
       opt_problems::Array{String},

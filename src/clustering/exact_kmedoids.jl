@@ -1,16 +1,11 @@
 # exact k-medoids modeled similar as in Kotzur et al, 2017
-using Distances
-using JuMP
+#using Distances
+#using JuMP
  #using GLPKMathProgInterface 
  #using Cbc
-using Gurobi  # Gurobi is super fast compared to the other solvers
+#using Gurobi  # Gurobi is super fast compared to the other solvers
   
-"""
-   kmedoidsResult()
- 
-Holds results of kmedoids run
-
-"""
+"Holds results of kmedoids run"
 mutable struct kmedoidsResult
     medoids::Array{Float64}
     assignments::Array{Int}
@@ -60,9 +55,9 @@ end
 @constraint(m,sum(y[i] for i=1:N_i) == nclust)
 
 # solve jump model
-tic()
+#tic()
 status=solve(m)
-toc()
+#toc()
 
 println("status: ",status)
 y_opt=round.(Integer,getvalue(y))
@@ -77,14 +72,16 @@ for i=1:N_i
     id[i]=ii
   end
 end
-# TODO: When updating kmedoids exact, replace findn with findall - depreciated
-centerids = findn(z_opt)[1]
+nz = findall(!iszero,z_opt)
+centerids=Int[]
+for i=1:length(nz) # just take the first dimension of each of the elements of the array of cartesianCoordinates
+  push!(centerids, nz[i][1])
+end
 clustids = zeros(Int,N_i)
 for i=1:N_i
   clustids[i] = id[centerids[i]]
 end
-# TODO: When updating kmedoids exact, replace find with findall - depreciated
-centers = data[:,find(id.!=0.0)]
+centers = data[:,findall(id.!=0.0)] 
 tot_dist = getobjectivevalue(m)
  # output centers
 results = kmedoidsResult(centers, clustids, tot_dist) 
