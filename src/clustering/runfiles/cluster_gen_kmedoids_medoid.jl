@@ -1,3 +1,36 @@
+"""
+function run_clust_kmedoids_medoid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int
+    )
+"""
+function run_clust_kmedoids_medoid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int
+    )
+    
+    # TODO: optional in future: pass distance metric as kwargs
+    dist = SqEuclidean()
+    d_mat=pairwise(dist,data_norm.data)
+    results = kmedoids(d_mat,n_clust;tol=1e-6,maxiter=iterations)
+    clustids = results.assignments
+    centers_norm = data_norm.data[:,results.medoids]
+    centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
+    cost = results.totalcost
+    iter = results.iterations
+
+    weights = calc_weights(clustids,n_clust)
+
+    return centers,weights,clustids,cost,iter
+end
+
+
+
+"""
+OLD
+"""
 function run_clust_kmedoids_medoid(
       region::String,
       opt_problems::Array{String},

@@ -45,12 +45,10 @@ function run_clust(
       save::String="",
       kwargs...
     )
-
+    
+    # When adding new methods: add combination of clust+rep to sup_kw_args
     check_kw_args(norm_op,norm_scope,method,representation)
-    # TODO: implement other methods with generic method call in for loops
-    if !(method=="kmeans" && representation =="centroid") 
-      @error("Any method other than kmeans centroid and kmedoids medoid not implemented yet. TODO")
-    end
+    
     # normalize
     # TODO: implement 0-1 normalization and add as a choice to runclust
     data_norm = z_normalize(data;scope=norm_scope)
@@ -69,8 +67,10 @@ function run_clust(
       n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts; n_clust_it is used for indexing Arrays
         for i = 1:n_init
  # TODO: implement other clustering methods
+           # function call to the respective function (method + representation)
+           fun_name = Symbol("run_clust_"*method*"_"*representation)
            centers[n_clust,i],weights[n_clust,i],clustids[n_clust,i],cost[n_clust_it,i],iter[n_clust_it,i] =
-              run_clust_kmeans_centroid(data_norm_merged,n_clust,iterations)
+           @eval $fun_name($data_norm_merged,$n_clust,$iterations;$kwargs...)
         end
     end
 
@@ -172,7 +172,7 @@ sup_kw_args["region"]=["GER","CA"]
 sup_kw_args["opt_problems"]=["battery","gas_turbine"]
 sup_kw_args["norm_op"]=["zscore"]
 sup_kw_args["norm_scope"]=["full","hourly","sequence"]
-sup_kw_args["method+representation"]=["kmeans+centroid","kmeans+medoid","kmedoids+medoid","kmedoids_exact+medoid","hierarchical+centroid","hierarchical+medoid","dbaclust+centroid","kshape+centroid"]
+sup_kw_args["method+representation"]=["kmeans+centroid","kmedoids+medoid"]#["kmeans+centroid","kmeans+medoid","kmedoids+medoid","kmedoids_exact+medoid","hierarchical+centroid","hierarchical+medoid","dbaclust+centroid","kshape+centroid"]
 
 
 """
