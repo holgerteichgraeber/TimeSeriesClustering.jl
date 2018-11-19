@@ -106,11 +106,11 @@ function solve_cep_opt_model(cep_model,co2limit::Float64)
   @time status=solve(cep_model)
   objective=getobjectivevalue(cep_model)
   var=Dict()
-  var["Cost"]=getvalue(cep_model[:COST])
-  var["Cap"]=getvalue(cep_model[:CAP])
-  var["Gen"]=getvalue(cep_model[:GEN])
+  var["COST"]=getvalue(cep_model[:COST])
+  var["CAP"]=getvalue(cep_model[:CAP])
+  var["GEN"]=getvalue(cep_model[:GEN])
   add_results=Dict()
-  add_results["Co2Limit"]=co2limit
+  add_results["co2limit"]=co2limit
   @info("Solved: "*String(status)*" min COST[EUR]: $objective s.t. CO₂-Emissions ≤ $co2limit")
   return OptResult(status,objective,var,add_results)
 end

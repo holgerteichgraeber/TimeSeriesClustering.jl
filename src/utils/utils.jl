@@ -44,24 +44,6 @@ function z_normalize(data::ClustInputData;scope="full")
  return ClustInputData(data.region,data.K,data.T,data_norm,data.weights;mean=mean,sdv=sdv)
 end
 
-#QUESTION Shall we rename already to a,b as it is not sdv after division?
-"""
-function attribute_weigh(data::ClustInputData,attribute_weights)
-scope: "full", "sequence", "hourly"
-"""
-function attribute_weigh(data::ClustInputData,attribute_weights::Dict{String,Any})
-  for (name,data_norm) in data.data_norm
-    #The first element before - defines the tech -> for time being weighting techs and Dict(tech -> weight)
-    tech=split(name,"-")[1]
-    if findall(tech.==keys(attribute_weights))!=[]
-      attribute_weight=attribute_weights[tech]
-      data_norm.*=attribute_weight
-      sdv[name]./=attribute_weight
-    end
-  end
-  return data
-end
-
 """
 function z_normalize(data;scope="full")
 

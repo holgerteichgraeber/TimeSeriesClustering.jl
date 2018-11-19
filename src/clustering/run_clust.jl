@@ -43,7 +43,7 @@ function run_clust(
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
-      attribute_weights=Dict{String,Any}(),
+      attribute_weights::Dict=Dict{String,Any}(),
       kwargs...
     )
     check_kw_args(norm_op,norm_scope,method,representation)
@@ -110,7 +110,23 @@ function run_clust(
     return clust_result
 end
 
-
+#QUESTION Shall we rename already to a,b as it is not sdv after division?
+"""
+function attribute_weigh(data::ClustInputData,attribute_weights)
+scope: "full", "sequence", "hourly"
+"""
+function attribute_weigh(data::ClustInputData,attribute_weights::Dict)
+  for name in keys(data.data)
+    #The first element before - defines the tech -> for time being weighting techs and Dict(tech -> weight)
+    tech=split(name,"-")[1]
+    if findall(tech.==keys(attribute_weights))!=[]
+      attribute_weight=attribute_weights[tech]
+      data.data[name].*=attribute_weight
+      data.sdv[name]./=attribute_weight
+    end
+  end
+  return data
+end
 """
 OLD
 TODO: Get rid of this one
