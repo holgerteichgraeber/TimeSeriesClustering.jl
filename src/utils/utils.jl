@@ -22,7 +22,9 @@ function sort_centers(centers::Array,weights::Array)
   weights: days [e.g. 9], unsorted
    sorts the centers by weights from largest to smallest
   """
-function sort_centers(centers::Array,weights::Array)
+function sort_centers(centers::Array,
+                      weights::Array
+                      )
   i_w = sortperm(-weights)   # large to small (-)
   weights_sorted = weights[i_w]
   centers_sorted = centers[:,i_w]
@@ -33,7 +35,9 @@ end # function
 function z_normalize(data::ClustInputData;scope="full")
 scope: "full", "sequence", "hourly"
 """
-function z_normalize(data::ClustInputData;scope="full")
+function z_normalize(data::ClustInputData;
+                    scope="full"
+                    )
  data_norm = Dict{String,Array}()
  mean= Dict{String,Array}()
  sdv= Dict{String,Array}()
@@ -52,7 +56,9 @@ z-normalize data with mean and sdv by hour
 data: input format: (1st dimension: 24 hours, 2nd dimension: # of days)
 scope: "full": one mean and sdv for the full data set; "hourly": univariate scaling: each hour is scaled seperately; "sequence": sequence based scaling
 """
-function z_normalize(data::Array;scope="full")
+function z_normalize(data::Array;
+                    scope="full"
+                    )
   if scope == "sequence"
     seq_mean = zeros(size(data)[2])
     seq_sdv = zeros(size(data)[2])
@@ -225,3 +231,42 @@ function resize_medoids(data::Array,centers::Array,weights::Array)
     new_centers = centers* mu_data_mu_clust
     return new_centers
 end
+
+"""
+function findvalindf(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::Symbol)
+  Take DataFrame(df) Look in Column (column_of_reference) for the reference value (reference) and return in same row the value in column (value_to_return)
+"""
+function findvalindf(df::DataFrame,
+                    column_of_reference::Symbol,
+                    reference::String,
+                    value_to_return::Symbol
+                    )
+    return df[findfirst(isequal(reference), df[column_of_reference]),value_to_return]
+end
+"""
+function findvalindf(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::String)
+  Take DataFrame(df) Look in Column (column_of_reference) for the reference value (reference) and return corresponding value in column (value_to_return)
+"""
+function findvalindf(df::DataFrame,
+                    column_of_reference::Symbol,
+                    reference::String,
+                    value_to_return::String
+                    )
+    return findvalindf(df,column_of_reference,reference,Symbol(value_to_return))
+end
+
+"""
+function mapsetindf(df::DataFrame,column_of_reference::Symbol,reference::String,set_to_return::Symbol)
+  Take DataFrame(df) Look in Column (column_of_reference) for all cases that match the reference value (reference) and return the corresponding sets in Column (set_to_return)
+"""
+function mapsetindf(df::DataFrame,
+                    column_of_reference::Symbol,
+                    reference::String,
+                    set_to_return::Symbol
+                    )
+    return Symbol.(df[df[column_of_reference].==reference,set_to_return])
+end
+
+#function mapsetsindf(df::DataFrame,column_of_reference::Symbol,reference::String,column_of_reference2::Symbol,reference2::String,value_to_return::Symbol)
+#    return df[(in)(mapsetindf(df,column_of_reference2,reference2,value_to_return)),findall(mapsetindf(df,column_of_reference,reference,value_to_return)),value_to_return]
+#end

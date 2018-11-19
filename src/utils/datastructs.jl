@@ -1,16 +1,18 @@
  ### Data structures ###
 abstract type InputData end
+abstract type TSInputData <:InputData end
+abstract type ModelInputData <: InputData end
 abstract type ClustResult end
 
 "FullInputData"
-struct FullInputData <: InputData
+struct FullInputData <: TSInputData
   region::String
   N::Int
   data::Dict{String,Array}
 end
 
 "ClustInputData \n weights: this is the absolute weight. E.g. for a year of 365 days, sum(weights)=365"
-struct ClustInputData <: InputData
+struct ClustInputData <: TSInputData
   region::String
   K::Int
   T::Int
@@ -21,7 +23,7 @@ struct ClustInputData <: InputData
 end
 
 "ClustInputDataMerged"
-struct ClustInputDataMerged <: InputData
+struct ClustInputDataMerged <: TSInputData
   region::String
   K::Int
   T::Int
@@ -57,15 +59,49 @@ end
 struct OptResult
   status::Symbol
   obj::Float64
-  desVar::Dict{String,Array}
-  opVar::Dict{String,Array}
+  op_var::Dict{String,Any}
+  des_var::Dict{String,Any}
   add_results::Dict
 end
-
+"""
+struct CEPData <: ModelInputData
+    nodes::DataFrame        nodes x installed capacity of different tech
+    fixprices::DataFrame    tech x [EUR, CO2]
+    varprices::DataFrame    tech x [EUR, CO2]
+    techs::DataFrame        tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
+"""
+struct CEPData <: ModelInputData
+    region::String
+    nodes::DataFrame
+    fix_costs::DataFrame
+    var_costs::DataFrame
+    techs::DataFrame
+end
+"""
+mutable struct Scenario
+  name::String
+  clust_res::ClustResultAll
+  opt_res::
+"""
+mutable struct Scenario
+  name::String
+  #QUESTION How to be general but not use Any
+  clust_res::Any #ClustInputData or ClustResultAll
+  opt_res::Any #OptResult or Nothing
+end
  #### Constructors for data structures###
 
  # need to come afterwards because of cyclic argument between ClustInputData and ClustInputDataMerged Constructors
-
+ """
+   function Scenario(clust_res::ClustResultAll
+ Constructor for FullInputData with optional data input
+ """
+ function Scenario(;clust_res=clust_res::ClustResultAll
+                        )
+  name=""
+  opt_res=nothing
+  Scenario(name,clust_res,opt_res)
+end
 """
   function FullInputData(region::String,
                          N::Int;
