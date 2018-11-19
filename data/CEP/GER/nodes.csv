@@ -1,4 +1,4 @@
-nodes,pv,wind,coal,gas,nuc,oil,psp,psp_stor
+nodes,pv,wind,coal,gas,nuc,oil,ph,ph_e
 dena21,1068,3299,470,23,1410,550,0,0
 dena81,2655,6757,1469,2468,0,718,0,0
 dena82,247,609,454,146,0,148,119,534

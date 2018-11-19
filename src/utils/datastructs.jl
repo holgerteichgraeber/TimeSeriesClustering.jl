@@ -1,5 +1,7 @@
  ### Data structures ###
 abstract type InputData end
+abstract type TSInputData <:InputData end
+abstract type ModelInputData <: InputData end
 abstract type ClustResult end
 
 """
@@ -9,14 +11,14 @@ struct FullInputData <: InputData
   data::Dict{String,Array}
 end
 """
-struct FullInputData <: InputData
+struct FullInputData <: TSInputData
   region::String
   N::Int
   data::Dict{String,Array}
 end
 
 """
-struct ClustInputData <: InputData
+struct ClustInputData <: TSInputData
   region::String
   K::Int
   T::Int
@@ -28,7 +30,7 @@ end
 
 weights: this is the absolute weight. E.g. for a year of 365 days, sum(weights)=365
 """
-struct ClustInputData <: InputData
+struct ClustInputData <: TSInputData
   region::String
   K::Int
   T::Int
@@ -38,7 +40,7 @@ struct ClustInputData <: InputData
   sdv::Dict{String,Array}
 end
 """
-struct ClustInputDataMerged <: InputData
+struct ClustInputDataMerged <: TSInputData
   region::String
   K::Int
   T::Int
@@ -49,7 +51,7 @@ struct ClustInputDataMerged <: InputData
   sdv::Dict{String,Array}
 end
 """
-struct ClustInputDataMerged <: InputData
+struct ClustInputDataMerged <: TSInputData
   region::String
   K::Int
   T::Int
@@ -105,7 +107,8 @@ end
 struct OptResult
   status::Symbol
   obj::Float64
-  var::Any
+  op_var::Dict{String,Any}
+  des_var::Dict{String,Any}
   add_results::Dict
 end
 """
@@ -115,7 +118,7 @@ struct CEPData <: ModelInputData
     varprices::DataFrame    tech x [EUR, CO2]
     techs::DataFrame        tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
 """
-struct CEPData
+struct CEPData <: ModelInputData
     region::String
     nodes::DataFrame
     fix_costs::DataFrame
@@ -130,8 +133,9 @@ mutable struct Scenario
 """
 mutable struct Scenario
   name::String
-  clust_res::Any
-  opt_res::Any
+  #QUESTION How to be general but not use Any
+  clust_res::Any #ClustInputData or ClustResultAll
+  opt_res::Any #OptResult or Nothing
 end
  #### Constructors for data structures###
 

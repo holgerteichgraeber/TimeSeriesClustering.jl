@@ -22,7 +22,9 @@ function sort_centers(centers::Array,weights::Array)
   weights: days [e.g. 9], unsorted
    sorts the centers by weights from largest to smallest
   """
-function sort_centers(centers::Array,weights::Array)
+function sort_centers(centers::Array,
+                      weights::Array
+                      )
   i_w = sortperm(-weights)   # large to small (-)
   weights_sorted = weights[i_w]
   centers_sorted = centers[:,i_w]
@@ -33,7 +35,9 @@ end # function
 function z_normalize(data::ClustInputData;scope="full")
 scope: "full", "sequence", "hourly"
 """
-function z_normalize(data::ClustInputData;scope="full")
+function z_normalize(data::ClustInputData;
+                    scope="full"
+                    )
  data_norm = Dict{String,Array}()
  mean= Dict{String,Array}()
  sdv= Dict{String,Array}()
@@ -52,7 +56,9 @@ z-normalize data with mean and sdv by hour
 data: input format: (1st dimension: 24 hours, 2nd dimension: # of days)
 scope: "full": one mean and sdv for the full data set; "hourly": univariate scaling: each hour is scaled seperately; "sequence": sequence based scaling
 """
-function z_normalize(data::Array;scope="full")
+function z_normalize(data::Array;
+                    scope="full"
+                    )
   if scope == "sequence"
     seq_mean = zeros(size(data)[2])
     seq_sdv = zeros(size(data)[2])
