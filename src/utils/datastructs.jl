@@ -4,20 +4,14 @@ abstract type TSInputData <:InputData end
 abstract type ModelInputData <: InputData end
 abstract type ClustResult end
 
-"""
-struct FullInputData <: InputData
-  region::String
-  N::Int
-  data::Dict{String,Array}
-end
-"""
+"FullInputData"
 struct FullInputData <: TSInputData
   region::String
   N::Int
   data::Dict{String,Array}
 end
 
-"""
+"ClustInputData \n weights: this is the absolute weight. E.g. for a year of 365 days, sum(weights)=365"
 struct ClustInputData <: TSInputData
   region::String
   K::Int
@@ -28,18 +22,7 @@ struct ClustInputData <: TSInputData
   sdv::Dict{String,Array}
 end
 
-weights: this is the absolute weight. E.g. for a year of 365 days, sum(weights)=365
-"""
-struct ClustInputData <: TSInputData
-  region::String
-  K::Int
-  T::Int
-  data::Dict{String,Array}
-  weights::Array{Float64}
-  mean::Dict{String,Array}
-  sdv::Dict{String,Array}
-end
-"""
+"ClustInputDataMerged"
 struct ClustInputDataMerged <: TSInputData
   region::String
   K::Int
@@ -50,31 +33,8 @@ struct ClustInputDataMerged <: TSInputData
   mean::Dict{String,Array}
   sdv::Dict{String,Array}
 end
-"""
-struct ClustInputDataMerged <: TSInputData
-  region::String
-  K::Int
-  T::Int
-  data::Array
-  data_type::Array{String}
-  weights::Array{Float64}
-  mean::Dict{String,Array}
-  sdv::Dict{String,Array}
-end
-"""
-struct ClustResultAll <: ClustResult
-  best_results::Array{ClustInputData}
-  best_ids::Array{Array}
-  best_cost::Array
-  n_clust_ar::Array
-  centers::Dict{Tuple{Int,Int},Array}
-  data_type::Array{String}
-  weights::Dict{Tuple{Int,Int},Array}
-  clustids::Dict{Tuple{Int,Int},Array}
-  cost::Array
-  iter::Array
-end
-"""
+
+"ClustResultAll"
 struct ClustResultAll <: ClustResult
   best_results::Array{ClustInputData}
   best_ids::Array{Array}
@@ -95,15 +55,7 @@ struct ClustResultBest <: ClustResult
   best_ids::Array{Tuple{Int,Int}}
 end
 
-"""
-struct OptResult
-  status::Symbol
-  obj::Float64
-  desVar::Dict{String,Array}
-  opVar::Dict{String,Array}
-  add_results::Dict
-end
-"""
+"OptResult"
 struct OptResult
   status::Symbol
   obj::Float64
