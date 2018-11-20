@@ -1,3 +1,44 @@
+"""
+function run_clust_kmeans_medoid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int
+    )
+"""
+function run_clust_kmeans_medoid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int
+    )
+    centers,weights,clustids,cost,iter =[],[],[],0,0
+    # if only one cluster
+    if n_clust ==1
+        clustids = ones(Int,size(data_norm.data,2))
+        centers_norm = calc_medoids(data_norm.data,clustids)
+        centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids) # need to provide idx in case that sequence-based normalization is used
+        cost = sum(pairwise(SqEuclidean(),centers_norm,data_norm.data)) #same as sum((seq_norm-repmat(mean(seq_norm,2),1,size(seq,2))).^2)
+        iter = 1
+    # kmeans() in Clustering.jl is implemented for k>=2
+    else
+        results = kmeans(data_norm.data,n_clust;maxiter=iterations)
+
+        # save clustering results
+        clustids = results.assignments
+        centers_norm = calc_medoids(data_norm.data,clustids)
+        centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
+        cost = calc_SSE(data_norm.data,centers_norm,clustids)
+        iter = results.iterations
+    end
+
+    weights = calc_weights(clustids,n_clust)
+
+    return centers,weights,clustids,cost,iter
+
+end
+
+"""
+OLD
+"""
 function run_clust_kmeans_medoid(
       region::String,
       opt_problems::Array{String},

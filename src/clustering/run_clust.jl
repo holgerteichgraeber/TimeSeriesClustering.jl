@@ -177,7 +177,7 @@ sup_kw_args["region"]=["GER","CA"]
 sup_kw_args["opt_problems"]=["battery","gas_turbine"]
 sup_kw_args["norm_op"]=["zscore"]
 sup_kw_args["norm_scope"]=["full","hourly","sequence"]
-sup_kw_args["method+representation"]=["kmeans+centroid","kmedoids+medoid","kmedoids_exact+medoid","hierarchical+centroid","hierarchical+medoid"]#["kmeans+centroid","kmeans+medoid","kmedoids+medoid","kmedoids_exact+medoid","hierarchical+centroid","hierarchical+medoid","dbaclust+centroid","kshape+centroid"]
+sup_kw_args["method+representation"]=["kmeans+centroid","kmeans+medoid","kmedoids+medoid","kmedoids_exact+medoid","hierarchical+centroid","hierarchical+medoid"]#["dbaclust+centroid","kshape+centroid"]
 
 
 """
