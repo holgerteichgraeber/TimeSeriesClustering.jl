@@ -25,6 +25,7 @@ function setup_cep_opt_sets(tsdata::ClustInputData,
   set["time_T"]=1:tsdata.T
   return set
 end
+
 """
 function setup_cep_opt_model(tsdata::ClustInputData,cepdata::CEPData, set::Dict; solver)
 setting up the capacity expansion model with  the time series (tsdata), capacity expansion model data (cepdata) and the sets (set) and returning the cep model
@@ -100,7 +101,7 @@ function setup_cep_opt_model(tsdata::ClustInputData,
   # Fix Generation to 0
   # GEN["el",tech, t, k, node] = 0 ∀ node, tech_storage, t, k
   @constraint(cep, [node=set["nodes"], tech=set["tech_storage"], t=set["time_T"], k=set["time_K"]], GEN["el",tech,t,k,node]==0)
-
+  
   ## DEMAND ##
   # Force the demand to match the generation
   # Σ_{tech,node}GEN["el",tech,t,k,node] = Σ_{node}ts[el_demand-node,t,k] ∀ t,k
