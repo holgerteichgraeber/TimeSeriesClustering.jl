@@ -1,0 +1,6 @@
+tech,categ,sector,lifetime,effic,fuel
+pv,renewable,el,15,1,none
+wind,renewable,el,15,1,none
+coal,fossil,el,45,1,coal
+nuc,fossil,el,40,1,nuc
+gas,fossil,el,50,1,gas
