@@ -1,18 +1,3 @@
-# This file provides the wrapper function run_clust for all clustering methods in the folder runfiles
-# include all files from runfiles folder here
-wor_dir = pwd()
-cd(dirname(@__FILE__)) # change working directory to current file
-include(joinpath(pwd(),"runfiles","cluster_gen_kmeans_centroid.jl"))
-include(joinpath(pwd(),"runfiles","cluster_gen_kmeans_medoid.jl"))
-include(joinpath(pwd(),"runfiles","cluster_gen_kmedoids_medoid.jl"))
-include(joinpath(pwd(),"runfiles","cluster_gen_kmedoids_exact_medoid.jl"))
-#TODO: Include Hierarchical
-include(joinpath(pwd(),"runfiles","cluster_gen_hierarchical.jl"))
-#include(joinpath(pwd(),"runfiles","cluster_gen_hierarchical_medoid.jl"))
-include(joinpath(pwd(),"runfiles","cluster_gen_dbaclust_centroid.jl"))
-
-cd(wor_dir) # change working directory to old previous file's dir
-
 
 """
 function run_clust(
@@ -66,7 +51,7 @@ function run_clust(
     for n_clust_it=1:length(n_clust_ar)
       n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts; n_clust_it is used for indexing Arrays
         for i = 1:n_init
- # TODO: implement other clustering methods
+ # TODO: implement shape based clustering methods
            # function call to the respective function (method + representation)
            fun_name = Symbol("run_clust_"*method*"_"*representation)
            centers[n_clust,i],weights[n_clust,i],clustids[n_clust,i],cost[n_clust_it,i],iter[n_clust_it,i] =
@@ -112,63 +97,6 @@ function run_clust(
     #TODO
 
     return clust_result
-end
-
-
-"""
-OLD
-TODO: Get rid of this one
-function run_clust(
-      region::String,
-      opt_problem::Array{String};
-      norm_op::String="zscore",
-      norm_scope::String="full",
-      method::String="kmeans",
-      representation::String="centroid",
-      n_clust_ar::Array=collect(1:9),
-      n_init::Int=100,
-      iterations::Int=300
-    )
-
-Wrapper function that calls the specific clustering methods. Saves results as jld2 file in a newly created folder outfiles, and also returns results from clustering.
-"""
-function run_clust_old(
-      region::String,
-      opt_problems::Array{String};
-      norm_op::String="zscore",
-      norm_scope::String="full",
-      method::String="kmeans",
-      representation::String="centroid",
-      n_clust_ar::Array=collect(1:9),
-      n_init::Int=100,
-      iterations::Int=300,
-      kwargs...
-    )
-
-    check_kw_args(norm_op,norm_scope,method,representation)
-
-    # function call to the respective function (method + representation)
-    fun_name = Symbol("run_clust_"*method*"_"*representation)
-    return @eval $fun_name($region,$opt_problems,$norm_op,$norm_scope,$n_clust_ar,$n_init,$iterations;$kwargs...)
-end
-
-
-"""
-TODO: GET RID OF THIS ONE
-function run_clust(
-    region::String,
-    opt_problem::String;
-    kwargs ...
-    )
-
-Wrapper function for run_clust to allow for one input argument only for the optimization problem type.
-"""
-function run_clust_old(
-      region::String,
-      opt_problem::String;
-      kwargs ...
-    )
-    return run_clust(region,[opt_problem];kwargs...)
 end
 
  # supported keyword arguments
@@ -229,3 +157,208 @@ function check_kw_args(
        error(error_string)
     end
 end
+
+"""
+function run_clust_kmeans_centroid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int
+    )
+"""
+function run_clust_kmeans_centroid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int
+    )
+    centers,weights,clustids,cost,iter =[],[],[],0,0
+    # if only one cluster
+    if n_clust ==1
+        centers_norm = mean(data_norm.data,dims=2) # should be 0 due to normalization
+        clustids = ones(Int,size(data_norm.data,2))
+        centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids) # need to provide idx in case that sequence-based normalization is used
+        cost = sum(pairwise(SqEuclidean(),centers_norm,data_norm.data)) #same as sum((seq_norm-repmat(mean(seq_norm,2),1,size(seq,2))).^2)
+        iter = 1
+    # kmeans() in Clustering.jl is implemented for k>=2
+    else
+        results = kmeans(data_norm.data,n_clust;maxiter=iterations)
+
+        # save clustering results
+        clustids = results.assignments
+        centers_norm = results.centers
+        centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
+        cost = results.totalcost
+        iter = results.iterations
+    end
+
+    weights = calc_weights(clustids,n_clust)
+
+    return centers,weights,clustids,cost,iter
+
+end
+
+"""
+function run_clust_kmeans_medoid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int
+    )
+"""
+function run_clust_kmeans_medoid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int
+    )
+    centers,weights,clustids,cost,iter =[],[],[],0,0
+    # if only one cluster
+    if n_clust ==1
+        clustids = ones(Int,size(data_norm.data,2))
+        centers_norm = calc_medoids(data_norm.data,clustids)
+        centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids) # need to provide idx in case that sequence-based normalization is used
+        cost = sum(pairwise(SqEuclidean(),centers_norm,data_norm.data)) #same as sum((seq_norm-repmat(mean(seq_norm,2),1,size(seq,2))).^2)
+        iter = 1
+    # kmeans() in Clustering.jl is implemented for k>=2
+    else
+        results = kmeans(data_norm.data,n_clust;maxiter=iterations)
+
+        # save clustering results
+        clustids = results.assignments
+        centers_norm = calc_medoids(data_norm.data,clustids)
+        centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
+        cost = calc_SSE(data_norm.data,centers_norm,clustids)
+        iter = results.iterations
+    end
+
+    weights = calc_weights(clustids,n_clust)
+
+    return centers,weights,clustids,cost,iter
+
+end
+
+"""
+function run_clust_kmedoids_medoid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int
+    )
+"""
+function run_clust_kmedoids_medoid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int
+    )
+    
+    # TODO: optional in future: pass distance metric as kwargs
+    dist = SqEuclidean()
+    d_mat=pairwise(dist,data_norm.data)
+    results = kmedoids(d_mat,n_clust;tol=1e-6,maxiter=iterations)
+    clustids = results.assignments
+    centers_norm = data_norm.data[:,results.medoids]
+    centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
+    cost = results.totalcost
+    iter = results.iterations
+
+    weights = calc_weights(clustids,n_clust)
+    
+    return centers,weights,clustids,cost,iter
+end
+
+"""
+function run_clust_kmedoids_exact_medoid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int;
+    gurobi_env=0
+    )
+"""
+function run_clust_kmedoids_exact_medoid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int;
+    gurobi_env=0
+    )
+   
+    (typeof(gurobi_env)==Int) && @error("Please provide a gurobi_env (Gurobi Environment). See test file for example")
+    
+    # TODO: optional in future: pass distance metric as kwargs
+    dist = SqEuclidean()
+    results = kmedoids_exact(data_norm.data,n_clust,gurobi_env;_dist=dist)#;distance_type_ar[dist])
+    clustids = results.assignments
+    centers_norm = results.medoids
+    centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
+    cost = results.totalcost
+    iter = 1
+
+    weights = calc_weights(clustids,n_clust)
+    
+    return centers,weights,clustids,cost,iter
+end
+
+"""
+function run_clust_hierarchical(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int;
+    _dist::SemiMetric = SqEuclidean()
+    )
+
+Helper function to run run_clust_hierarchical_centroids and run_clust_hierarchical_medoid
+"""
+function run_clust_hierarchical(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int;
+    _dist::SemiMetric = SqEuclidean()
+    )
+
+    d_mat=pairwise(_dist,data_norm.data)
+    r=hclust(d_mat,linkage=:ward_presquared)
+    clustids = cutree(r,k=n_clust)
+    weights = calc_weights(clustids,n_clust)
+
+    return [],weights,clustids,[],1
+end
+
+"""
+function run_clust_hierarchical_centroid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int;
+    _dist::SemiMetric = SqEuclidean()
+    )
+"""
+function run_clust_hierarchical_centroid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int;
+    _dist::SemiMetric = SqEuclidean()
+    )
+    ~,weights,clustids,~,iter= run_clust_hierarchical(data_norm,n_clust,iterations;_dist=_dist)
+    centers_norm = calc_centroids(data_norm.data,clustids) 
+    cost = calc_SSE(data_norm.data,centers_norm,clustids)
+    centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
+
+    return centers,weights,clustids,cost,iter
+end
+
+"""
+function run_clust_hierarchical_medoid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int;
+    _dist::SemiMetric = SqEuclidean()
+    )
+"""
+function run_clust_hierarchical_medoid(
+    data_norm::ClustInputDataMerged,
+    n_clust::Int,
+    iterations::Int;
+    _dist::SemiMetric = SqEuclidean()
+    )
+    ~,weights,clustids,~,iter= run_clust_hierarchical(data_norm,n_clust,iterations;_dist=_dist)
+    centers_norm = calc_medoids(data_norm.data,clustids) 
+    cost = calc_SSE(data_norm.data,centers_norm,clustids)
+    centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
+
+    return centers,weights,clustids,cost,iter
+end
+
