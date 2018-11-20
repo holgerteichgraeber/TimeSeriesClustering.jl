@@ -77,11 +77,13 @@ for i=1:N_i
     id[i]=ii
   end
 end
+# TODO: When updating kmedoids exact, replace findn with findall - depreciated
 centerids = findn(z_opt)[1]
 clustids = zeros(Int,N_i)
 for i=1:N_i
   clustids[i] = id[centerids[i]]
 end
+# TODO: When updating kmedoids exact, replace find with findall - depreciated
 centers = data[:,find(id.!=0.0)]
 tot_dist = getobjectivevalue(m)
  # output centers
