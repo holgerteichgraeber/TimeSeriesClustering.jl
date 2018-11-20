@@ -24,7 +24,8 @@ function run_clust_kmeans_centroid(
 
         # save clustering results
         clustids = results.assignments
-        centers_norm = results.centers
+       # centers_norm = results.centers
+        centers_norm = calc_centroids(data_norm.data,clustids) 
         centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
         cost = results.totalcost
         iter = results.iterations

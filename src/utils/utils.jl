@@ -168,27 +168,49 @@ function calc_SSE(data::Array,centers::Array,assignments::Array)
 end # calc_SSE
 
 """
-function find_medoids(data::Array,centers::Array,assignments::Array)
+function calc_centroids(data::Array,assignments::Array)
 
-Given the data and cluster centroids and their respective assignments, this function finds
+Given the data and cluster assignments, this function finds
+the centroid of the respective clusters.
+"""
+function calc_centroids(data::Array,assignments::Array)
+  K=maximum(assignments) #number of clusters
+  n_per_period=size(data,1)
+  n_periods =size(data,2)
+  centroids=zeros(n_per_period,K)
+  for k=1:K
+    centroids[:,k]=sum(data[:,findall(assignments.==k)];dims=2)/length(findall(assignments.==k))
+  end
+  return centroids
+end
+
+"""
+function calc_medoids(data::Array,assignments::Array)
+
+Given the data and cluster assignments, this function finds
 the medoids that are closest to the cluster center.
 """
-function find_medoids(data::Array,centers::Array,assignments::Array)
-  k=size(centers,2) #number of clusters
+function calc_medoids(data::Array,assignments::Array)
+  K=maximum(assignments) #number of clusters
+  n_per_period=size(data,1)
   n_periods =size(data,2)
   SSE=Float64[]
-  for i=1:k
+  for i=1:K
     push!(SSE,Inf)
   end
-  medoids=zeros(centers)
+  centroids=calc_centroids(data,assignments)
+  medoids=zeros(n_per_period,K)
+  # iterate through all data points
   for i=1:n_periods
-    d = sqeuclidean(data[:,i],centers[:,assignments[i]])
-    if d < SSE[assignments[i]]
+    d = sqeuclidean(data[:,i],centroids[:,assignments[i]])
+    if d < SSE[assignments[i]] # if this data point is closer to centroid than the previously visited ones, then make this the medoid
       medoids[:,assignments[i]] = data[:,i]
+      SSE[assignments[i]]=d
     end
   end
   return medoids
 end
+
 
 """
 function resize_medoids(data::Array,centers::Array,weights::Array,assignments::Array)
