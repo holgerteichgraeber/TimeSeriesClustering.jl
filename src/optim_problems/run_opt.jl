@@ -32,8 +32,9 @@ setting up the capacity expansion model with  the time series (tsdata), capacity
 function setup_cep_opt_model(tsdata::ClustInputData,
                             cepdata::CEPData,
                             set::Dict,
-                            solver::Any, #Otherwise we have to explicitly state the solver
-                            co2limit::Number)
+                            solver::Any; #Otherwise we have to explicitly state the solver
+                            co2limit=Inf,
+                            nuclear=false)
   ##### Extract data #####
   #nodes: nodes x installed capacity of different tech
   #fix_costs   tech x impact[EUR, CO2]
@@ -60,9 +61,6 @@ function setup_cep_opt_model(tsdata::ClustInputData,
   # Assign the existing capacity from the nodes table
   @constraint(cep, [node=set["nodes"], tech=set["tech"]], CAP[tech,"ex",node]==findvalindf(nodes,:nodes,node,tech))
 
-  ## GENERAL ##
-  # Limit new capacities (for the time being)
-  @constraint(cep, [node=set["nodes"], tech=set["tech_fossil"]], CAP[tech,"new",node]==0)
 
   ## FOSSIL POWER PLANTS ##
   # ! variable Cost-EUR for fossils in €/MW_th and Cost-CO2 in CO₂-eq./MW_el
@@ -75,6 +73,9 @@ function setup_cep_opt_model(tsdata::ClustInputData,
   # Calculate the fixed Costs
   # COST["fix",impact,tech] = Σ_{node}CAP[tech,"new",node] ⋅ fix_costs[tech,impact] ∀ impact, tech_fossil
   @constraint(cep, [impact=set["impact"], tech=set["tech_fossil"]], COST["fix",impact,tech]==sum(CAP[tech,"new",node] for node=set["nodes"])*findvalindf(fix_costs,:tech,tech,impact))
+  if nuclear==false
+    @constraint(cep, [node=set["nodes"]], CAP["nuc","new",node]==0)
+  end
   # Limit the generation to the existing capacity
   # 0 ≤ GEN["el",tech, t, k, node] ≤ Σ_{exist}CAP[tech,exist,node] ∀ node, tech_fossil, t, k
   @constraint(cep, [node=set["nodes"], tech=set["tech_fossil"], t=set["time_T"], k=set["time_K"]], 0 <=GEN["el",tech, t, k, node])
@@ -108,8 +109,8 @@ function setup_cep_opt_model(tsdata::ClustInputData,
   ## EMISSIONS ##
   # Limit the Emissions with co2limit if it exists
   if !isinf(co2limit)
-    # ΣCOST_{account}[account,"CO2",-tech-] ≤ co2limit
-    @constraint(cep, sum(COST[account,"CO2",tech] for account=set["account"], tech=set["tech"])<=co2limit)
+    # ΣCOST_{account}[account,"CO2",-tech-] ≤ co2limit*Σ_{node,t,k}ts[el_demand-node,t,k]
+    @constraint(cep, sum(COST[account,"CO2",tech] for account=set["account"], tech=set["tech"])<= co2limit*sum(sum(ts["el_demand-"*node]) for node=set["nodes"]))
   end
 
   ## OBJECTIVE ##
@@ -134,7 +135,7 @@ function solve_cep_opt_model(cep_model::Model,
   op_var["GEN"]=getvalue(cep_model[:GEN])
   add_results=Dict()
   add_results["co2limit"]=co2limit
-  @info("Solved: "*String(status)*" min COST[EUR]: $objective s.t. CO₂-Emissions ≤ $co2limit")
+  @info("Solved: "*String(status)*" min COST[EUR]: $objective s.t. CO₂-Emissions per MWh ≤ $co2limit")
   return OptResult(status,objective,op_var,des_var,add_results)
 end
 """
@@ -149,7 +150,7 @@ function run_cep_opt(tsdata::ClustInputData,
                     )
   @info("Setting Up CEP 🔌 ⛅")
   set=setup_cep_opt_sets(tsdata,cepdata)
-  cep_model=setup_cep_opt_model(tsdata,cepdata,set,solver,co2limit)
+  cep_model=setup_cep_opt_model(tsdata,cepdata,set,solver;co2limit=co2limit)
   @info("Solving ⏳")
   return solve_cep_opt_model(cep_model, co2limit)
 end

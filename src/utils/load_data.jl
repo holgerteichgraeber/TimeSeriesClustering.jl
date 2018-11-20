@@ -60,5 +60,7 @@ function load_cep_data(region::String
   techs=CSV.read(joinpath(data_path,"techs.csv"),allowmissing=:none)
   i=interest_rate
   techs[:annuityfactor]=map(lifetime -> (1+i)^(min(max_years_of_payment,lifetime))*i/((1+i)^(min(max_years_of_payment,lifetime))-1),techs[:lifetime])
+  fix_costs[:EUR]=map((tech, EUR) -> findvalindf(techs,:tech,tech,:annuityfactor)*EUR, fix_costs[:tech], fix_costs[:EUR])
+  fix_costs[:CO2]=map((tech, CO2) -> CO2/findvalindf(techs,:tech,tech,:lifetime), fix_costs[:tech], fix_costs[:CO2])
   return CEPData(region,nodes,fix_costs,var_costs,techs)
 end #load_pricedata
