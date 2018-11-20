@@ -7,7 +7,7 @@ include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_develo
 input_data,~ = load_input_data("DAM","GER")
 
  # run clustering
-clust_res = run_clust(input_data;method="kmeans",representation="centroid",n_init=100,n_clust_ar=collect(1:9)) # default k-means
+clust_res = run_clust(input_data;method="kmeans",representation="centroid",n_init=1000,n_clust_ar=collect(1:9)) # default k-means
 
  # optimization
 

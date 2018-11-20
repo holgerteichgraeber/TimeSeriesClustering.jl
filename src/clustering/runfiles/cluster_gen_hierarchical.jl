@@ -16,7 +16,7 @@ function run_clust_hierarchical(
     )
 
     d_mat=pairwise(_dist,data_norm.data)
-    r=hclust(d_mat,linkage=:ward)
+    r=hclust(d_mat,linkage=:ward_presquared)
     clustids = cutree(r,k=n_clust)
     weights = calc_weights(clustids,n_clust)
 
