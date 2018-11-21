@@ -6,7 +6,7 @@ function run_clust(
       norm_scope::String="full",
       method::String="kmeans",
       representation::String="centroid",
-      n_clust_ar::Array=collect(1:9),
+      n_clust::Int=5,
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
@@ -15,7 +15,7 @@ function run_clust(
 
 norm_op: "zscore", "01"(not implemented yet)
 norm_scope: "full","sequence","hourly"
-method: "kmeans",...
+method: "kmeans","kmedoids","kmedoids_exact","hierarchical"
 representation: "centroid","medoid"
 """
 function run_clust(
@@ -24,7 +24,7 @@ function run_clust(
       norm_scope::String="full",
       method::String="kmeans",
       representation::String="centroid",
-      n_clust_ar::Array=collect(1:9),
+      n_clust::Int=5,
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
@@ -39,74 +39,93 @@ function run_clust(
     data_norm = z_normalize(data;scope=norm_scope)
     data_norm_merged = ClustInputDataMerged(data_norm)
 
-     # initialize dictionaries of the loaded data (key: number of clusters, n_init)
-    centers = Dict{Tuple{Int,Int},Array}()
-    clustids = Dict{Tuple{Int,Int},Array}()
-    cost = zeros(length(n_clust_ar),n_init)
-    iter =  zeros(length(n_clust_ar),n_init)
-    weights = Dict{Tuple{Int,Int},Array}()
+    # initialize data arrays
+    centers = Array{Array{Float64},1}(undef,n_init)
+    clustids = Array{Array{Int,1},1}(undef,n_init)
+    weights = Array{Array{Float64},1}(undef,n_init)
+    cost = Array{Float64,1}(undef,n_init)
+    iter = Array{Int,1}(undef,n_init)
 
     # clustering
 
-    for n_clust_it=1:length(n_clust_ar)
-      n_clust = n_clust_ar[n_clust_it] # use for indexing Dicts; n_clust_it is used for indexing Arrays
-        for i = 1:n_init
- # TODO: implement shape based clustering methods
-           # function call to the respective function (method + representation)
-           fun_name = Symbol("run_clust_"*method*"_"*representation)
-           centers[n_clust,i],weights[n_clust,i],clustids[n_clust,i],cost[n_clust_it,i],iter[n_clust_it,i] =
-           @eval $fun_name($data_norm_merged,$n_clust,$iterations;$kwargs...)
-    
-           # recalculate centers if medoids is used. Recalculate because medoid is not integrally preserving
-          if representation=="medoid"
-            centers[n_clust,i] = resize_medoids(data,centers[n_clust,i],weights[n_clust,i])
-          end
-       end
+    for i = 1:n_init
+       # TODO: implement shape based clustering methods
+       # function call to the respective function (method + representation)
+       fun_name = Symbol("run_clust_"*method*"_"*representation)
+       centers[i],weights[i],clustids[i],cost[i],iter[i] =
+       @eval $fun_name($data_norm_merged,$n_clust,$iterations;$kwargs...)
+
+       # recalculate centers if medoids is used. Recalculate because medoid is not integrally preserving
+      if representation=="medoid"
+        centers[i] = resize_medoids(data,centers[i],weights[i])
+      end
     end
 
     # find best
  # TODO: write as function
-    ind_mincost = findmin(cost,dims=2)[2]  # along dimension 2, only store indices
-    cost_best = zeros(size(cost,1))
-    ind_mincost_2 = zeros(size(cost,1))
-    for i=1:size(cost,1)
-        cost_best[i]=cost[ind_mincost[i]]
-        # linear to cartesian indice (get column value [2] in order to get the initial starting point of interest. i is the row value already.) 
-        ind_mincost_2[i]=ind_mincost[i][2]
-    end
+    cost_best,ind_mincost = findmin(cost)  # along dimension 2, only store indice
 
-    # save best results as ClustInputData
-      # an array that contains 9 ClustInputData, one for each k
-    best_results = ClustInputData[]
-    best_weights = Array[]
-    best_ids = Array[]
-    for i=1:length(n_clust_ar)
-        n_clust = n_clust_ar[i] # use for indexing Dicts
-        i_mincost = ind_mincost_2[i] # minimum cost index at cluster numbered i
-        # save in merged format as array
-        b_merged = ClustInputDataMerged(data_norm_merged.region,n_clust_ar[i],data_norm_merged.T,centers[n_clust,i_mincost],data_norm_merged.data_type,weights[n_clust,i_mincost])
-        # transfer into ClustInputData format
-        b = ClustInputData(b_merged)
-        push!(best_results,b)
-        # save best clust ids
-        push!(best_ids,clustids[n_clust,i_mincost])
-    end
+    # save in merged format as array
+    b_merged = ClustInputDataMerged(data_norm_merged.region,n_clust,data_norm_merged.T,centers[ind_mincost],data_norm_merged.data_type,weights[ind_mincost])
+    # transfer into ClustInputData format
+    best_results = ClustInputData(b_merged)
+    best_ids = clustids[ind_mincost]
+    
     # save all locally converged solutions and the best into a struct
-    clust_result = ClustResultAll(best_results,best_ids,cost_best,n_clust_ar,centers,data_norm_merged.data_type,weights,clustids,cost,iter)
+    clust_result = ClustResultAll(best_results,best_ids,cost_best,n_clust,centers,data_norm_merged.data_type,weights,clustids,cost,iter)
     # save in save file
     #TODO
 
     return clust_result
 end
 
- # supported keyword arguments
+"""
+function run_clust(
+      data::ClustInputData,
+      n_clust_ar::Array{Int,1};
+      norm_op::String="zscore",
+      norm_scope::String="full",
+      method::String="kmeans",
+      representation::String="centroid",
+      n_init::Int=100,
+      iterations::Int=300,
+      save::String="",
+      kwargs...
+    )
+
+This function is a wrapper function around run_clust(). It runs multiple number of clusters k and returns an array of results.
+
+norm_op: "zscore", "01"(not implemented yet)
+norm_scope: "full","sequence","hourly"
+method: "kmeans","kmedoids","kmedoids_exact","hierarchical"
+representation: "centroid","medoid"
+"""
+function run_clust(
+      data::ClustInputData,
+      n_clust_ar::Array{Int,1};
+      norm_op::String="zscore",
+      norm_scope::String="full",
+      method::String="kmeans",
+      representation::String="centroid",
+      n_init::Int=100,
+      iterations::Int=300,
+      save::String="",
+      kwargs...
+    )
+    results_ar = Array{ClustResultAll,1}(undef,length(n_clust_ar)) 
+    for i=1:length(n_clust_ar)
+      results_ar[i] = run_clust(data;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_init=n_init,n_clust=n_clust_ar[i],iterations=iterations,save=save,kwargs...) 
+    end
+    return results_ar
+end
+
+# supported keyword arguments
 sup_kw_args =Dict{String,Array{String}}()
 sup_kw_args["region"]=["GER","CA"]
 sup_kw_args["opt_problems"]=["battery","gas_turbine"]
 sup_kw_args["norm_op"]=["zscore"]
 sup_kw_args["norm_scope"]=["full","hourly","sequence"]
 sup_kw_args["method+representation"]=["kmeans+centroid","kmeans+medoid","kmedoids+medoid","kmedoids_exact+medoid","hierarchical+centroid","hierarchical+medoid"]#["dbaclust+centroid","kshape+centroid"]
-
 
 """
 Returns supported keyword arguments for clustering function run_clust()

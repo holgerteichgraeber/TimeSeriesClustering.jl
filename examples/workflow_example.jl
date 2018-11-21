@@ -11,7 +11,7 @@ ts_input_data,~ = load_timeseries_data("CEP", "GER";K=365, T=24) #CEP
 cep_input_data_GER=load_cep_data("GER";interest_rate=0.05,max_years_of_payment=20)
 
  # run clustering
-ts_clust_res = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=10,n_clust_ar=collect(1:9)) # default k-means
+ts_clust_res = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=10,n_clust=5) # default k-means
 
  # optimization
-opt_res = run_cep_opt(ts_clust_res.best_results[5],cep_input_data_GER;solver=GurobiSolver(),co2limit=1e9)
+opt_res = run_cep_opt(ts_clust_res.best_results,cep_input_data_GER;solver=GurobiSolver(),co2limit=1e9)
