@@ -38,6 +38,7 @@ function load_timeseries_data( application::String,
   data_reshape =  ClustInputData(data_full,K,T)
   return data_reshape, data_full
 end #load_pricedata
+
 """
 function load_cepdata(region::String)
 Loading from .csv files in a the folder ../ClustForOpt/data/CEP/{region}/
