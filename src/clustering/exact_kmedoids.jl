@@ -1,9 +1,4 @@
 # exact k-medoids modeled similar as in Kotzur et al, 2017
-#using Distances
-#using JuMP
- #using GLPKMathProgInterface 
- #using Cbc
-#using Gurobi  # Gurobi is super fast compared to the other solvers
   
 "Holds results of kmedoids run"
 mutable struct kmedoidsResult
