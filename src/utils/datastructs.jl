@@ -36,16 +36,16 @@ end
 
 "ClustResultAll"
 struct ClustResultAll <: ClustResult
-  best_results::Array{ClustInputData}
-  best_ids::Array{Array}
-  best_cost::Array
-  n_clust_ar::Array
-  centers::Dict{Tuple{Int,Int},Array}
+  best_results::ClustInputData
+  best_ids::Array{Int,1}
+  best_cost::Float64
+  n_clust::Int
+  centers::Array{Array{Float64},1}
   data_type::Array{String}
-  weights::Dict{Tuple{Int,Int},Array}
-  clustids::Dict{Tuple{Int,Int},Array}
-  cost::Array
-  iter::Array
+  weights::Array{Array{Float64},1}
+  clustids::Array{Array{Int,1},1}
+  cost::Array{Float64,1}
+  iter::Array{Int,1}
 end
 
  # TODO: not used yet, but maybe best to implement this one later for users who just want to use clustering but do not care about the locally converged solutions
@@ -66,15 +66,17 @@ end
 """
 struct CEPData <: ModelInputData
     nodes::DataFrame        nodes x installed capacity of different tech
-    fixprices::DataFrame    tech x [EUR, CO2]
-    varprices::DataFrame    tech x [EUR, CO2]
+    var_costs::DataFrame    tech x [EUR, CO2]
+    fix_costs::DataFrame    tech x [EUR, CO2]
+    cap_costs::DataFrame    tech x [EUR, CO2]
     techs::DataFrame        tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
 """
 struct CEPData <: ModelInputData
     region::String
     nodes::DataFrame
-    fix_costs::DataFrame
     var_costs::DataFrame
+    fix_costs::DataFrame
+    cap_costs::DataFrame
     techs::DataFrame
 end
 """
