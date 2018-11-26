@@ -28,7 +28,7 @@ struct ClustInputDataMerged <: TSInputData
   K::Int
   T::Int
   data::Array
-  data_type::Array{String}
+  data_types::Array{String}
   weights::Array{Float64}
   mean::Dict{String,Array}
   sdv::Dict{String,Array}
@@ -41,7 +41,7 @@ struct ClustResultAll <: ClustResult
   best_cost::Float64
   n_clust::Int
   centers::Array{Array{Float64},1}
-  data_type::Array{String}
+  data_types::Array{String}
   weights::Array{Array{Float64},1}
   clustids::Array{Array{Int,1},1}
   cost::Array{Float64,1}
@@ -258,7 +258,7 @@ function ClustInputDataMerged(region::String,
                         K::Int,
                         T::Int,
                         data::Array,
-                        data_type::Array{String},
+                        data_types::Array{String},
                         weights::Array{Float64};
                         mean::Dict{String,Array}=Dict{String,Array}(),
                         sdv::Dict{String,Array}=Dict{String,Array}()
@@ -268,20 +268,20 @@ function ClustInputDataMerged(region::String,
                         K::Int,
                         T::Int,
                         data::Array,
-                        data_type::Array{String},
+                        data_types::Array{String},
                         weights::Array{Float64};
                         mean::Dict{String,Array}=Dict{String,Array}(),
                         sdv::Dict{String,Array}=Dict{String,Array}()
                         )
   mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
   if !mean_sdv_provided
-    for dt in data_type
+    for dt in data_types
       mean[dt]=zeros(T)
       sdv[dt]=ones(T)
     end
   end
 
-  ClustInputDataMerged(region,K,T,data,data_type,weights,mean,sdv)
+  ClustInputDataMerged(region,K,T,data,data_types,weights,mean,sdv)
 end
 
 
@@ -294,12 +294,12 @@ function ClustInputDataMerged(data::ClustInputData)
 function ClustInputDataMerged(data::ClustInputData)
   n_datasets = length(keys(data.data))
   data_merged= zeros(data.T*n_datasets,data.K)
-  data_type=String[]
+  data_types=String[]
   i=0
   for (k,v) in data.data
     i+=1
     data_merged[(1+data.T*(i-1)):(data.T*i),:] = v
-    push!(data_type,k)
+    push!(data_types,k)
   end
-  ClustInputDataMerged(data.region,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv)
+  ClustInputDataMerged(data.region,data.K,data.T,data_merged,data_types,data.weights,data.mean,data.sdv)
 end

@@ -66,13 +66,13 @@ function run_clust(
     cost_best,ind_mincost = findmin(cost)  # along dimension 2, only store indice
 
     # save in merged format as array
-    b_merged = ClustInputDataMerged(data_norm_merged.region,n_clust,data_norm_merged.T,centers[ind_mincost],data_norm_merged.data_type,weights[ind_mincost])
+    b_merged = ClustInputDataMerged(data_norm_merged.region,n_clust,data_norm_merged.T,centers[ind_mincost],data_norm_merged.data_types,weights[ind_mincost])
     # transfer into ClustInputData format
     best_results = ClustInputData(b_merged)
     best_ids = clustids[ind_mincost]
     
     # save all locally converged solutions and the best into a struct
-    clust_result = ClustResultAll(best_results,best_ids,cost_best,n_clust,centers,data_norm_merged.data_type,weights,clustids,cost,iter)
+    clust_result = ClustResultAll(best_results,best_ids,cost_best,n_clust,centers,data_norm_merged.data_types,weights,clustids,cost,iter)
     # save in save file
     #TODO
 
