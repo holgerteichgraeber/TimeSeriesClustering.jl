@@ -28,7 +28,7 @@ function run_clust(
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
-      attribute_weights::Dict=Dict{String,Any}(),
+      attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
       kwargs...
     )
     
