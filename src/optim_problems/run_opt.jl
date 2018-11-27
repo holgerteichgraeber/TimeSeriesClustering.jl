@@ -5,7 +5,8 @@ function setup_cep_opt_sets(tsdata::ClustInputData,cepdata::CEPData)
 fetching sets from the time series (tsdata) and capacity expansion model data (cepdata) and returning Dictionary with Sets as Symbols
 """
 function setup_cep_opt_sets(tsdata::ClustInputData,
-                            cepdata::CEPData
+                            cepdata::CEPData;
+                            existing_infrastructure=true
                             )
   set=Dict{String,Array}()
   set["nodes"]=cepdata.nodes[:nodes]
@@ -16,7 +17,11 @@ function setup_cep_opt_sets(tsdata::ClustInputData,
   set["tech"]=cepdata.techs[:tech]
   set["impact"]=String.(names(cepdata.cap_costs))[2:end]
   set["account"]=["cap_fix","var"]
-  set["exist"]=["ex","new"]
+  if existing_infrastructure
+    set["exist"]=["new","ex"]
+  else
+    set["exist"]=["new"]
+  end
   #QUESTION How to integrate different secotors?
   set["sector"]=unique(cepdata.techs[:sector])
   #Different set: set["sector"]=unique(cepdata.techs[:sector]) .. CAP[node,tech,sector]
@@ -34,7 +39,8 @@ function setup_cep_opt_model(tsdata::ClustInputData,
                             cepdata::CEPData,
                             set::Dict,
                             solver::Any; #Otherwise we have to explicitly state the solver
-                            co2limit=Inf
+                            co2limit=Inf,
+                            existing_infrastructure=true
                             )
   ##### Extract data #####
   #nodes: nodes x installed capacity of different tech
@@ -46,7 +52,6 @@ function setup_cep_opt_model(tsdata::ClustInputData,
   var_costs=cepdata.var_costs
   fix_costs=cepdata.fix_costs
   techs=cepdata.techs
-  currency=String(names(fix_costs)[2])
   ts=tsdata.data
   ts_dict=Dict{String,String}("wind"=>"wind","pv"=>"solar")
   ##### Define the model #####
@@ -62,9 +67,10 @@ function setup_cep_opt_model(tsdata::ClustInputData,
   #@variable(cep, SLACK[t=set["time_T"], k=set["time_K"]]>=0)
 
   ## ASSIGN VALUES ##
-  # Assign the existing capacity from the nodes table
-  @constraint(cep, [node=set["nodes"], tech=set["tech"]], CAP[tech,"ex",node]==findvalindf(nodes,:nodes,node,tech))
-
+  if existing_infrastructure
+    # Assign the existing capacity from the nodes table
+    @constraint(cep, [node=set["nodes"], tech=set["tech"]], CAP[tech,"ex",node]==findvalindf(nodes,:nodes,node,tech))
+  end
 
   ## FOSSIL POWER PLANTS ##
   if "tech_fossil" in keys(set)
@@ -78,7 +84,7 @@ function setup_cep_opt_model(tsdata::ClustInputData,
     # 0 ≤ GEN["el",tech, t, k, node] ≤ Σ_{exist}CAP[tech,exist,node] ∀ node, tech_fossil, t, k
     @constraint(cep, [node=set["nodes"], tech=set["tech_fossil"], t=set["time_T"], k=set["time_K"]], 0 <=GEN["el",tech, t, k, node])
     @constraint(cep, [node=set["nodes"], tech=set["tech_fossil"], t=set["time_T"], k=set["time_K"]],     GEN["el",tech, t, k, node] <=sum(CAP[tech,exist,node] for exist=set["exist"]))
-  end
+end
 
   ## RENEWABLES ##
   if "tech_renewable" in keys(set)
@@ -118,8 +124,8 @@ function setup_cep_opt_model(tsdata::ClustInputData,
 
   ## OBJECTIVE ##
   # Minimize the total €-Costs s.t. the Constraints introduced above
-  # min Σ_{account,tech}COST[account,{currency},tech] st. obove
-  @objective(cep, Min, sum(COST[account,currency,tech] for account=set["account"], tech=set["tech"]))
+  # min Σ_{account,tech}COST[account,"EUR",tech] st. obove
+  @objective(cep, Min, sum(COST[account,"EUR",tech] for account=set["account"], tech=set["tech"]))
   return cep
 end #functoin setup_cep_opt_model
 """
@@ -138,7 +144,8 @@ function solve_cep_opt_model(cep_model::Model,
   op_var["GEN"]=OptVariable(getvalue(cep_model[:GEN]))
   add_results=Dict()
   add_results["co2limit"]=co2limit
-  @info("Solved: "*String(status)*" min COST[EUR]: $objective s.t. CO₂-Emissions per MWh ≤ $co2limit")
+  currency=op_var["COST"].indexsets[2][1]
+  @info("Solved: "*String(status)*" min COST[$currency]: $objective s.t. CO₂-Emissions per MWh ≤ $co2limit")
   return OptResult(status,objective,op_var,des_var,add_results)
 end
 """
@@ -149,11 +156,12 @@ capacity expansion optimization problem: sets up the problem and runs the proble
 function run_cep_opt(tsdata::ClustInputData,
                     cepdata::CEPData;
                     solver=CbcSolver(),
-                    co2limit=Inf
+                    co2limit=Inf,
+                    existing_infrastructure=true
                     )
   @info("Setting Up CEP 🔌 ⛅")
-  set=setup_cep_opt_sets(tsdata,cepdata)
-  cep_model=setup_cep_opt_model(tsdata,cepdata,set,solver;co2limit=co2limit)
+  set=setup_cep_opt_sets(tsdata,cepdata;existing_infrastructure=existing_infrastructure)
+  cep_model=setup_cep_opt_model(tsdata,cepdata,set,solver;co2limit=co2limit,existing_infrastructure=existing_infrastructure)
   @info("Solving ⏳")
   return solve_cep_opt_model(cep_model, co2limit)
 end
