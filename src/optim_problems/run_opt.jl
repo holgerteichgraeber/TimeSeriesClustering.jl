@@ -6,7 +6,7 @@ fetching sets from the time series (tsdata) and capacity expansion model data (c
 """
 function setup_cep_opt_sets(tsdata::ClustInputData,
                             cepdata::CEPData;
-                            existing_infrastructure=true
+                            existing_infrastructure::Bool=false
                             )
   set=Dict{String,Array}()
   set["nodes"]=cepdata.nodes[:nodes]
@@ -40,12 +40,13 @@ function setup_cep_opt_model(tsdata::ClustInputData,
                             set::Dict,
                             solver::Any; #Otherwise we have to explicitly state the solver
                             co2limit=Inf,
-                            existing_infrastructure=true
+                            #QUESTION what type shall co2limit be to enable both Int64 and Float64? Number doesn't work
+                            existing_infrastructure::Bool=false
                             )
   ##### Extract data #####
   #nodes: nodes x installed capacity of different tech
-  #cap_costs   tech x impact[EUR, CO2]
-  #var_costs   tech x impact[EUR, CO2]
+  #cap_costs   tech x impact[USD, CO2]
+  #var_costs   tech x impact[USD, CO2]
   #techs       tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
   nodes=cepdata.nodes
   cap_costs=cepdata.cap_costs
@@ -124,8 +125,8 @@ end
 
   ## OBJECTIVE ##
   # Minimize the total €-Costs s.t. the Constraints introduced above
-  # min Σ_{account,tech}COST[account,"EUR",tech] st. obove
-  @objective(cep, Min, sum(COST[account,"EUR",tech] for account=set["account"], tech=set["tech"]))
+  # min Σ_{account,tech}COST[account,"USD",tech] st. obove
+  @objective(cep, Min, sum(COST[account,set["impact"][1],tech] for account=set["account"], tech=set["tech"]))
   return cep
 end #functoin setup_cep_opt_model
 """
@@ -157,7 +158,7 @@ function run_cep_opt(tsdata::ClustInputData,
                     cepdata::CEPData;
                     solver=CbcSolver(),
                     co2limit=Inf,
-                    existing_infrastructure=true
+                    existing_infrastructure=false
                     )
   @info("Setting Up CEP 🔌 ⛅")
   set=setup_cep_opt_sets(tsdata,cepdata;existing_infrastructure=existing_infrastructure)
