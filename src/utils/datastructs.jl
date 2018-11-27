@@ -63,18 +63,27 @@ struct OptResult
   des_var::Dict{String,Any}
   add_results::Dict
 end
+
+"OptVariable"
+struct OptVariable
+  innerArray::Array
+  indexsets::Tuple
+end
+
 """
 struct CEPData <: ModelInputData
     nodes::DataFrame        nodes x installed capacity of different tech
-    fixprices::DataFrame    tech x [EUR, CO2]
-    varprices::DataFrame    tech x [EUR, CO2]
+    var_costs::DataFrame    tech x [EUR, CO2]
+    fix_costs::DataFrame    tech x [EUR, CO2]
+    cap_costs::DataFrame    tech x [EUR, CO2]
     techs::DataFrame        tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
 """
 struct CEPData <: ModelInputData
     region::String
     nodes::DataFrame
-    fix_costs::DataFrame
     var_costs::DataFrame
+    fix_costs::DataFrame
+    cap_costs::DataFrame
     techs::DataFrame
 end
 """
@@ -99,9 +108,19 @@ end
  function Scenario(;clust_res=clust_res::ClustResultAll
                         )
   name=""
-  opt_res=nothing
+  opt_res=false
   Scenario(name,clust_res,opt_res)
 end
+
+"""
+function OptVariable
+Constructor for OptVariable based on JUMPArray
+"""
+function OptVariable(jumparray::Any
+                       )
+ OptVariable(jumparray.innerArray,jumparray.indexsets)
+end
+
 """
   function FullInputData(region::String,
                          N::Int;
