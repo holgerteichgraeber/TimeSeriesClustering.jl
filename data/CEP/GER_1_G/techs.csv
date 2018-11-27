@@ -1,8 +1,0 @@
-tech,categ,sector,fuel,lifetime,financial_lifetime,discount_rate
-pv,renewable,el,none,15,20,0.05
-wind,renewable,el,none,15,20,0.05
-coal,fossil,el,coal,45,20,0.05
-oil,fossil,el,oil,40,20,0.05
-gas,fossil,el,gas,50,20,0.05
-ph_p,storage,el,none,50,20,0.05
-ph_e,storage,el,none,50,20,0.05

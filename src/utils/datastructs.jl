@@ -66,17 +66,15 @@ end
 """
 struct CEPData <: ModelInputData
     nodes::DataFrame        nodes x installed capacity of different tech
-    var_costs::DataFrame    tech x [EUR, CO2]
-    fix_costs::DataFrame    tech x [EUR, CO2]
-    cap_costs::DataFrame    tech x [EUR, CO2]
+    fixprices::DataFrame    tech x [EUR, CO2]
+    varprices::DataFrame    tech x [EUR, CO2]
     techs::DataFrame        tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
 """
 struct CEPData <: ModelInputData
     region::String
     nodes::DataFrame
-    var_costs::DataFrame
     fix_costs::DataFrame
-    cap_costs::DataFrame
+    var_costs::DataFrame
     techs::DataFrame
 end
 """
