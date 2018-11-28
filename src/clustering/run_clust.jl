@@ -37,7 +37,7 @@ function run_clust(
     # normalize
     # TODO: implement 0-1 normalization and add as a choice to runclust
     data_norm = z_normalize(data;scope=norm_scope)
-    data_norm_att = attribute_weigh(data_norm,attribute_weights)
+    data_norm_att = attribute_weighting(data_norm,attribute_weights)
     data_norm_merged = ClustInputDataMerged(data_norm_att)
 
     # initialize data arrays
@@ -84,11 +84,11 @@ end
 
 #QUESTION Shall we rename already to a,b as it is not sdv after division?
 """
-function attribute_weigh(data::ClustInputData,attribute_weights::Dict)
+function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
 
 weigh the different attributes based on a dictionary entry for each tech or exact name
 """
-function attribute_weigh(data::ClustInputData,attribute_weights::Dict)
+function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
   for name in keys(data.data)
     tech=split(name,"-")[1]
     if name in keys(attribute_weights)
