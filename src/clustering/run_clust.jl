@@ -86,7 +86,7 @@ end
 """
 function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
 
-weigh the different attributes based on a dictionary entry for each tech or exact name
+apply the different attribute weights based on the dictionary entry for each tech or exact name
 """
 function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
   for name in keys(data.data)
