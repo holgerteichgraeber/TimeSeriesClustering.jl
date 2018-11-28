@@ -116,7 +116,7 @@ function Scenario(;clust_res=clust_res::ClustResultAll
 end
 
 """
-function OptVariable
+function OptVariable(jumparray::Any)
 Constructor for OptVariable based on JUMPArray
 """
 function OptVariable(jumparray::Any
