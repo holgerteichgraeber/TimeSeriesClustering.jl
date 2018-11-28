@@ -44,9 +44,9 @@ function load_cepdata(region::String)
 Loading from .csv files in a the folder ../ClustForOpt/data/CEP/{region}/
 Follow instructions for the CSV-Files:
     nodes       nodes x installed capacity of different tech in MW_el
-    var_costs   tech x [EUR for fossils: in €/MWh_el, CO2 in kg-CO₂-eq./MWh_el] # Variable costs per year
-    fix_costs   tech x [EUR in €/MW_el, CO2 in kg-CO₂-eq./MW_el] # Fixed costs per year
-    cap_costs   tech x [EUR in €/MW_el, CO2 in kg-CO₂-eq./MW_el] # Entire (NOT annulized) Costs per Investment in technology
+    var_costs   tech x [USD for fossils: in $/MWh_el, CO2 in kg-CO₂-eq./MWh_el] # Variable costs per year
+    fix_costs   tech x [USD in $/MW_el, CO2 in kg-CO₂-eq./MW_el] # Fixed costs per year
+    cap_costs   tech x [USD in $/MW_el, CO2 in kg-CO₂-eq./MW_el] # Entire (NOT annulized) Costs per Investment in technology
     techs       tech x [categ,sector,lifetime in years,effic in %,fuel]
 for regions:
 - GER Germany
@@ -60,8 +60,10 @@ function load_cep_data(region::String)
   fix_costs=CSV.read(joinpath(data_path,"fix_costs.csv"),allowmissing=:none)
   cap_costs=CSV.read(joinpath(data_path,"cap_costs.csv"),allowmissing=:none)
   techs=CSV.read(joinpath(data_path,"techs.csv"),allowmissing=:none)
+  # The time for the cap-investion to be paid back is the minimum of the max. financial lifetime and the lifetime of the product (If it's just good for 5 years, you'll have to rebuy one after 5 years)
+  # annuityfactor = (1+i)^y*i/((1+i)^y-1) , i-discount_rate and y-payoff years
   techs[:annuityfactor]=map((lifetime,financial_lifetime,discount_rate) -> (1+discount_rate)^(min(financial_lifetime,lifetime))*discount_rate/((1+discount_rate)^(min(financial_lifetime,lifetime))-1), techs[:lifetime],techs[:financial_lifetime],techs[:discount_rate])
-  cap_costs[:EUR]=map((tech, EUR) -> findvalindf(techs,:tech,tech,:annuityfactor)*EUR, cap_costs[:tech], cap_costs[:EUR])
+  cap_costs[2]=map((tech, EUR) -> findvalindf(techs,:tech,tech,:annuityfactor)*EUR, cap_costs[:tech], cap_costs[2])
   cap_costs[:CO2]=map((tech, CO2) -> CO2/findvalindf(techs,:tech,tech,:lifetime), cap_costs[:tech], cap_costs[:CO2])
   return CEPData(region,nodes,var_costs,fix_costs,cap_costs,techs)
 end #load_pricedata
