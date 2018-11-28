@@ -9,8 +9,7 @@ function run_clust(
       n_clust::Int=5,
       n_init::Int=100,
       iterations::Int=300,
-      save::String="",
-      kwargs...
+      save::String=""
     )
 
 norm_op: "zscore", "01"(not implemented yet)
@@ -28,7 +27,9 @@ function run_clust(
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
-      attribute_weights::Dict{String,Float64}=Dict{String,Float64}()
+      #QUESTION Where do we use save for? Do we really want to save each single Clustering result?
+      attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
+      get_all_clust_results::Bool=false
     )
 
     # When adding new methods: add combination of clust+rep to sup_kw_args
@@ -54,7 +55,7 @@ function run_clust(
        # function call to the respective function (method + representation)
        fun_name = Symbol("run_clust_"*method*"_"*representation)
        centers[i],weights[i],clustids[i],cost[i],iter[i] =
-       @eval $fun_name($data_norm_merged,$n_clust,$iterations;$kwargs...)
+       @eval $fun_name($data_norm_merged,$n_clust,$iterations)
 
        # recalculate centers if medoids is used. Recalculate because medoid is not integrally preserving
       if representation=="medoid"
@@ -73,11 +74,12 @@ function run_clust(
     best_ids = clustids[ind_mincost]
 
     # save all locally converged solutions and the best into a struct
-    clust_result = ClustResultAll(best_results,best_ids,cost_best,n_clust,centers,data_norm_merged.data_type,weights,clustids,cost,iter)
-    # save in save file
-    #TODO
-
-
+    if get_all_clust_results
+      clust_result = ClustResultAll(best_results,best_ids,cost_best,n_clust,data_norm_merged.data_type,centers,weights,clustids,cost,iter)
+    else
+      clust_result =  ClustResultBest(best_results,best_ids,cost_best,n_clust,data_norm_merged.data_type)
+    end
+    #TODO save in save file
     return clust_result
 end
 
