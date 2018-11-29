@@ -55,6 +55,26 @@ struct ClustResultBest <: ClustResult
   best_ids::Array{Tuple{Int,Int}}
 end
 
+"SimpleExtremeValueDescr"
+struct SimpleExtremeValueDescr
+   data_type::String
+   extremum::String
+   peak_def::String
+   "Replace default constructor to only allow certain entries"
+   function SimpleExtremeValueDescr(data_type::String, 
+                                    extremum::String,
+                                    peak_def::String)
+       # only allow certain entries 
+       if !(extremum in ["min","max"])
+         @error("extremum - "*extremum*" - not defined")  
+       elseif !(peak_def in ["absolute","integral"])
+         @error("peak_def - "*peak_def*" - not defined")  
+       end
+       new(data_type,extremum,peak_def) 
+   end
+end
+
+
 "OptResult"
 struct OptResult
   status::Symbol
@@ -63,6 +83,7 @@ struct OptResult
   des_var::Dict{String,Any}
   add_results::Dict
 end
+
 """
 struct CEPData <: ModelInputData
     nodes::DataFrame        nodes x installed capacity of different tech
@@ -77,6 +98,7 @@ struct CEPData <: ModelInputData
     var_costs::DataFrame
     techs::DataFrame
 end
+
 """
 mutable struct Scenario
   name::String
@@ -303,3 +325,4 @@ function ClustInputDataMerged(data::ClustInputData)
   end
   ClustInputDataMerged(data.region,data.K,data.T,data_merged,data_types,data.weights,data.mean,data.sdv)
 end
+
