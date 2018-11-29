@@ -7,11 +7,11 @@ function simple_extr_val_sel(data::ClustInputData,
 Selects simple extreme values and returns modified data, extreme values, and the corresponding indices.
 """
 function simple_extr_val_sel(data::ClustInputData,
-                             extreme_value_descr_ar::Array{SimpleExtremeValueDescr,1};
+                             extr_value_descr_ar::Array{SimpleExtremeValueDescr,1};
                              rep_mod_method::String="feasibility"
                              )
-  idcs = simple_extr_val_ident(data,extreme_value_descr_ar)
-  extr_vals = extreme_val_output(data,extr_val_idcs;rep_mod_method=rep_mod_method)
+  idcs = simple_extr_val_ident(data,extr_value_descr_ar)
+  extr_vals = extreme_val_output(data,idcs;rep_mod_method=rep_mod_method)
   # for append method: modify data to be clustered to only contain the values that are not extreme values 
   if rep_mod_method=="feasibility"
     data_mod = data
@@ -33,10 +33,10 @@ Wrapper function for only one simple extreme value.
 Selects simple extreme values and returns modified data, extreme values, and the corresponding indices.
 """
 function simple_extr_val_sel(data::ClustInputData,
-                             extreme_value_descr::SimpleExtremeValueDescr;
+                             extr_value_descr::SimpleExtremeValueDescr;
                              rep_mod_method::String="feasibility"
                              )
-  return simple_extr_val_sel(data,[extreme_value_descr];rep_mod_method=rep_mod_method)
+  return simple_extr_val_sel(data,[extr_value_descr];rep_mod_method=rep_mod_method)
 end
 
 """
@@ -123,10 +123,11 @@ Gives extreme vals the weight that they had in data.
 This function is needed for the append method for representation modification
 """
 function input_data_modification(data::ClustInputData,extr_val_idcs::Array{Int,1})
-  K_dn = data.K- length(extr_val_idcs) 
+  unique_extr_val_idcs = unique(extr_val_idcs)
+  K_dn = data.K- length(unique_extr_val_idcs) 
   data_dn=Dict{String,Array}()
   for dt in keys(data.data)
-    data_dn[dt] = data.data[dt][:,setdiff(1:size(data.data[dt],2),extr_val_idcs)] #take all columns but the ones that are extreme vals
+    data_dn[dt] = data.data[dt][:,setdiff(1:size(data.data[dt],2),extr_val_idcs)] #take all columns but the ones that are extreme vals. If index occurs multiple times, setdiff only treats it as one.
   end
   weights_dn = data.weights[setdiff(1:size(data.weights,2),extr_val_idcs)]
   data_modified = ClustInputData(data.region,K_dn,data.T,data_dn,weights_dn;mean=data.mean,sdv=data.sdv) 
@@ -154,16 +155,17 @@ Takes indices as input and returns ClustInputData struct that contains the extre
 function extreme_val_output(data::ClustInputData,
                             extr_val_idcs::Array{Int,1};
                             rep_mod_method="feasibility")
-  K_ed = length(extr_val_idcs)
+  unique_extr_val_idcs = unique(extr_val_idcs)
+  K_ed = length(unique_extr_val_idcs)
   data_ed=Dict{String,Array}()
   for dt in keys(data.data)
-    data_ed[dt] = data.data[dt][:,extr_val_idcs]
+    data_ed[dt] = data.data[dt][:,unique_extr_val_idcs]
   end
   weights_ed=[]
   if rep_mod_method == "feasibility"
-    weights_ed = zeros(length(extr_val_idcs)) 
+    weights_ed = zeros(length(unique_extr_val_idcs)) 
   elseif rep_mod_method == "append"
-    weights_ed = data.weights[extr_val_idcs]
+    weights_ed = data.weights[unique_extr_val_idcs]
   else
     @error("rep_mod_method - "*rep_mod_method*" - does not exist")
   end
