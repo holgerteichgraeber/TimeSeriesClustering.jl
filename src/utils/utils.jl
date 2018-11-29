@@ -324,6 +324,52 @@ function mapsetindf(df::DataFrame,
                     )
     return Symbol.(df[df[column_of_reference].==reference,set_to_return])
 end
+"""
+function run_cep_scenarios(scenarios,cep_input_data;existing_infrastructure::Bool=false,solver=GurobiSolver())
+  Run the CEP optimization problem for all the scenarios provided as a
+"""
+function run_cep_scenarios(scenarios::Dict{String,Scenario},
+                          cep_input_data::Any;
+                          existing_infrastructure::Bool=false,
+                          solver=GurobiSolver()
+                          )
+    for (name,scenario) in scenarios
+        scenario.info["name"]=name
+        #TODO Unify the reference and the other scenarios with both having the information in clust_res.best_results and specific cep_input_data
+        if occursin("reference",name)
+            tsdata=scenario.clust_res
+        else
+            tsdata=scenario.clust_res.best_results
+        end
+        scenario.opt_res=run_cep_opt(tsdata,cep_input_data;solver=solver,co2limit=scenario.co2limit,existing_infrastructure=existing_infrastructure)
+    end
+    return scenarios
+end
+
+"""
+function get_opt_variable_value(scenario::Scenario,var_name::String,index_set::Array)
+  Get the variable data from the specific Scenario by indicating the var_name e.g. "COST" and the index_set like [:;"EUR";"pv"]
+"""
+function get_opt_variable_value(scenario::Scenario,
+                                var_name::String,
+                                index_set::Array
+                                )
+    variable=scenario.opt_res.var[var_name]
+    index_num=[]
+    for i in  1:length(index_set)
+        if index_set[i]==Colon()
+            push!(index_num,Colon())
+        else
+            new_index_num=findfirst(variable.indexsets[i].==index_set[i])
+            if new_index_num==[]
+                @error("$(index_set[i]) not in indexset #$i of Variable $var_name")
+            else
+                push!(index_num,new_index_num)
+            end
+        end
+    end
+    return getindex(variable.innerArray,Tuple(index_num)...)
+end#
 
 #function mapsetsindf(df::DataFrame,column_of_reference::Symbol,reference::String,column_of_reference2::Symbol,reference2::String,value_to_return::Symbol)
 #    return df[(in)(mapsetindf(df,column_of_reference2,reference2,value_to_return)),findall(mapsetindf(df,column_of_reference,reference,value_to_return)),value_to_return]
