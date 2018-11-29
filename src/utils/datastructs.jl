@@ -58,19 +58,19 @@ struct ClustResultBest <: ClustResult
   data_type::Array{String}
 end
 
-"OptResult"
-struct OptResult
- status::Symbol
- obj::Float64
- op_var::Dict{String,Any}
- des_var::Dict{String,Any}
- add_results::Dict
-end
-
 "OptVariable \n contains the results of the optimization problem including the values in the innerArray and the sets in the indexsets"
 struct OptVariable
  innerArray::Array
  indexsets::Tuple
+ type::String
+end
+
+"OptResult"
+struct OptResult
+ status::Symbol
+ obj::Float64
+ var::Dict{String,OptVariable}
+ add_results::Dict
 end
 
 """
@@ -93,12 +93,13 @@ end
 
 """
 mutable struct Scenario
- name::String
- clust_res::ClustResultAll
- opt_res::
+ info::Dict{String,Any}
+ clust_res::Any
+ opt_res::Any
 """
 mutable struct Scenario
- name::String
+ info::Dict{String,Any}
+ co2limit::Any
  #QUESTION How to be general but not use Any
  clust_res::Any #ClustInputData or ClustResultAll or ClustResultBest
  opt_res::Any #OptResult or Nothing
@@ -108,23 +109,26 @@ end
 
 # need to come afterwards because of cyclic argument between ClustInputData and ClustInputDataMerged Constructors
 """
-  function Scenario(clust_res::ClustResultAll
-Constructor for FullInputData with optional data input
+  function Scenario(;clust_res::ClustResultAll
+Constructor 1 for FullInputData with optional data input
 """
-function Scenario(;clust_res=clust_res::ClustResultAll
+function Scenario(;info=Dict{String,Any}(),
+                  co2limit=Inf,
+                  #QUESTION How to have two or three possible datatypes? One function each?
+                  clust_res::Any=false
                        )
- name=""
  opt_res=false
- Scenario(name,clust_res,opt_res)
+ Scenario(info,co2limit,clust_res,opt_res)
 end
 
 """
 function OptVariable(jumparray::Any)
 Constructor for OptVariable based on JUMPArray
 """
-function OptVariable(jumparray::Any
+function OptVariable(jumparray::Any,
+                      type::String
                       )
-OptVariable(jumparray.innerArray,jumparray.indexsets)
+OptVariable(jumparray.innerArray,jumparray.indexsets,type)
 end
 
 """

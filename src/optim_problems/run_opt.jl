@@ -138,16 +138,15 @@ function solve_cep_opt_model(cep_model::Model,
                             )
   @time status=solve(cep_model)
   objective=getobjectivevalue(cep_model)
-  op_var=Dict{String,Any}()
-  des_var=Dict{String,Any}()
-  op_var["COST"]=OptVariable(getvalue(cep_model[:COST]))
-  des_var["CAP"]=OptVariable(getvalue(cep_model[:CAP]))
-  op_var["GEN"]=OptVariable(getvalue(cep_model[:GEN]))
+  var=Dict{String,OptVariable}()
+  var["COST"]=OptVariable(getvalue(cep_model[:COST]),"operation")
+  var["CAP"]=OptVariable(getvalue(cep_model[:CAP]),"decision")
+  var["GEN"]=OptVariable(getvalue(cep_model[:GEN]),"decision")
   add_results=Dict()
   add_results["co2limit"]=co2limit
-  currency=op_var["COST"].indexsets[2][1]
+  currency=var["COST"].indexsets[2][1]
   @info("Solved: "*String(status)*" min COST[$currency]: $objective s.t. CO₂-Emissions per MWh ≤ $co2limit")
-  return OptResult(status,objective,op_var,des_var,add_results)
+  return OptResult(status,objective,var,add_results)
 end
 """
 function run_cep_opt(tsdata::ClustInputData,cepdata::CEPData)
