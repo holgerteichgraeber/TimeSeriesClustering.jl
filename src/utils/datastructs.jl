@@ -92,18 +92,23 @@ struct CEPData <: ModelInputData
 end
 
 """
-mutable struct Scenario
- info::Dict{String,Any}
- clust_res::Any
- opt_res::Any
+struct CEPScenario
+ name::String
+ co2limit::Float64
+ clust_res::Any #ClustInputData or ClustResultAll or ClustResultBest
+ opt_res::Any #OptResult or Nothing
+ add_info::Dict{String,Any}
+end
 """
-mutable struct Scenario
- info::Dict{String,Any}
- co2limit::Any
+
+struct CEPScenario
+ name::String
  #QUESTION How to be general but not use Any
  clust_res::Any #ClustInputData or ClustResultAll or ClustResultBest
  opt_res::Any #OptResult or Nothing
+ info::Dict
 end
+
 
 #### Constructors for data structures###
 
@@ -112,13 +117,13 @@ end
   function Scenario(;clust_res::ClustResultAll
 Constructor 1 for FullInputData with optional data input
 """
-function Scenario(;info=Dict{String,Any}(),
-                  co2limit=Inf,
+function Scenario(name::String,
+                  clust_res::Any,
+                  opt_res::Any;
                   #QUESTION How to have two or three possible datatypes? One function each?
-                  clust_res::Any=false
-                       )
- opt_res=false
- Scenario(info,co2limit,clust_res,opt_res)
+                  info=Dict{String,Float64}()
+                  )
+ CEPScenario(name,clust_res,opt_res,info)
 end
 
 """

@@ -324,33 +324,12 @@ function mapsetindf(df::DataFrame,
                     )
     return Symbol.(df[df[column_of_reference].==reference,set_to_return])
 end
-"""
-function run_cep_scenarios(scenarios,cep_input_data;existing_infrastructure::Bool=false,solver=GurobiSolver())
-  Run the CEP optimization problem for all the scenarios provided as a
-"""
-function run_cep_scenarios(scenarios::Dict{String,Scenario},
-                          cep_input_data::Any;
-                          existing_infrastructure::Bool=false,
-                          solver=GurobiSolver()
-                          )
-    for (name,scenario) in scenarios
-        scenario.info["name"]=name
-        #TODO Unify the reference and the other scenarios with both having the information in clust_res.best_results and specific cep_input_data
-        if occursin("reference",name)
-            tsdata=scenario.clust_res
-        else
-            tsdata=scenario.clust_res.best_results
-        end
-        scenario.opt_res=run_cep_opt(tsdata,cep_input_data;solver=solver,co2limit=scenario.co2limit,existing_infrastructure=existing_infrastructure)
-    end
-    return scenarios
-end
 
 """
 function get_opt_variable_value(scenario::Scenario,var_name::String,index_set::Array)
   Get the variable data from the specific Scenario by indicating the var_name e.g. "COST" and the index_set like [:;"EUR";"pv"]
 """
-function get_opt_variable_value(scenario::Scenario,
+function get_cep_variable_value(scenario::CEPScenario,
                                 var_name::String,
                                 index_set::Array
                                 )
