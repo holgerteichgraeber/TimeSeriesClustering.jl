@@ -28,7 +28,8 @@ function run_clust(
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
-      attribute_weights::Dict{String,Float64}=Dict{String,Float64}()
+      attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
+      kwargs...
     )
 
     # When adding new methods: add combination of clust+rep to sup_kw_args
@@ -135,7 +136,8 @@ function run_clust(
       representation::String="centroid",
       n_init::Int=100,
       iterations::Int=300,
-      save::String=""
+      save::String="",
+      kwargs...
     )
     results_ar = Array{ClustResultAll,1}(undef,length(n_clust_ar))
     for i=1:length(n_clust_ar)
