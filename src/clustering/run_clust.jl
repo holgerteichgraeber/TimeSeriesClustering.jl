@@ -9,7 +9,10 @@ function run_clust(
       n_clust::Int=5,
       n_init::Int=100,
       iterations::Int=300,
-      save::String=""
+      save::String="",
+      attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
+      get_all_clust_results::Bool=false,
+      kwargs...
     )
 
 norm_op: "zscore", "01"(not implemented yet)
@@ -29,7 +32,8 @@ function run_clust(
       save::String="",
       #QUESTION Where do we use save for? Do we really want to save each single Clustering result?
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
-      get_all_clust_results::Bool=false
+      get_all_clust_results::Bool=false,
+      kwargs...
     )
 
     # When adding new methods: add combination of clust+rep to sup_kw_args
@@ -55,7 +59,7 @@ function run_clust(
        # function call to the respective function (method + representation)
        fun_name = Symbol("run_clust_"*method*"_"*representation)
        centers[i],weights[i],clustids[i],cost[i],iter[i] =
-       @eval $fun_name($data_norm_merged,$n_clust,$iterations)
+       @eval $fun_name($data_norm_merged,$n_clust,$iterations;kwargs...)
 
        # recalculate centers if medoids is used. Recalculate because medoid is not integrally preserving
       if representation=="medoid"
@@ -137,7 +141,8 @@ function run_clust(
       representation::String="centroid",
       n_init::Int=100,
       iterations::Int=300,
-      save::String=""
+      save::String="",
+      kwargs...
     )
     results_ar = Array{ClustResultAll,1}(undef,length(n_clust_ar))
     for i=1:length(n_clust_ar)
