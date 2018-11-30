@@ -9,7 +9,10 @@ function run_clust(
       n_clust::Int=5,
       n_init::Int=100,
       iterations::Int=300,
-      save::String=""
+      save::String="",
+      attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
+      get_all_clust_results::Bool=false,
+      kwargs...
     )
 
 norm_op: "zscore", "01"(not implemented yet)
