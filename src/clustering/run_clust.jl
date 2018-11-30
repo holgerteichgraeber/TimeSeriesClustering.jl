@@ -27,9 +27,9 @@ function run_clust(
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
-      #QUESTION Where do we use save for? Do we really want to save each single Clustering result?
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
-      get_all_clust_results::Bool=false
+      get_all_clust_results::Bool=false,
+      kwargs...
     )
 
     # When adding new methods: add combination of clust+rep to sup_kw_args
@@ -55,7 +55,7 @@ function run_clust(
        # function call to the respective function (method + representation)
        fun_name = Symbol("run_clust_"*method*"_"*representation)
        centers[i],weights[i],clustids[i],cost[i],iter[i] =
-       @eval $fun_name($data_norm_merged,$n_clust,$iterations)
+       @eval $fun_name($data_norm_merged,$n_clust,$iterations;$kwargs...)
 
        # recalculate centers if medoids is used. Recalculate because medoid is not integrally preserving
       if representation=="medoid"
@@ -82,30 +82,6 @@ function run_clust(
     #TODO save in save file
     return clust_result
 end
-
-
-#QUESTION Shall we rename already to a,b as it is not sdv after division?
-"""
-function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
-
-apply the different attribute weights based on the dictionary entry for each tech or exact name
-"""
-function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
-  for name in keys(data.data)
-    tech=split(name,"-")[1]
-    if name in keys(attribute_weights)
-      attribute_weight=attribute_weights[name]
-      data.data[name].*=attribute_weight
-      data.sdv[name]./=attribute_weight
-    elseif tech in keys(attribute_weights)
-      attribute_weight=attribute_weights[tech]
-      data.data[name].*=attribute_weight
-      data.sdv[name]./=attribute_weight
-    end
-  end
-  return data
-end
-
 
 """
 function run_clust(
@@ -137,9 +113,10 @@ function run_clust(
       representation::String="centroid",
       n_init::Int=100,
       iterations::Int=300,
-      save::String=""
+      save::String="",
+      kwargs...
     )
-    results_ar = Array{ClustResultAll,1}(undef,length(n_clust_ar))
+    results_ar = Array{ClustResult,1}(undef,length(n_clust_ar))
     for i=1:length(n_clust_ar)
       results_ar[i] = run_clust(data;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_init=n_init,n_clust=n_clust_ar[i],iterations=iterations,save=save,kwargs...)
     end

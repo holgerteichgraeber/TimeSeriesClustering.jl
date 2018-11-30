@@ -11,7 +11,7 @@ ts_input_data,~ = load_timeseries_data("DAM", "GER";K=365, T=24) #DAM
  # run clustering
 using Gurobi
 env = Gurobi.Env()
-clust_res_ar = run_clust(ts_input_data,collect(1:9);method="kmedoids_exact",representation="medoid",n_init=1,gurobi_env=env) # default k-means
+clust_res_ar = run_clust(ts_input_data;method="kmedoids_exact",representation="medoid",iterations=5,n_init=1,gurobi_env=env) # default k-means
 
  # optimization
 

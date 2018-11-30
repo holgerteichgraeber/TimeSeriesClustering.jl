@@ -325,6 +325,23 @@ function mapsetindf(df::DataFrame,
     return Symbol.(df[df[column_of_reference].==reference,set_to_return])
 end
 
-#function mapsetsindf(df::DataFrame,column_of_reference::Symbol,reference::String,column_of_reference2::Symbol,reference2::String,value_to_return::Symbol)
-#    return df[(in)(mapsetindf(df,column_of_reference2,reference2,value_to_return)),findall(mapsetindf(df,column_of_reference,reference,value_to_return)),value_to_return]
-#end
+"""
+function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
+
+apply the different attribute weights based on the dictionary entry for each tech or exact name
+"""
+function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
+  for name in keys(data.data)
+    tech=split(name,"-")[1]
+    if name in keys(attribute_weights)
+      attribute_weight=attribute_weights[name]
+      data.data[name].*=attribute_weight
+      data.sdv[name]./=attribute_weight
+    elseif tech in keys(attribute_weights)
+      attribute_weight=attribute_weights[tech]
+      data.data[name].*=attribute_weight
+      data.sdv[name]./=attribute_weight
+    end
+  end
+  return data
+end
