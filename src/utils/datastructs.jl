@@ -100,7 +100,7 @@ mutable struct Scenario
 mutable struct Scenario
  name::String
  #QUESTION How to be general but not use Any
- clust_res::Any #ClustInputData or ClustResultAll or ClustResultBest
+ clust_res::ClustResult
  opt_res::Any #OptResult or Nothing
 end
 
