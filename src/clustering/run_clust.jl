@@ -59,7 +59,7 @@ function run_clust(
        # function call to the respective function (method + representation)
        fun_name = Symbol("run_clust_"*method*"_"*representation)
        centers[i],weights[i],clustids[i],cost[i],iter[i] =
-       @eval $fun_name($data_norm_merged,$n_clust,$iterations;kwargs...)
+       @eval $fun_name($data_norm_merged,$n_clust,$iterations;$kwargs...)
 
        # recalculate centers if medoids is used. Recalculate because medoid is not integrally preserving
       if representation=="medoid"
