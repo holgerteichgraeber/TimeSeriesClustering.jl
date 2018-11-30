@@ -1,15 +1,13 @@
-julia 0.6-
+julia 0.7-
 Gurobi
 CSV
 LinearAlgebra
 Statistics
 Reexport
 Distances
-PyPlot
 DataFrames
 Clustering
 JLD2
 FileIO
-PyCall
 JuMP
 Clp
