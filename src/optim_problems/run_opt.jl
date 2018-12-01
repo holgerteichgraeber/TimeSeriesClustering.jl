@@ -134,7 +134,8 @@ function solve_cep_opt_model(cep,co2limit)
 solving the cep model and writing it's results and co2limit into an OptResult-Struct
 """
 function solve_cep_opt_model(cep_model::Model,
-                            co2limit::Float64
+                            co2limit::Float64;
+                            name::String="X"
                             )
   @time status=solve(cep_model)
   objective=getobjectivevalue(cep_model)
@@ -145,7 +146,7 @@ function solve_cep_opt_model(cep_model::Model,
   add_results=Dict()
   add_results["co2limit"]=co2limit
   currency=var["COST"].indexsets[2][1]
-  @info("Solved: "*String(status)*" min COST[$currency]: $objective s.t. CO₂-Emissions per MWh ≤ $co2limit")
+  @info("Solved Scenario $name:"*String(status)*" min COST[$currency]: $objective s.t. CO₂-Emissions per MWh ≤ $co2limit")
   return OptResult(status,objective,var,add_results)
 end
 """
@@ -157,13 +158,13 @@ function run_cep_opt(tsdata::ClustInputData,
                     cepdata::CEPData;
                     solver=CbcSolver(),
                     co2limit=Inf,
-                    existing_infrastructure=false
+                    existing_infrastructure=false,
+                    name::String="X"
                     )
-  @info("Setting Up CEP 🔌 ⛅")
+  #@info("Setting Up CEP 🔌 ⛅")
   set=setup_cep_opt_sets(tsdata,cepdata;existing_infrastructure=existing_infrastructure)
   cep_model=setup_cep_opt_model(tsdata,cepdata,set,solver;co2limit=co2limit,existing_infrastructure=existing_infrastructure)
-  @info("Solving ⏳")
-  return solve_cep_opt_model(cep_model, co2limit)
+  return solve_cep_opt_model(cep_model, co2limit; name=name)
 end
 """
 function run_battery_opt(data::ClustInputData)
