@@ -326,7 +326,7 @@ function mapsetindf(df::DataFrame,
 end
 
 """
-function get_opt_variable_value(scenario::Scenario,var_name::String,index_set::Array)
+function get_cep_variable_value(scenario::Scenario,var_name::String,index_set::Array)
   Get the variable data from the specific Scenario by indicating the var_name e.g. "COST" and the index_set like [:;"EUR";"pv"]
 """
 function get_cep_variable_value(scenario::CEPScenario,
@@ -348,8 +348,18 @@ function get_cep_variable_value(scenario::CEPScenario,
         end
     end
     return getindex(variable.innerArray,Tuple(index_num)...)
-end#
+end
 
+"""
+function get_cep_variable_set(scenario::Scenario,var_name::String,num_index_set::Int)
+  Get the variable set from the specific Scenario by indicating the var_name e.g. "COST" and the num_index_set like 1
+"""
+function get_cep_variable_set(scenario::CEPScenario,
+                                var_name::String,
+                                num_index_set::Int
+                                )
+    return scenario.opt_res.var[var_name].indexsets[num_index_set]
+end
 #function mapsetsindf(df::DataFrame,column_of_reference::Symbol,reference::String,column_of_reference2::Symbol,reference2::String,value_to_return::Symbol)
 #    return df[(in)(mapsetindf(df,column_of_reference2,reference2,value_to_return)),findall(mapsetindf(df,column_of_reference,reference,value_to_return)),value_to_return]
 #end
