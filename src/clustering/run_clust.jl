@@ -10,6 +10,8 @@ function run_clust(
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
+      attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
+      get_all_clust_results::Bool=false,
       kwargs...
     )
 
@@ -28,16 +30,19 @@ function run_clust(
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
+      attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
+      get_all_clust_results::Bool=false,
       kwargs...
     )
-    
+
     # When adding new methods: add combination of clust+rep to sup_kw_args
     check_kw_args(norm_op,norm_scope,method,representation)
-    
+
     # normalize
     # TODO: implement 0-1 normalization and add as a choice to runclust
     data_norm = z_normalize(data;scope=norm_scope)
-    data_norm_merged = ClustInputDataMerged(data_norm)
+    data_norm_att = attribute_weighting(data_norm,attribute_weights)
+    data_norm_merged = ClustInputDataMerged(data_norm_att)
 
     # initialize data arrays
     centers = Array{Array{Float64},1}(undef,n_init)
@@ -70,12 +75,14 @@ function run_clust(
     # transfer into ClustInputData format
     best_results = ClustInputData(b_merged)
     best_ids = clustids[ind_mincost]
-    
-    # save all locally converged solutions and the best into a struct
-    clust_result = ClustResultAll(best_results,best_ids,cost_best,n_clust,centers,data_norm_merged.data_type,weights,clustids,cost,iter)
-    # save in save file
-    #TODO
 
+    # save all locally converged solutions and the best into a struct
+    if get_all_clust_results
+      clust_result = ClustResultAll(best_results,best_ids,cost_best,n_clust,data_norm_merged.data_type,centers,weights,clustids,cost,iter)
+    else
+      clust_result =  ClustResultBest(best_results,best_ids,cost_best,n_clust,data_norm_merged.data_type)
+    end
+    #TODO save in save file
     return clust_result
 end
 
@@ -112,9 +119,9 @@ function run_clust(
       save::String="",
       kwargs...
     )
-    results_ar = Array{ClustResultAll,1}(undef,length(n_clust_ar)) 
+    results_ar = Array{ClustResult,1}(undef,length(n_clust_ar))
     for i=1:length(n_clust_ar)
-      results_ar[i] = run_clust(data;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_init=n_init,n_clust=n_clust_ar[i],iterations=iterations,save=save,kwargs...) 
+      results_ar[i] = run_clust(data;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_init=n_init,n_clust=n_clust_ar[i],iterations=iterations,save=save,kwargs...)
     end
     return results_ar
 end
@@ -265,7 +272,7 @@ function run_clust_kmedoids_medoid(
     n_clust::Int,
     iterations::Int
     )
-    
+
     # TODO: optional in future: pass distance metric as kwargs
     dist = SqEuclidean()
     d_mat=pairwise(dist,data_norm.data)
@@ -277,7 +284,7 @@ function run_clust_kmedoids_medoid(
     iter = results.iterations
 
     weights = calc_weights(clustids,n_clust)
-    
+
     return centers,weights,clustids,cost,iter
 end
 
@@ -295,9 +302,9 @@ function run_clust_kmedoids_exact_medoid(
     iterations::Int;
     gurobi_env=0
     )
-   
+
     (typeof(gurobi_env)==Int) && @error("Please provide a gurobi_env (Gurobi Environment). See test file for example")
-    
+
     # TODO: optional in future: pass distance metric as kwargs
     dist = SqEuclidean()
     results = kmedoids_exact(data_norm.data,n_clust,gurobi_env;_dist=dist)#;distance_type_ar[dist])
@@ -308,7 +315,7 @@ function run_clust_kmedoids_exact_medoid(
     iter = 1
 
     weights = calc_weights(clustids,n_clust)
-    
+
     return centers,weights,clustids,cost,iter
 end
 
@@ -352,7 +359,7 @@ function run_clust_hierarchical_centroid(
     _dist::SemiMetric = SqEuclidean()
     )
     ~,weights,clustids,~,iter= run_clust_hierarchical(data_norm,n_clust,iterations;_dist=_dist)
-    centers_norm = calc_centroids(data_norm.data,clustids) 
+    centers_norm = calc_centroids(data_norm.data,clustids)
     cost = calc_SSE(data_norm.data,centers_norm,clustids)
     centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
 
@@ -374,10 +381,9 @@ function run_clust_hierarchical_medoid(
     _dist::SemiMetric = SqEuclidean()
     )
     ~,weights,clustids,~,iter= run_clust_hierarchical(data_norm,n_clust,iterations;_dist=_dist)
-    centers_norm = calc_medoids(data_norm.data,clustids) 
+    centers_norm = calc_medoids(data_norm.data,clustids)
     cost = calc_SSE(data_norm.data,centers_norm,clustids)
     centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
 
     return centers,weights,clustids,cost,iter
 end
-

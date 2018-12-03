@@ -41,12 +41,12 @@ function z_normalize(data::ClustInputData;
  data_norm = Dict{String,Array}()
  mean= Dict{String,Array}()
  sdv= Dict{String,Array}()
+ #QUESTION Normalization is for each tech AND EACH NODE - Is that how we want that to be?
  for (k,v) in data.data
    data_norm[k],mean[k],sdv[k] = z_normalize(v,scope=scope)
  end
  return ClustInputData(data.region,data.K,data.T,data_norm,data.weights;mean=mean,sdv=sdv)
 end
-
 
 """
 function z_normalize(data::Array;scope="full")
@@ -325,6 +325,23 @@ function mapsetindf(df::DataFrame,
     return Symbol.(df[df[column_of_reference].==reference,set_to_return])
 end
 
-#function mapsetsindf(df::DataFrame,column_of_reference::Symbol,reference::String,column_of_reference2::Symbol,reference2::String,value_to_return::Symbol)
-#    return df[(in)(mapsetindf(df,column_of_reference2,reference2,value_to_return)),findall(mapsetindf(df,column_of_reference,reference,value_to_return)),value_to_return]
-#end
+"""
+function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
+
+apply the different attribute weights based on the dictionary entry for each tech or exact name
+"""
+function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
+  for name in keys(data.data)
+    tech=split(name,"-")[1]
+    if name in keys(attribute_weights)
+      attribute_weight=attribute_weights[name]
+      data.data[name].*=attribute_weight
+      data.sdv[name]./=attribute_weight
+    elseif tech in keys(attribute_weights)
+      attribute_weight=attribute_weights[tech]
+      data.data[name].*=attribute_weight
+      data.sdv[name]./=attribute_weight
+    end
+  end
+  return data
+end
