@@ -8,14 +8,10 @@
  #TODO other way of including module
 #module ClustForOpt_priv
 
-#using Reexport
 using Distances
-#using PyPlot
 using Clustering
 using JLD2
-#TESt
-#using FileIO
-#using PyCall
+using FileIO
 #TODO Update TimeWarp
 #using TimeWarp
 using Statistics
@@ -23,10 +19,10 @@ using LinearAlgebra
 using CSV
 using JuMP
 using Clp
+#TODO make Gurobi optional
 using Gurobi
-#@reexport
 using DataFrames
- #TODO how to make PyPlot, PyCall, and TimeWarp optional? -> only import when needed
+
 
 
 
