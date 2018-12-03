@@ -40,8 +40,8 @@ struct ClustResultAll <: ClustResult
  best_ids::Array{Int,1}
  best_cost::Float64
  n_clust::Int
- centers::Array{Array{Float64},1}
  data_type::Array{String}
+ centers::Array{Array{Float64},1}
  weights::Array{Array{Float64},1}
  clustids::Array{Array{Int,1},1}
  cost::Array{Float64,1}
@@ -49,10 +49,13 @@ struct ClustResultAll <: ClustResult
 end
 
 # TODO: not used yet, but maybe best to implement this one later for users who just want to use clustering but do not care about the locally converged solutions
+"ClustResultBest"
 struct ClustResultBest <: ClustResult
- best_results::Array{ClustInputData}
- best_cost::Array
- best_ids::Array{Tuple{Int,Int}}
+  best_results::ClustInputData
+  best_ids::Array{Int,1}
+  best_cost::Float64
+  n_clust::Int
+  data_type::Array{String}
 end
 
 "OptResult"
@@ -97,7 +100,7 @@ mutable struct Scenario
 mutable struct Scenario
  name::String
  #QUESTION How to be general but not use Any
- clust_res::Any #ClustInputData or ClustResultAll
+ clust_res::ClustResult
  opt_res::Any #OptResult or Nothing
 end
 

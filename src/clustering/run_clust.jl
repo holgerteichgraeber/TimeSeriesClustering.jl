@@ -10,6 +10,8 @@ function run_clust(
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
+      attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
+      get_all_clust_results::Bool=false,
       kwargs...
     )
 
@@ -29,6 +31,7 @@ function run_clust(
       iterations::Int=300,
       save::String="",
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
+      get_all_clust_results::Bool=false,
       kwargs...
     )
 
@@ -74,37 +77,14 @@ function run_clust(
     best_ids = clustids[ind_mincost]
 
     # save all locally converged solutions and the best into a struct
-    clust_result = ClustResultAll(best_results,best_ids,cost_best,n_clust,centers,data_norm_merged.data_type,weights,clustids,cost,iter)
-    # save in save file
-    #TODO
-
-
+    if get_all_clust_results
+      clust_result = ClustResultAll(best_results,best_ids,cost_best,n_clust,data_norm_merged.data_type,centers,weights,clustids,cost,iter)
+    else
+      clust_result =  ClustResultBest(best_results,best_ids,cost_best,n_clust,data_norm_merged.data_type)
+    end
+    #TODO save in save file
     return clust_result
 end
-
-
-#QUESTION Shall we rename already to a,b as it is not sdv after division?
-"""
-function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
-
-apply the different attribute weights based on the dictionary entry for each tech or exact name
-"""
-function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
-  for name in keys(data.data)
-    tech=split(name,"-")[1]
-    if name in keys(attribute_weights)
-      attribute_weight=attribute_weights[name]
-      data.data[name].*=attribute_weight
-      data.sdv[name]./=attribute_weight
-    elseif tech in keys(attribute_weights)
-      attribute_weight=attribute_weights[tech]
-      data.data[name].*=attribute_weight
-      data.sdv[name]./=attribute_weight
-    end
-  end
-  return data
-end
-
 
 """
 function run_clust(
@@ -139,7 +119,7 @@ function run_clust(
       save::String="",
       kwargs...
     )
-    results_ar = Array{ClustResultAll,1}(undef,length(n_clust_ar))
+    results_ar = Array{ClustResult,1}(undef,length(n_clust_ar))
     for i=1:length(n_clust_ar)
       results_ar[i] = run_clust(data;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_init=n_init,n_clust=n_clust_ar[i],iterations=iterations,save=save,kwargs...)
     end
