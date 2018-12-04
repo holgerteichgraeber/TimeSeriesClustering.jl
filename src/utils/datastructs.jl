@@ -104,7 +104,7 @@ end
 struct CEPScenario
  name::String
  #QUESTION How to be general but not use Any
- clust_res::Any #ClustInputData or ClustResultAll or ClustResultBest
+ clust_res::ClustResult
  opt_res::Any #OptResult or Nothing
  info::Dict
 end
@@ -130,10 +130,20 @@ end
 function OptVariable(jumparray::Any)
 Constructor for OptVariable based on JUMPArray
 """
-function OptVariable(jumparray::Any,
+function OptVariable(variable::JuMP.JuMPArray,
                       type::String
                       )
-OptVariable(jumparray.innerArray,jumparray.indexsets,type)
+  OptVariable(variable.innerArray,variable.indexsets,type)
+end
+
+"""
+function OptVariable(jumparray::Array)
+Constructor for OptVariable based on JUMPArray
+"""
+function OptVariable(variable::Array,
+                      type::String
+                      )
+  OptVariable(variable,Tuple(""),type)
 end
 
 """
