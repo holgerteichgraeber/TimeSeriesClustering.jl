@@ -205,9 +205,13 @@ function run_clust_kmeans_centroid(
         cost = sum(pairwise(SqEuclidean(),centers_norm,data_norm.data)) #same as sum((seq_norm-repmat(mean(seq_norm,2),1,size(seq,2))).^2)
         iter = 1
     # kmeans() in Clustering.jl is implemented for k>=2
+    elseif n_clust==data_norm.K
+        clustids = collect(1:data_norm.K)
+        centers = undo_z_normalize(data_norm,data_norm.mean,data_norm.sdv;idx=clustids) # need to provide idx in case that sequence-based normalization is used
+        cost = 0.0
+        iter = 1
     else
         results = kmeans(data_norm.data,n_clust;maxiter=iterations)
-
         # save clustering results
         clustids = results.assignments
         centers_norm = results.centers
@@ -243,6 +247,11 @@ function run_clust_kmeans_medoid(
         cost = sum(pairwise(SqEuclidean(),centers_norm,data_norm.data)) #same as sum((seq_norm-repmat(mean(seq_norm,2),1,size(seq,2))).^2)
         iter = 1
     # kmeans() in Clustering.jl is implemented for k>=2
+    elseif n_clust==data_norm.K
+        clustids = collect(1:data_norm.K)
+        centers = undo_z_normalize(data_norm,data_norm.mean,data_norm.sdv;idx=clustids) # need to provide idx in case that sequence-based normalization is used
+        cost = 0.0
+        iter = 1
     else
         results = kmeans(data_norm.data,n_clust;maxiter=iterations)
 
