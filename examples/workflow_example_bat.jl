@@ -25,7 +25,7 @@ opt_res = run_opt("battery",clust_res_ar[2].best_results)
  # run optimization for all k=1:9
 opt_res_all = []
 obj=[]
-for i=1:9
+for i=1:2
   push!(opt_res_all,run_opt("battery", clust_res_ar[i].best_results))
   push!(obj,opt_res_all[i].obj)
 end
