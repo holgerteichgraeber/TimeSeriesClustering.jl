@@ -92,6 +92,16 @@ struct CEPData <: ModelInputData
 end
 
 """
+struct CEPModel
+  model::Model
+  equations::Array
+"""
+struct CEPModel
+  model::JuMP.Model
+  info::Array
+end
+
+"""
 struct CEPScenario
  name::String
  co2limit::Float64
