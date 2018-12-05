@@ -36,7 +36,8 @@ function initialize_cep_opt_model(tsdata::ClustInputData,cepdata::CEPData, set::
  initialize setting up the capacity expansion model with  the time series (tsdata), capacity expansion model data (cepdata) and the sets (set) and returning the cep model and prepared data
 """
 function setup_cep_opt_model_variables(;cep::Any,
-                                     set::Dict)
+                                     set::Dict,
+                                    cep_info::Array)
   ##### Define the model #####
   ## VARIABLES ##
   # Cost
@@ -47,16 +48,18 @@ function setup_cep_opt_model_variables(;cep::Any,
   @variable(cep, GEN[sector=set["sector"], tech=set["tech"], t=set["time_T"], k=set["time_K"], node=set["nodes"]])
   #TODO Include Slack into CEP
   #@variable(cep, SLACK[t=set["time_T"], k=set["time_K"]]>=0)
-  return cep
+  return cep, cep_info
 end
 
 function setup_cep_opt_model_exist(;cep::Any,
                                     nodes::DataFrame,
-                                    set::Dict)
+                                    set::Dict,
+                                    cep_info::Array)
   ## ASSIGN VALUES ##
   # Assign the existing capacity from the nodes table
+  push!(cep_info,["CAP[tech, 'ex', node] = existing infrastructure ∀ tech, node"])
   @constraint(cep, [node=set["nodes"], tech=set["tech"]], cep[:CAP][tech,"ex",node]==findvalindf(nodes,:nodes,node,tech))
-  return cep
+  return cep, cep_info
 end
 
 
@@ -71,7 +74,8 @@ function setup_cep_opt_model_fossil(;cep::Any,
                                      ts::Dict,
                                      ts_dict::Dict,
                                      ts_weights::Array,
-                                     set::Dict)
+                                     set::Dict,
+                                    cep_info::Array)
   ## FOSSIL POWER PLANTS ##
 
     # Calculate Variable Costs
@@ -83,8 +87,9 @@ function setup_cep_opt_model_fossil(;cep::Any,
     # 0 ≤ GEN["el",tech, t, k, node] ≤ Σ_{exist}CAP[tech,exist,node] ∀ node, tech_fossil, t, k
     @constraint(cep, [node=set["nodes"], tech=set["tech_fossil"], t=set["time_T"], k=set["time_K"]], 0 <=cep[:GEN]["el",tech, t, k, node])
     @constraint(cep, [node=set["nodes"], tech=set["tech_fossil"], t=set["time_T"], k=set["time_K"]],     cep[:GEN]["el",tech, t, k, node] <=sum(cep[:CAP][tech,exist,node] for exist=set["exist"]))
-    return cep
+    return cep, cep_info
 end
+
 """
 function initialize_cep_opt_model_fossil(tsdata::ClustInputData,cepdata::CEPData, set::Dict; solver)
  initialize setting up the capacity expansion model with  the time series (tsdata), capacity expansion model data (cepdata) and the sets (set) and returning the cep model and prepared data
@@ -96,7 +101,8 @@ function setup_cep_opt_model_renewable(;cep::Any,
                                      ts::Dict,
                                      ts_dict::Dict,
                                      ts_weights::Array,
-                                     set::Dict)
+                                     set::Dict,
+                                    cep_info::Array)
   ## RENEWABLES ##
 
     # Calculate the variable Costs
@@ -109,11 +115,12 @@ function setup_cep_opt_model_renewable(;cep::Any,
     # 0 ≤ GEN["el",tech, t, k, node] ≤ Σ_{exist}CAP[tech,exist,node]*ts[tech-node,t,k] ∀ node, tech_renewable, t,
     @constraint(cep, [node=set["nodes"], tech=set["tech_renewable"], t=set["time_T"], k=set["time_K"]], 0 <=cep[:GEN]["el",tech, t, k, node])
     @constraint(cep, [node=set["nodes"], tech=set["tech_renewable"], t=set["time_T"], k=set["time_K"]],     cep[:GEN]["el",tech,t,k,node] <=sum(cep[:CAP][tech,exist,node] for exist=set["exist"])*ts[ts_dict[tech]*"-"*node][t,k])
-    return cep
+    return cep, cep_info
 end
 
 function setup_cep_opt_model_storage(;cep::Any,
-                                     set::Dict)
+                                     set::Dict,
+                                    cep_info::Array)
   ## STORAGE ##
 
     # Fix Costs to 0
@@ -122,36 +129,40 @@ function setup_cep_opt_model_storage(;cep::Any,
     # Fix Generation to 0
     # GEN["el",tech, t, k, node] = 0 ∀ node, tech_storage, t, k
     @constraint(cep, [node=set["nodes"], tech=set["tech_storage"], t=set["time_T"], k=set["time_K"]], cep[:GEN]["el",tech,t,k,node]==0)
-    return cep
+    return cep, cep_info
 end
 
 function setup_cep_opt_model_demand(;cep::Any,
-                                     set::Dict)
+                                     set::Dict,
+                                     ts::Dict,
+                                    cep_info::Array)
   ## DEMAND ##
   # Force the demand to match the generation
   # Σ_{tech,node}GEN["el",tech,t,k,node] = Σ_{node}ts[el_demand-node,t,k] ∀ t,k
   @constraint(cep, [t=set["time_T"], k=set["time_K"]], sum(cep[:GEN]["el",tech,t,k,node] for node=set["nodes"], tech=set["tech"]) == sum(ts["el_demand-"*node][t,k] for node=set["nodes"]))
-  return cep
+  return cep, cep_info
 end
 
 function setup_cep_opt_model_emissions(;cep::Any,
                                         set::Dict,
                                         co2limit::Float64,
-                                        ts::Dict)
+                                        ts::Dict,
+                                    cep_info::Array)
   ## EMISSIONS ##
   # Limit the Emissions with co2limit if it exists
   # ΣCOST_{account}[account,"CO2",-tech-] ≤ co2limit*Σ_{node,t,k}ts[el_demand-node,t,k]
   @constraint(cep, sum(cep[:COST][account,"CO2",tech] for account=set["account"], tech=set["tech"])<= co2limit*sum(sum(ts["el_demand-"*node]) for node=set["nodes"]))
-  return cep
+  return cep, cep_info
 end
 
 function setup_cep_opt_model_objective(;cep::Any,
-                                     set::Dict)
+                                     set::Dict,
+                                    cep_info::Array)
   ## OBJECTIVE ##
   # Minimize the total €-Costs s.t. the Constraints introduced above
   # min Σ_{account,tech}COST[account,"USD",tech] st. obove
   @objective(cep, Min, sum(cep[:COST][account,set["impact"][1],tech] for account=set["account"], tech=set["tech"]))
-  return cep
+  return cep, cep_info
 end #functoin setup_cep_opt_model
 
 """
@@ -202,23 +213,25 @@ function run_cep_opt(tsdata::ClustInputData,
   ts_weights=tsdata.weights
   set=setup_cep_opt_sets(tsdata, cepdata; existing_infrastructure=existing_infrastructure)
   cep=Model(solver=solver)
-  cep=setup_cep_opt_model_variables(;cep=cep,set=set)
+  cep_info=[]
+  cep, cep_info=setup_cep_opt_model_variables(;cep=cep,set=set, cep_info=cep_info)
   if existing_infrastructure
-      cep=setup_cep_opt_model_exist(;cep=cep,nodes=nodes,set=set)
-    end
+      cep, cep_info=setup_cep_opt_model_exist(;cep=cep,nodes=nodes,set=set, cep_info=cep_info)
+  end
   if "tech_fossil" in keys(set)
-    cep=setup_cep_opt_model_fossil(;cep=cep, cap_costs=cap_costs, var_costs=var_costs, fix_costs=fix_costs, ts=ts, ts_dict=ts_dict, ts_weights=ts_weights, set=set)
+    cep, cep_info=setup_cep_opt_model_fossil(;cep=cep, cap_costs=cap_costs, var_costs=var_costs, fix_costs=fix_costs, ts=ts, ts_dict=ts_dict, ts_weights=ts_weights, set=set, cep_info=cep_info)
   end
   if "tech_renewable" in keys(set)
-    cep=setup_cep_opt_model_renewable(;cep=cep, cap_costs=cap_costs, var_costs=var_costs, fix_costs=fix_costs, ts=ts, ts_dict=ts_dict, ts_weights=ts_weights, set=set)
+    cep, cep_info=setup_cep_opt_model_renewable(;cep=cep, cap_costs=cap_costs, var_costs=var_costs, fix_costs=fix_costs, ts=ts, ts_dict=ts_dict, ts_weights=ts_weights, set=set, cep_info=cep_info)
   end
   if "tech_storage" in keys(set)
-    cep=setup_cep_opt_model_storage(;cep=cep, set=set)
+    cep, cep_info=setup_cep_opt_model_storage(;cep=cep, set=set, cep_info=cep_info)
   end
   if co2limit!=Inf
-    cep=setup_cep_opt_model_emissions(;cep=cep, set=set, co2limit=co2limit, ts=ts)
+    cep, cep_info=setup_cep_opt_model_emissions(;cep=cep, set=set, co2limit=co2limit, ts=ts, cep_info=cep_info)
   end
-  cep=setup_cep_opt_model_objective(;cep=cep,set=set)
+  cep, cep_info=setup_cep_opt_model_demand(;cep=cep, set=set, ts=ts, cep_info=cep_info)
+  cep, cep_info=setup_cep_opt_model_objective(;cep=cep,set=set, cep_info=cep_info)
   return solve_cep_opt_model(cep, co2limit; name=name)
 end
 """
