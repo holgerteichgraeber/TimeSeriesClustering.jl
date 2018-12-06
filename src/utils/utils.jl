@@ -32,10 +32,10 @@ function sort_centers(centers::Array,
 end # function
 
 """
-function z_normalize(data::ClustInputData;scope="full")
+function z_normalize(data::ClustData;scope="full")
 scope: "full", "sequence", "hourly"
 """
-function z_normalize(data::ClustInputData;
+function z_normalize(data::ClustData;
                     scope="full"
                     )
  data_norm = Dict{String,Array}()
@@ -45,7 +45,7 @@ function z_normalize(data::ClustInputData;
  for (k,v) in data.data
    data_norm[k],mean[k],sdv[k] = z_normalize(v,scope=scope)
  end
- return ClustInputData(data.region,data.K,data.T,data_norm,data.weights;mean=mean,sdv=sdv)
+ return ClustData(data.region,data.K,data.T,data_norm,data.weights;mean=mean,sdv=sdv)
 end
 
 """
@@ -262,7 +262,7 @@ This is the DEFAULT resize medoids function
 
 Takes in centers (typically medoids) and normalizes them such that the yearly average of the clustered data is the same as the yearly average of the original data.
 """
-function resize_medoids(data::ClustInputData,centers::Array,weights::Array)
+function resize_medoids(data::ClustData,centers::Array,weights::Array)
     (data.T * length(keys(data.data)) != size(centers,1) ) && @error("dimension missmatch between full input data and centers")
     centers_res = zeros(size(centers))
     # go through the attributes within data
@@ -329,17 +329,17 @@ end
 function get_cep_variable_value(scenario::Scenario,var_name::String,index_set::Array)
   Get the variable data from the specific Scenario by indicating the var_name e.g. "COST" and the index_set like [:;"EUR";"pv"]
 """
-function get_cep_variable_value(scenario::CEPScenario,
+function get_cep_variable_value(scenario::Scenario,
                                 var_name::String,
                                 index_set::Array
                                 )
-    variable=scenario.opt_res.var[var_name]
+    variable=scenario.opt_res.variables[var_name]
     index_num=[]
     for i in  1:length(index_set)
         if index_set[i]==Colon()
             push!(index_num,Colon())
         else
-            new_index_num=findfirst(variable.indexsets[i].==index_set[i])
+            new_index_num=findfirst(variable.axes[i].==index_set[i])
             if new_index_num==[]
                 @error("$(index_set[i]) not in indexset #$i of Variable $var_name")
             else
@@ -347,26 +347,26 @@ function get_cep_variable_value(scenario::CEPScenario,
             end
         end
     end
-    return getindex(variable.innerArray,Tuple(index_num)...)
+    return getindex(variable.data,Tuple(index_num)...)
 end
 
 """
 function get_cep_variable_set(scenario::Scenario,var_name::String,num_index_set::Int)
   Get the variable set from the specific Scenario by indicating the var_name e.g. "COST" and the num_index_set like 1
 """
-function get_cep_variable_set(scenario::CEPScenario,
+function get_cep_variable_set(scenario::Scenario,
                                 var_name::String,
                                 num_index_set::Int
                                 )
-    return scenario.opt_res.var[var_name].indexsets[num_index_set]
+    return scenario.opt_res.variables[var_name].axes[num_index_set]
 end
 
 """
-function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
+function attribute_weighting(data::ClustData,attribute_weights::Dict{String,Float64})
 
 apply the different attribute weights based on the dictionary entry for each tech or exact name
 """
-function attribute_weighting(data::ClustInputData,
+function attribute_weighting(data::ClustData,
                               attribute_weights::Dict{String,Float64}
                               )
   for name in keys(data.data)

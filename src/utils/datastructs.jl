@@ -1,7 +1,8 @@
 ### Data structures ###
+abstract type ModelConfig end
 abstract type InputData end
 abstract type TSInputData <:InputData end
-abstract type ModelInputData <: InputData end
+abstract type OptData <: InputData end
 abstract type ClustResult end
 
 "FullInputData"
@@ -11,8 +12,8 @@ struct FullInputData <: TSInputData
  data::Dict{String,Array}
 end
 
-"ClustInputData \n weights: this is the absolute weight. E.g. for a year of 365 days, sum(weights)=365"
-struct ClustInputData <: TSInputData
+"ClustData \n weights: this is the absolute weight. E.g. for a year of 365 days, sum(weights)=365"
+struct ClustData <: TSInputData
  region::String
  K::Int
  T::Int
@@ -22,8 +23,8 @@ struct ClustInputData <: TSInputData
  sdv::Dict{String,Array}
 end
 
-"ClustInputDataMerged"
-struct ClustInputDataMerged <: TSInputData
+"ClustDataMerged"
+struct ClustDataMerged <: TSInputData
  region::String
  K::Int
  T::Int
@@ -36,7 +37,7 @@ end
 
 "ClustResultAll"
 struct ClustResultAll <: ClustResult
- best_results::ClustInputData
+ best_results::ClustData
  best_ids::Array{Int,1}
  best_cost::Float64
  n_clust::Int
@@ -51,30 +52,33 @@ end
 # TODO: not used yet, but maybe best to implement this one later for users who just want to use clustering but do not care about the locally converged solutions
 "ClustResultBest"
 struct ClustResultBest <: ClustResult
-  best_results::ClustInputData
+  best_results::ClustData
   best_ids::Array{Int,1}
   best_cost::Float64
   n_clust::Int
   data_type::Array{String}
 end
 
-"OptVariable \n contains the results of the optimization problem including the values in the innerArray and the sets in the indexsets"
+"OptVariable"
 struct OptVariable
- innerArray::Array
- indexsets::Tuple
+ data::Array
+ axes::Tuple{String,Array}
  type::String
 end
 
 "OptResult"
 struct OptResult
  status::Symbol
- obj::Float64
- var::Dict{String,OptVariable}
- add_results::Dict
+ objective::Float64
+ variables::Dict{String,OptVariable}
+ model_set::Dict{String,Array}
+ model_info::Array{String}
+ opt_config::Dict{String,Any}
 end
 
 """
-struct CEPData <: ModelInputData
+struct OptDataCEP <: OptData
+   region::String          name of state or region data belongs to
    nodes::DataFrame        nodes x installed capacity of different tech
    var_costs::DataFrame    tech x [USD, CO2]
    fix_costs::DataFrame    tech x [USD, CO2]
@@ -82,7 +86,7 @@ struct CEPData <: ModelInputData
    techs::DataFrame        tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
    instead of USD you can also use your favorite currency like EUR
 """
-struct CEPData <: ModelInputData
+struct OptDataCEP <: OptData
    region::String
    nodes::DataFrame
    var_costs::DataFrame
@@ -92,68 +96,41 @@ struct CEPData <: ModelInputData
 end
 
 """
-struct CEPModel
-  model::Model
-  equations::Array
-"""
-struct CEPModel
+struct OptModelCEP
   model::JuMP.Model
-  info::Array
+  info::Array{String}
+  set::Dict{String,Array}
+"""
+struct OptModelCEP
+  model::JuMP.Model
+  info::Array{String}
+  set::Dict{String,Array}
 end
 
+
 """
-struct CEPScenario
- name::String
- co2limit::Float64
- clust_res::Any #ClustInputData or ClustResultAll or ClustResultBest
- opt_res::Any #OptResult or Nothing
- add_info::Dict{String,Any}
+struct Scenario
+  name::String
+  clust_res::ClustResult
+  opt_res::OptResult
 end
 """
-
-struct CEPScenario
+struct Scenario
  name::String
- #QUESTION How to be general but not use Any
  clust_res::ClustResult
- opt_res::Any #OptResult or Nothing
- info::Dict
+ opt_res::OptResult
 end
 
 
 #### Constructors for data structures###
-
-# need to come afterwards because of cyclic argument between ClustInputData and ClustInputDataMerged Constructors
 """
-  function Scenario(;clust_res::ClustResultAll
-Constructor 1 for FullInputData with optional data input
+function OptVariable(jumparray::JuMP.Array, type::String)
+  Constructor for OptVariable taking JuMP Array and type (ov-operational variable or dv-decision variable)
 """
-function Scenario(name::String,
-                  clust_res::Any,
-                  opt_res::Any;
-                  #QUESTION How to have two or three possible datatypes? One function each?
-                  info=Dict{String,Float64}()
-                  )
- CEPScenario(name,clust_res,opt_res,info)
-end
-
-"""
-function OptVariable(jumparray::Any)
-Constructor for OptVariable based on JUMPArray
-"""
-function OptVariable(variable::JuMP.JuMPArray,
-                      type::String
+function OptVariable(jumparray::JuMP.Array,
+                     type::String
                       )
-  OptVariable(variable.innerArray,variable.indexsets,type)
-end
-
-"""
-function OptVariable(jumparray::Array)
-Constructor for OptVariable based on JUMPArray
-"""
-function OptVariable(variable::Array,
-                      type::String
-                      )
-  OptVariable(variable,Tuple(""),type)
+OptVariable(jumparray.innerArray,jumparray.indexsets,type)
 end
 
 """
@@ -184,9 +161,9 @@ function FullInputData(region::String,
 end
 
 """
-constructor 1 for ClustInputData: provide data individually
+constructor 1 for ClustData: provide data individually
 
-function ClustInputData(region::String,
+function ClustData(region::String,
                          K::Int,
                          T::Int;
                          el_price::Array=[],
@@ -197,7 +174,7 @@ function ClustInputData(region::String,
                          sdv::Dict{String,Array}=Dict{String,Array}()
                          )
 """
-function ClustInputData(region::String,
+function ClustData(region::String,
                          K::Int,
                          T::Int;
                          el_price::Array=[],
@@ -240,13 +217,13 @@ function ClustInputData(region::String,
    end
    isempty(dt) && @error("Need to provide at least one input data stream")
    # TODO: Check dimensionality of K T and supplied input data streams KxT
-   ClustInputData(region,K,T,dt,weights,mean,sdv)
+   ClustData(region,K,T,dt,weights,mean,sdv)
 end
 
 """
-constructor 2 for ClustInputData: provide data as dict
+constructor 2 for ClustData: provide data as dict
 
-function ClustInputData(region::String,
+function ClustData(region::String,
                        K::Int,
                        T::Int,
                        data::Dict{String,Array};
@@ -254,7 +231,7 @@ function ClustInputData(region::String,
                        sdv::Dict{String,Array}=Dict{String,Array}()
                        )
 """
-function ClustInputData(region::String,
+function ClustData(region::String,
                        K::Int,
                        T::Int,
                        data::Dict{String,Array},
@@ -271,41 +248,41 @@ function ClustInputData(region::String,
    end
  end
  # TODO check if right keywords are used
- ClustInputData(region,K,T,data,weights,mean,sdv)
+ ClustData(region,K,T,data,weights,mean,sdv)
 end
 
 """
-constructor 3: Convert ClustInputDataMerged to ClustInputData
+constructor 3: Convert ClustDataMerged to ClustData
 
-function ClustInputData(data::ClustInputDataMerged)
+function ClustData(data::ClustDataMerged)
 """
-function ClustInputData(data::ClustInputDataMerged)
+function ClustData(data::ClustDataMerged)
  data_dict=Dict{String,Array}()
  i=0
  for (k,v) in data.mean
    i+=1
    data_dict[k] = data.data[(1+data.T*(i-1)):(data.T*i),:]
  end
- ClustInputData(data.region,data.K,data.T,data_dict,data.weights,data.mean,data.sdv)
+ ClustData(data.region,data.K,data.T,data_dict,data.weights,data.mean,data.sdv)
 end
 
 """
-constructor 4: Convert FullInputData to ClustInputData
-function ClustInputData(data::FullInputData,K,T)
+constructor 4: Convert FullInputData to ClustData
+function ClustData(data::FullInputData,K,T)
 """
-function ClustInputData(data::FullInputData,
+function ClustData(data::FullInputData,
                                  K::Int,
                                  T::Int)
   data_reshape = Dict{String,Array}()
   for (k,v) in data.data
      data_reshape[k] =  reshape(v,T,K)
   end
-  return ClustInputData(data.region,K,T,data_reshape,ones(K))
+  return ClustData(data.region,K,T,data_reshape,ones(K))
 end
 
 """
-constructor 1: construct ClustInputDataMerged
-function ClustInputDataMerged(region::String,
+constructor 1: construct ClustDataMerged
+function ClustDataMerged(region::String,
                        K::Int,
                        T::Int,
                        data::Array,
@@ -315,7 +292,7 @@ function ClustInputDataMerged(region::String,
                        sdv::Dict{String,Array}=Dict{String,Array}()
                        )
 """
-function ClustInputDataMerged(region::String,
+function ClustDataMerged(region::String,
                        K::Int,
                        T::Int,
                        data::Array,
@@ -331,15 +308,15 @@ function ClustInputDataMerged(region::String,
      sdv[dt]=ones(T)
    end
  end
- ClustInputDataMerged(region,K,T,data,data_type,weights,mean,sdv)
+ ClustDataMerged(region,K,T,data,data_type,weights,mean,sdv)
 end
 
 """
-constructor 2: convert ClustInputData into merged format
+constructor 2: convert ClustData into merged format
 
-function ClustInputDataMerged(data::ClustInputData)
+function ClustDataMerged(data::ClustData)
 """
-function ClustInputDataMerged(data::ClustInputData)
+function ClustDataMerged(data::ClustData)
  n_datasets = length(keys(data.data))
  data_merged= zeros(data.T*n_datasets,data.K)
  data_type=String[]
@@ -349,5 +326,5 @@ function ClustInputDataMerged(data::ClustInputData)
    data_merged[(1+data.T*(i-1)):(data.T*i),:] = v
    push!(data_type,k)
  end
- ClustInputDataMerged(data.region,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv)
+ ClustDataMerged(data.region,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv)
 end

@@ -1,6 +1,6 @@
-tech,categ,sector,fuel,lifetime,financial_lifetime,discount_rate
-pv,renewable,el,none,15,20,0.05
-wind,renewable,el,none,15,20,0.05
-coal,fossil,el,coal,45,20,0.05
-nuc,fossil,el,none,40,20,0.05
-gas,fossil,el,gas,50,20,0.05
+tech,categ,sector,fuel,time_series,lifetime,financial_lifetime,discount_rate
+pv,no_dispatch,el,none,solar,15,10,0.07
+wind,no_dispatch,el,none,wind,15,10,0.07
+coal,dispatch,el,coal,none,45,10,0.07
+nuc,dispatch,el,none,none,40,10,0.07
+gas,dispatch,el,gas,none,50,10,0.07

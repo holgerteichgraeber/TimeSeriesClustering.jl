@@ -35,12 +35,12 @@ function load_timeseries_data( application::String,
       end
   end
   data_full =  FullInputData(region, num, dt)
-  data_reshape =  ClustInputData(data_full,K,T)
+  data_reshape =  ClustData(data_full,K,T)
   return data_reshape, data_full
 end #load_pricedata
 
 """
-function load_cepdata(region::String)
+function load_cep_data(region::String)
 Loading from .csv files in a the folder ../ClustForOpt/data/CEP/{region}/
 Follow instructions for the CSV-Files:
     nodes       nodes x installed capacity of different tech in MW_el
@@ -65,5 +65,5 @@ function load_cep_data(region::String)
   techs[:annuityfactor]=map((lifetime,financial_lifetime,discount_rate) -> (1+discount_rate)^(min(financial_lifetime,lifetime))*discount_rate/((1+discount_rate)^(min(financial_lifetime,lifetime))-1), techs[:lifetime],techs[:financial_lifetime],techs[:discount_rate])
   cap_costs[2]=map((tech, EUR) -> findvalindf(techs,:tech,tech,:annuityfactor)*EUR, cap_costs[:tech], cap_costs[2])
   cap_costs[:CO2]=map((tech, CO2) -> CO2/findvalindf(techs,:tech,tech,:lifetime), cap_costs[:tech], cap_costs[:CO2])
-  return CEPData(region,nodes,var_costs,fix_costs,cap_costs,techs)
+  return OptDataCEP(region,nodes,var_costs,fix_costs,cap_costs,techs)
 end #load_pricedata
