@@ -59,5 +59,7 @@ module ClustForOpt_priv
   include(joinpath("optim_problems","opt_cep.jl"))
   include(joinpath("clustering","run_clust.jl"))
   include(joinpath("clustering","exact_kmedoids.jl"))
+  include(joinpath("clustering","extreme_vals.jl"))
+  include(joinpath("clustering","attribute_weighting.jl"))
 
 end # module ClustForOpt

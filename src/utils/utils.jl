@@ -362,60 +362,39 @@ function get_cep_variable_set(scenario::Scenario,
 end
 
 """
-function attribute_weighting(data::ClustData,attribute_weights::Dict{String,Float64})
-
-apply the different attribute weights based on the dictionary entry for each tech or exact name
-"""
-function attribute_weighting(data::ClustData,
-                              attribute_weights::Dict{String,Float64}
-                              )
-  for name in keys(data.data)
-    tech=split(name,"-")[1]
-    if name in keys(attribute_weights)
-      attribute_weight=attribute_weights[name]
-      data.data[name].*=attribute_weight
-      data.sdv[name]./=attribute_weight
-    elseif tech in keys(attribute_weights)
-      attribute_weight=attribute_weights[tech]
-      data.data[name].*=attribute_weight
-      data.sdv[name]./=attribute_weight
-    end
-  end
-  return data
-end
-
-"""
 set_opt_config_cep(descriptor::String, first_stage_vars::Dict{String,OptVariable}, co2_limit::Number, existing_infrastructure::Bool, storage::Bool)
   Returning Dictionary with the variables as entries
 """
-function set_opt_config_cep(opt_data::OptDataCEP,
-                            descriptor::String,
-                            first_stage_vars::Dict{String,OptVariable},
-                            co2_limit::Number,
-                            existing_infrastructure::Bool,
-                            storage::Bool)
-  # Check existence of data
-  categ=unique(opt_data.techs[:categ])
-  if storage && !"storage" in categ
-      @error("Storage activated, but no data provided")
+function set_opt_config_cep(opt_data;kwargs...)
+  config=Dict{String,Any}()
+  for categ in unique(opt_data.techs[:categ])
+    config[categ]=true
   end
-  generation="generation" in categ
+  # Check existence of data
+  for key in kwargs
+    config[String(key[1])]=key[2]
+  end
   # Return Directory with the information
-  return Dict{String,Any}("descriptor"=>descriptor, "first_stage_vars"=>first_stage_vars, "co2_limit"=>co2_limit, "existing_infrastructure"=> existing_infrastructure, "storage"=>storage, "generation"=>generation)
+  return config
 end
 
 """
-set_clust_config(norm_op::String, norm_scope::String, method::String, representation::String, n_clust::Int, n_init::Int, iterations::Int, attribute_weights::Dict{String,Float64})
-  Returning Dictionary with the variables as entries
+add_clust_config!(config::Dict{String,Any};kwargs...)
+    Add kwargs to the Dictionary with the variables as entries
 """
-function set_clust_config(norm_op::String,
-      norm_scope::String,
-      method::String,
-      representation::String,
-      n_clust::Int,
-      n_init::Int,
-      iterations::Int,
-      attribute_weights::Dict{String,Float64})
+function add_clust_config!(config::Dict{String,Any};
+                          kwargs...)
    # Return Directory with the information
-   return Dict{String,Any}("norm_op"=>norm_op, "norm_scope"=>norm_scope, "method"=>method, "representation"=>representation, "n_clust"=>n_clust, "n_init"=>n_init, "iterations"=>iterations, "attribute_weights"=>attribute_weights)
+   for key in kwargs
+     config[String(key[1])]=key[2]
+   end
+   return config
  end
+
+ """
+ set_clust_config(;kwargs...)
+     Add kwargs to a new Dictionary with the variables as entries
+ """
+function set_clust_config(;kwargs...)
+  return add_clust_config!(Dict{String,Any}();kwargs...)
+end

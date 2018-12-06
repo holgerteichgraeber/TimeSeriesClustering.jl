@@ -16,4 +16,10 @@ ts_clust_res = run_clust(ts_input_data;method="kmeans",representation="centroid"
  # optimization
 model = run_opt(ts_clust_res.best_results,cep_input_data_GER;solver=GurobiSolver())
 
- 
+exact_res=[70540.26439790576;0.0;8498.278397905757;0.0;80132.88454450261]
+
+if round.(exact_res)==round.(model.variables["CAP"].data[:,1,1])
+    @info("texas_merrick test succeeded")
+else
+    @error("texas_merrick test failed")
+end

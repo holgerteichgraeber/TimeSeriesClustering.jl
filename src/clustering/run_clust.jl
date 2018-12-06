@@ -75,7 +75,7 @@ function run_clust(
     # transfer into ClustData format
     best_results = ClustData(b_merged)
     best_ids = clustids[ind_mincost]
-    clust_config = set_clust_config(norm_op, norm_scope, method, representation, n_clust, n_init, iterations, attribute_weights)
+    clust_config = set_clust_config(;norm_op=norm_op, norm_scope=norm_scope, method=method, representation=representation, n_clust=n_clust, n_init=n_init, iterations=iterations, attribute_weights=attribute_weights)
     # save all locally converged solutions and the best into a struct
     if get_all_clust_results
       clust_result = ClustResultAll(best_results,best_ids,cost_best,data_norm_merged.data_type,clust_config,centers,weights,clustids,cost,iter)
@@ -86,6 +86,7 @@ function run_clust(
     return clust_result
 end
 
+#QUESTION still needed?
 """
 function run_clust(
       data::ClustData,
