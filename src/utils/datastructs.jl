@@ -1,5 +1,4 @@
 ### Data structures ###
-abstract type ModelConfig end
 abstract type InputData end
 abstract type TSInputData <:InputData end
 abstract type OptData <: InputData end
@@ -40,8 +39,8 @@ struct ClustResultAll <: ClustResult
  best_results::ClustData
  best_ids::Array{Int,1}
  best_cost::Float64
- n_clust::Int
  data_type::Array{String}
+ clust_config::Dict{String,Any}
  centers::Array{Array{Float64},1}
  weights::Array{Array{Float64},1}
  clustids::Array{Array{Int,1},1}
@@ -52,17 +51,17 @@ end
 # TODO: not used yet, but maybe best to implement this one later for users who just want to use clustering but do not care about the locally converged solutions
 "ClustResultBest"
 struct ClustResultBest <: ClustResult
-  best_results::ClustData
-  best_ids::Array{Int,1}
-  best_cost::Float64
-  n_clust::Int
-  data_type::Array{String}
+ best_results::ClustData
+ best_ids::Array{Int,1}
+ best_cost::Float64
+ data_type::Array{String}
+ clust_config::Dict{String,Any}
 end
 
 "OptVariable"
 struct OptVariable
  data::Array
- axes::Tuple{String,Array}
+ axes::Tuple
  type::String
 end
 
@@ -127,10 +126,10 @@ end
 function OptVariable(jumparray::JuMP.Array, type::String)
   Constructor for OptVariable taking JuMP Array and type (ov-operational variable or dv-decision variable)
 """
-function OptVariable(jumparray::JuMP.Array,
+function OptVariable(jumparray::JuMP.JuMPArray,
                      type::String
                       )
-OptVariable(jumparray.innerArray,jumparray.indexsets,type)
+  OptVariable(jumparray.innerArray,jumparray.indexsets,type)
 end
 
 """

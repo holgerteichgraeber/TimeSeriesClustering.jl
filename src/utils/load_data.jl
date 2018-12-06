@@ -22,7 +22,7 @@ function load_timeseries_data( application::String,
   for fulldataname in readdir(data_path)
       dataname=split(fulldataname,".")[1]
       data_df=CSV.read(joinpath(data_path,fulldataname);allowmissing=:none)
-      for column in eachcol(data_df)
+      for column in eachcol(data_df, true)
           if findall([:Timestamp,:time,:Time,:Zeit].==(column[1]))==[]
               dt[dataname*"-"*string(column[1])]=column[2]
               newnum=length(column[2])

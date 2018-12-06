@@ -10,11 +10,13 @@ function setup_opt_cep_set(ts_data::ClustData,
   set=Dict{String,Array}()
   set["nodes"]=opt_data.nodes[:nodes]
   #Seperate sets for fossil and renewable technology
-  for cat in unique(opt_data.techs[:categ])
-      set["tech_"*cat]=opt_data.techs[opt_data.techs[:categ].==cat,:tech]
+  set["tech"]=Array{String,1}()
+  for categ in unique(opt_data.techs[:categ])
+    if opt_config[categ]
+      set["tech_"*categ]=opt_data.techs[opt_data.techs[:categ].==categ,:tech]
+      set["tech"]=[set["tech"];set["tech_"*categ]]
+    end
   end
-  #TODO exclude storage if not activate
-  set["tech"]=opt_data.techs[:tech]
   set["impact"]=String.(names(opt_data.cap_costs))[2:end]
   set["account"]=["cap_fix","var"]
   if opt_config["existing_infrastructure"]
@@ -42,7 +44,7 @@ function setup_opt_cep_basic(ts_data::ClustData,
                             solver::Any)
    ## MODEL CEP ##
    # Initialize model
-   model=Model(with_optimizer(Gurobi.Optimizer))
+   model=Model(solver=solver)
    # Initialize info
    info=[opt_config["descriptor"]]
    # Setup set
@@ -122,19 +124,28 @@ function setup_opt_cep_generation_el!(cep::OptModelCEP,
 
     ## GENERATION ELECTRICITY ##
     # Calculate Variable Costs
-    push!(cep.info,"COST['var',impact,tech] = Δt ⋅ Σ_{t,k,node}GEN['el',t,k,node]⋅ ts_weights[k] ⋅ var_costs[tech,impact] ∀ impact, tech_{dispatch, no_dispatch}")
-    @constraint(cep.model, [impact=set["impact"], tech=[set["tech_dispatch"];set["tech_no_dispatch"]]], cep.model[:COST]["var",impact,tech]==sum(cep.model[:GEN]["el",tech,t,k,node]*ts_weights[k]*findvalindf(var_costs,:tech,tech,Symbol(impact)) for node=set["nodes"], t=set["time_T"], k=set["time_K"]))
+    push!(cep.info,"COST['var',impact,tech] = Δt ⋅ Σ_{t,k,node}GEN['el',t,k,node]⋅ ts_weights[k] ⋅ var_costs[tech,impact] ∀ impact, tech_generation")
+    @constraint(cep.model, [impact=set["impact"], tech=set["tech_generation"]], cep.model[:COST]["var",impact,tech]==sum(cep.model[:GEN]["el",tech,t,k,node]*ts_weights[k]*findvalindf(var_costs,:tech,tech,Symbol(impact)) for node=set["nodes"], t=set["time_T"], k=set["time_K"]))
     # Calculate Fixed Costs
-    push!(cep.info,"COST['cap_fix',impact,tech] = Σ_{node}CAP[tech,'new',node] ⋅ cap_costs[tech,impact] ∀ impact, tech_{dispatch, no_dispatch}")
-    @constraint(cep.model, [impact=set["impact"], tech=[set["tech_dispatch"];set["tech_no_dispatch"]]], cep.model[:COST]["cap_fix",impact,tech]==sum(cep.model[:CAP][tech,"new",node] for node=set["nodes"])*(findvalindf(cap_costs,:tech,tech,impact)+findvalindf(fix_costs,:tech,tech,impact)))
+    push!(cep.info,"COST['cap_fix',impact,tech] = Σ_{node}CAP[tech,'new',node] ⋅ cap_costs[tech,impact] ∀ impact, tech_generation")
+    @constraint(cep.model, [impact=set["impact"], tech=set["tech_generation"]], cep.model[:COST]["cap_fix",impact,tech]==sum(cep.model[:CAP][tech,"new",node] for node=set["nodes"])*(findvalindf(cap_costs,:tech,tech,impact)+findvalindf(fix_costs,:tech,tech,impact)))
+
     # Limit the generation of dispathables to the existing capacity of dispachable power plants
-    push!(cep.info," 0 ≤ GEN['el',tech, t, k, node] ≤ Σ_{exist} CAP[tech,exist,node] ∀ node, tech_dispatch, t, k")
-    @constraint(cep.model, [node=set["nodes"], tech=set["tech_dispatch"], t=set["time_T"], k=set["time_K"]], 0 <=cep.model[:GEN]["el",tech, t, k, node])
-    @constraint(cep.model, [node=set["nodes"], tech=set["tech_dispatch"], t=set["time_T"], k=set["time_K"]],     cep.model[:GEN]["el",tech, t, k, node] <=sum(cep.model[:CAP][tech,exist,node] for exist=set["exist"]))
+    push!(cep.info," 0 ≤ GEN['el',tech, t, k, node] ≤ Σ_{exist} CAP[tech,exist,node] ∀ node, tech_generation{dispatchable}, t, k")
     # Limit the generation of dispathables to the existing capacity of non-dispachable power plants
-    push!(cep.info," 0 ≤ GEN['el',tech, t, k, node] ≤ Σ_{exist}CAP[tech,exist,node]*ts[tech-node,t,k] ∀ node, tech_{no_dispatch}, t, k")
-    @constraint(cep.model, [node=set["nodes"], tech=set["tech_no_dispatch"], t=set["time_T"], k=set["time_K"]], 0 <=cep.model[:GEN]["el",tech, t, k, node])
-    @constraint(cep.model, [node=set["nodes"], tech=set["tech_no_dispatch"], t=set["time_T"], k=set["time_K"]],     cep.model[:GEN]["el",tech,t,k,node] <=sum(cep.model[:CAP][tech,exist,node] for exist=set["exist"])*ts[findvalindf(techs,:tech,tech,:time_series)*"-"*node][t,k])
+    push!(cep.info," 0 ≤ GEN['el',tech, t, k, node] ≤ Σ_{exist}CAP[tech,exist,node]*ts[tech-node,t,k] ∀ node, tech_generation{non_dispatchable}, t, k")
+    for tech in set["tech_generation"]
+      # Limit the generation of dispathables to the existing capacity of dispachable power plants
+      if findvalindf(techs,:tech,tech,:time_series)=="none"
+      @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], 0 <=cep.model[:GEN]["el",tech, t, k, node])
+      @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]],     cep.model[:GEN]["el",tech, t, k, node] <=sum(cep.model[:CAP][tech,exist,node] for exist=set["exist"]))
+      else
+      # Limit the generation of dispathables to the existing capacity of non-dispachable power plants
+      @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], 0 <=cep.model[:GEN]["el",tech, t, k, node])
+      @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]],     cep.model[:GEN]["el",tech,t,k,node] <=sum(cep.model[:CAP][tech,exist,node] for exist=set["exist"])*ts[findvalindf(techs,:tech,tech,:time_series)*"-"*node][t,k])
+      end
+    end
+
     return cep
 end
 
@@ -222,19 +233,13 @@ function solve_opt_cep(cep::OptModelCEP,
                             ts_data::ClustData,
                             opt_data::OptDataCEP,
                             opt_config::Dict{String,Any})
- return cep
-end
-
-"""
-df
-  status=JuMP.optimize!(cep.model)
+  status=solve(cep.model)
   objective=getobjectivevalue(cep.model)
   variables=Dict{String,OptVariable}()
   variables["COST"]=OptVariable(getvalue(cep.model[:COST]),"ov")
   variables["CAP"]=OptVariable(getvalue(cep.model[:CAP]),"dv")
   variables["GEN"]=OptVariable(getvalue(cep.model[:GEN]),"ov")
-  currency=var["COST"].indexsets[2][1]
-  @info("Solved Scenario "*opt_config["descriptor"]*":"*String(status)*" min COST[currency]: objective s.t. CO₂-Emissions per MWh ≤ " *opt_config["descriptor"])
+  currency=variables["COST"].axes[2][1]
+  @info("Solved Scenario $(opt_config["descriptor"]):"*String(status)*" min COST[currency]: objective s.t. CO₂-Emissions per MWh ≤ $(opt_config["co2_limit"])")
   return OptResult(status,objective,variables,cep.set,cep.info,opt_config)
 end
-"""

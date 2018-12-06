@@ -6,24 +6,14 @@ include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_develo
 #using Gurobi
 
 # load data
-ts_input_data, = load_timeseries_data("CEP", "GER_1";K=365, T=24) #CEP
+ts_input_data, = load_timeseries_data("CEP", "TX_1";K=365, T=24) #CEP
 
-cep_input_data_GER=load_cep_data("GER_1")
+cep_input_data_GER=load_cep_data("TX_1")
 
  # run clustering
 ts_clust_res = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1,n_clust=365) # default k-means
 
  # optimization
-model = run_opt(ts_clust_res.best_results,cep_input_data_GER;solver=Gurobi.Optimizer,storage=true)
-model.info
-JuMP.backend(model.model)
+model = run_opt(ts_clust_res.best_results,cep_input_data_GER;solver=GurobiSolver(),storage=false)
 
-JuMP.optimize!(model.model)
-JuMP.objective_value(model.model)
-
-@variable(m, 0 <= x <= 10)
-@objective(m, Max, x)
-
-m
-
-JuMP.optimize!(m)
+ 

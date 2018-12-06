@@ -29,11 +29,11 @@ end
 """
 function run_opt(problem_type,el_price,weight=1,country="",prnt=false)
 
-Wrapper function for type of optimization problem
+Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
 """
 function run_opt(ts_data::ClustData,
                  opt_data::OptDataCEP;
-                 solver::Any=Cbc.Optimizer,
+                 solver::Any=CbcSolver(),
                  descriptor::String="",
                  first_stage_vars::Dict{String,OptVariable}=Dict{String,OptVariable}(),
                  co2_limit::Number=Inf,
@@ -41,21 +41,9 @@ function run_opt(ts_data::ClustData,
                  storage::Bool=false,
                  kwargs...)
   #TODO first_stage_vars
-  opt_config=set_opt_config_cep(descriptor, first_stage_vars, co2_limit, existing_infrastructure, storage)
+  opt_config=set_opt_config_cep(opt_data, descriptor, first_stage_vars, co2_limit, existing_infrastructure, storage)
   run_opt(ts_data,opt_data,opt_config;solver=solver)
 end # run_opt
-
-"""
-set_opt_config_cep(descriptor::String, first_stage_vars::Dict{String,OptVariable}, co2_limit::Number, existing_infrastructure::Bool, storage::Bool)
-  Returning Dictionary with the variables as entries
-"""
-function set_opt_config_cep(descriptor::String,
-                            first_stage_vars::Dict{String,OptVariable},
-                            co2_limit::Number,
-                            existing_infrastructure::Bool,
-                            storage::Bool)
-  return Dict{String,Any}("descriptor"=>descriptor, "first_stage_vars"=>first_stage_vars, "co2_limit"=>co2_limit, "existing_infrastructure"=> existing_infrastructure, "storage"=>storage)
-end
 
 #TODO Rewrite battery problem
 """

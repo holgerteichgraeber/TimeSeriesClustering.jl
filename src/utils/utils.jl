@@ -383,3 +383,39 @@ function attribute_weighting(data::ClustData,
   end
   return data
 end
+
+"""
+set_opt_config_cep(descriptor::String, first_stage_vars::Dict{String,OptVariable}, co2_limit::Number, existing_infrastructure::Bool, storage::Bool)
+  Returning Dictionary with the variables as entries
+"""
+function set_opt_config_cep(opt_data::OptDataCEP,
+                            descriptor::String,
+                            first_stage_vars::Dict{String,OptVariable},
+                            co2_limit::Number,
+                            existing_infrastructure::Bool,
+                            storage::Bool)
+  # Check existence of data
+  categ=unique(opt_data.techs[:categ])
+  if storage && !"storage" in categ
+      @error("Storage activated, but no data provided")
+  end
+  generation="generation" in categ
+  # Return Directory with the information
+  return Dict{String,Any}("descriptor"=>descriptor, "first_stage_vars"=>first_stage_vars, "co2_limit"=>co2_limit, "existing_infrastructure"=> existing_infrastructure, "storage"=>storage, "generation"=>generation)
+end
+
+"""
+set_clust_config(norm_op::String, norm_scope::String, method::String, representation::String, n_clust::Int, n_init::Int, iterations::Int, attribute_weights::Dict{String,Float64})
+  Returning Dictionary with the variables as entries
+"""
+function set_clust_config(norm_op::String,
+      norm_scope::String,
+      method::String,
+      representation::String,
+      n_clust::Int,
+      n_init::Int,
+      iterations::Int,
+      attribute_weights::Dict{String,Float64})
+   # Return Directory with the information
+   return Dict{String,Any}("norm_op"=>norm_op, "norm_scope"=>norm_scope, "method"=>method, "representation"=>representation, "n_clust"=>n_clust, "n_init"=>n_init, "iterations"=>iterations, "attribute_weights"=>attribute_weights)
+ end
