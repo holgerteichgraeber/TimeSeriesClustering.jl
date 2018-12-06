@@ -58,6 +58,26 @@ struct ClustResultBest <: ClustResult
   data_type::Array{String}
 end
 
+"SimpleExtremeValueDescr"
+struct SimpleExtremeValueDescr
+   data_type::String
+   extremum::String
+   peak_def::String
+   "Replace default constructor to only allow certain entries"
+   function SimpleExtremeValueDescr(data_type::String, 
+                                    extremum::String,
+                                    peak_def::String)
+       # only allow certain entries 
+       if !(extremum in ["min","max"])
+         @error("extremum - "*extremum*" - not defined")  
+       elseif !(peak_def in ["absolute","integral"])
+         @error("peak_def - "*peak_def*" - not defined")  
+       end
+       new(data_type,extremum,peak_def) 
+   end
+end
+
+
 "OptResult"
 struct OptResult
  status::Symbol
@@ -322,3 +342,4 @@ function ClustInputDataMerged(data::ClustInputData)
  end
  ClustInputDataMerged(data.region,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv)
 end
+
