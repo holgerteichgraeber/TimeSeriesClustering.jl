@@ -326,14 +326,12 @@ function mapsetindf(df::DataFrame,
 end
 
 """
-function get_cep_variable_value(scenario::Scenario,var_name::String,index_set::Array)
+function get_cep_variable_value(variable::OptVariable,index_set::Array)
   Get the variable data from the specific Scenario by indicating the var_name e.g. "COST" and the index_set like [:;"EUR";"pv"]
 """
-function get_cep_variable_value(scenario::Scenario,
-                                var_name::String,
+function get_cep_variable_value(variable::OptVariable,
                                 index_set::Array
                                 )
-    variable=scenario.opt_res.variables[var_name]
     index_num=[]
     for i in  1:length(index_set)
         if index_set[i]==Colon()
@@ -351,50 +349,57 @@ function get_cep_variable_value(scenario::Scenario,
 end
 
 """
+function get_cep_variable_value(scenario::Scenario,var_name::String,index_set::Array)
+  Get the variable data from the specific Scenario by indicating the var_name e.g. "COST" and the index_set like [:;"EUR";"pv"]
+"""
+function get_cep_variable_value(scenario::Scenario,
+                                var_name::String,
+                                index_set::Array
+                                )
+    return get_cep_variable_value(scenario.opt_res.variables[var_name], index_set)
+end
+
+"""
 function get_cep_variable_set(scenario::Scenario,var_name::String,num_index_set::Int)
   Get the variable set from the specific Scenario by indicating the var_name e.g. "COST" and the num_index_set like 1
 """
-function get_cep_variable_set(scenario::Scenario,
-                                var_name::String,
-                                num_index_set::Int
-                                )
-    return scenario.opt_res.variables[var_name].axes[num_index_set]
+function get_cep_variable_set(variable::OptVariable,
+                              num_index_set::Int
+                              )
+    return variable.axes[num_index_set]
 end
 
 """
 set_opt_config_cep(descriptor::String, first_stage_vars::Dict{String,OptVariable}, co2_limit::Number, existing_infrastructure::Bool, storage::Bool)
   Returning Dictionary with the variables as entries
 """
-function set_opt_config_cep(opt_data;kwargs...)
+function set_opt_config_cep(opt_data::OptDataCEP
+                            ;kwargs...)
+  # Create new Dictionary
   config=Dict{String,Any}()
+  # Check the existence of the categ (like generation or storage - see techs.csv) and write it into Dictionary
   for categ in unique(opt_data.techs[:categ])
     config[categ]=true
   end
-  # Check existence of data
-  for key in kwargs
-    config[String(key[1])]=key[2]
+  # Loop through the kwargs and write them into Dictionary
+  for kwarg in kwargs
+    config[String(kwarg[1])]=kwarg[2]
   end
   # Return Directory with the information
   return config
 end
-
-"""
-add_clust_config!(config::Dict{String,Any};kwargs...)
-    Add kwargs to the Dictionary with the variables as entries
-"""
-function add_clust_config!(config::Dict{String,Any};
-                          kwargs...)
-   # Return Directory with the information
-   for key in kwargs
-     config[String(key[1])]=key[2]
-   end
-   return config
- end
 
  """
  set_clust_config(;kwargs...)
      Add kwargs to a new Dictionary with the variables as entries
  """
 function set_clust_config(;kwargs...)
-  return add_clust_config!(Dict{String,Any}();kwargs...)
+  #Create new Dictionary
+  config=Dict{String,Any}()
+  # Loop through the kwargs and write them into Dictionary
+  for kwarg in kwargs
+    config[String(kwarg[1])]=kwarg[2]
+  end
+  # Return Directory with the information of kwargs
+  return config
 end

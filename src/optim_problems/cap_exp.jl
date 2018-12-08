@@ -17,7 +17,7 @@ c_var_s = 0.5 # $/GWh
 c_var_w = 0.5 # $/GWh
 c_var_gas = 41500 # $/GWh
 c_var_nuc = 7025 # $/GWh
-c_var_coal = 23000 # $/GWh #QUESTION is that true?
+c_var_coal = 23000 # $/GWh
 c_var = [c_var_s,c_var_w,c_var_gas,c_var_nuc,c_var_coal]
 c_var = [c_var_coal,c_var_nuc,c_var_gas,c_var_w,c_var_s]
 

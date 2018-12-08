@@ -65,22 +65,32 @@ struct OptVariable
  type::String
 end
 
+"""
+function OptVariable(jumparray::JuMP.Array, type::String)
+  Constructor for OptVariable taking JuMP Array and type (ov-operational variable or dv-decision variable)
+"""
+function OptVariable(jumparray::JuMP.JuMPArray,
+                     type::String
+                      )
+  OptVariable(jumparray.innerArray,jumparray.indexsets,type)
+end
+
 "SimpleExtremeValueDescr"
 struct SimpleExtremeValueDescr
    data_type::String
    extremum::String
    peak_def::String
    "Replace default constructor to only allow certain entries"
-   function SimpleExtremeValueDescr(data_type::String, 
+   function SimpleExtremeValueDescr(data_type::String,
                                     extremum::String,
                                     peak_def::String)
-       # only allow certain entries 
+       # only allow certain entries
        if !(extremum in ["min","max"])
-         @error("extremum - "*extremum*" - not defined")  
+         @error("extremum - "*extremum*" - not defined")
        elseif !(peak_def in ["absolute","integral"])
-         @error("peak_def - "*peak_def*" - not defined")  
+         @error("peak_def - "*peak_def*" - not defined")
        end
-       new(data_type,extremum,peak_def) 
+       new(data_type,extremum,peak_def)
    end
 end
 
@@ -129,28 +139,19 @@ end
 
 """
 struct Scenario
-  name::String
+  descriptor::String
   clust_res::ClustResult
   opt_res::OptResult
 end
 """
 struct Scenario
- name::String
+ descriptor::String
  clust_res::ClustResult
  opt_res::OptResult
 end
 
 
 #### Constructors for data structures###
-"""
-function OptVariable(jumparray::JuMP.Array, type::String)
-  Constructor for OptVariable taking JuMP Array and type (ov-operational variable or dv-decision variable)
-"""
-function OptVariable(jumparray::JuMP.JuMPArray,
-                     type::String
-                      )
-  OptVariable(jumparray.innerArray,jumparray.indexsets,type)
-end
 
 """
  function FullInputData(region::String,
@@ -347,4 +348,3 @@ function ClustDataMerged(data::ClustData)
  end
  ClustDataMerged(data.region,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv)
 end
-
