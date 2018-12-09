@@ -12,6 +12,7 @@ Masterthesis Christiane Reinert,
 Allelein
 fix_costs: Sektorübergreifende Modellierung und Optimierung eines zukünftigen deutschen Energiesystems unter Berücksichtigung von Energieeffizienzmaßnahmen im Gebäudesektor, A. Palzer, assumption oil and coal similar to GuD fix/cap
 var_costs: varcosts_th(Masterthesis Christiane Reinert)/eff(median(eff in ELMOD-DE))
+! Costs for transmission expansion are per MW*km!
 
 # LCIA Recipe H Midpoint, GWP 100a#
 Ecoinvent v3.3:

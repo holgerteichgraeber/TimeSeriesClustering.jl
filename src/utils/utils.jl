@@ -322,7 +322,7 @@ function mapsetindf(df::DataFrame,
                     reference::String,
                     set_to_return::Symbol
                     )
-    return Symbol.(df[df[column_of_reference].==reference,set_to_return])
+    return df[df[column_of_reference].==reference,set_to_return]
 end
 
 """
@@ -336,6 +336,8 @@ function get_cep_variable_value(variable::OptVariable,
     for i in  1:length(index_set)
         if index_set[i]==Colon()
             push!(index_num,Colon())
+        elseif typeof(index_set[i])==Int64
+            push!(index_num,index_set[i])
         else
             new_index_num=findfirst(variable.axes[i].==index_set[i])
             if new_index_num==[]

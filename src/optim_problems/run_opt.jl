@@ -7,13 +7,10 @@ function run_opt(ts_data::ClustData,
                     opt_data::OptDataCEP,
                     opt_config::Dict{String,Any};
                     solver::Any=CbcSolver(),
-                    best_ids::Array{Int64}=Array{Int64}()
+                    best_ids::Array{Int64,1}=Array{Int64,1}(),
                     )
   cep=setup_opt_cep_basic(ts_data, opt_data, opt_config, solver; k_ids=best_ids)
   setup_opt_cep_variables!(cep, ts_data, opt_data)
-  if opt_config["existing_infrastructure"]
-      setup_opt_cep_existing_infrastructure!(cep;nodes=nodes,set=set)
-  end
   setup_opt_cep_generation_el!(cep, ts_data, opt_data)
   if opt_config["storage"]
     setup_opt_cep_storage!(cep, ts_data, opt_data)
@@ -23,10 +20,16 @@ function run_opt(ts_data::ClustData,
       setup_opt_cep_intrastorage!(cep, ts_data, opt_data)
     end
   end
+  if opt_config["transmission"]
+      setup_opt_cep_transmission!(cep, ts_data, opt_data)
+  end
   if opt_config["co2_limit"]!=Inf
     setup_opt_cep_co2_limit!(cep, ts_data, opt_data; co2_limit=opt_config["co2_limit"])
   end
   setup_opt_cep_demand!(cep, ts_data, opt_data)
+  if opt_config["existing_infrastructure"]
+      setup_opt_cep_existing_infrastructure!(cep, ts_data, opt_data)
+  end
   setup_opt_cep_objective!(cep, ts_data, opt_data)
   return solve_opt_cep(cep, ts_data, opt_data, opt_config)
 end
@@ -46,10 +49,11 @@ function run_opt(ts_data::ClustData,
                  existing_infrastructure::Bool=false,
                  storage::Bool=false,
                  interstorage::Bool=false,
-                 best_ids::Array{Int64}=Array{Int64}(),
+                 transmission::Bool=false,
+                 best_ids::Array{Int64,1}=Array{Int64,1}(),
                  kwargs...)
   #TODO first_stage_vars
-  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, first_stage_vars=first_stage_vars, co2_limit=co2_limit, existing_infrastructure=existing_infrastructure, storage=storage, interstorage=interstorage)
+  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, first_stage_vars=first_stage_vars, co2_limit=co2_limit, existing_infrastructure=existing_infrastructure, storage=storage, interstorage=interstorage, transmission=transmission)
   run_opt(ts_data,opt_data,opt_config;solver=solver,best_ids=best_ids)
 end # run_opt
 

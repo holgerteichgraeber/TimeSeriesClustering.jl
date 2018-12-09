@@ -122,6 +122,7 @@ struct OptDataCEP <: OptData
    fix_costs::DataFrame
    cap_costs::DataFrame
    techs::DataFrame
+   lines::DataFrame
 end
 
 """

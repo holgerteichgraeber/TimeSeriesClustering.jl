@@ -5,3 +5,4 @@ coal,generation,el,coal,0,0,none,45,20,0.05
 oil,generation,el,oil,0,0,none,40,20,0.05
 gas,generation,el,gas,0,0,none,50,20,0.05
 bat,storage,el,none,0.8,0.97,none,25,20,0.05
+trans,transmission,el,none,0,0,none,80,20,0.05

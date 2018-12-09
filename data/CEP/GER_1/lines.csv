@@ -1,1 +1,1 @@
-line,node_start,node_end,reactance,resistance,power,voltage,circuits,length
+transmission_lines,node_start,node_end,reactance,resistance,power,voltage,circuits,length
