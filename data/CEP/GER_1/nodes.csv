@@ -1,2 +1,2 @@
-nodes,pv,wind,coal,gas,oil,ph_p,ph_e
-germany,32312,31827,45027,22370,7004,7287,42410
+nodes,pv,wind,coal,gas,oil,bat_p,bat_e
+germany,32312,31827,45027,22370,7004,0,0

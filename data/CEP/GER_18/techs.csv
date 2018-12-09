@@ -1,8 +1,7 @@
-tech,categ,sector,fuel,time_series,lifetime,financial_lifetime,discount_rate
-pv,generation,el,none,solar,15,20,0.05
-wind,generation,el,none,wind,15,20,0.05
-coal,generation,el,coal,none,45,20,0.05
-oil,generation,el,oil,none,40,20,0.05
-gas,generation,el,gas,none,50,20,0.05
-ph_p,storage,el,none,none,50,20,0.05
-ph_e,storage,el,none,none,50,20,0.05
+tech,categ,sector,fuel,e_p_ratio,efficiency,time_series,lifetime,financial_lifetime,discount_rate
+pv,generation,el,none,0,0,solar,15,20,0.05
+wind,generation,el,none,0,0,wind,15,20,0.05
+coal,generation,el,coal,0,0,none,45,20,0.05
+oil,generation,el,oil,0,0,none,40,20,0.05
+gas,generation,el,gas,0,0,none,50,20,0.05
+bat,storage,el,none,0.8,0.97,none,25,20,0.05

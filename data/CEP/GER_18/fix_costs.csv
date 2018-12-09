@@ -1,8 +1,7 @@
 tech,EUR,CO2
-pv,0,0
-wind,0,0
-coal,0,0
-oil,0,0
-gas,0,0
-ph_p,0,0
-ph_e,0,0
+pv,2.4500E+04,0
+wind,4.250E+04,0
+coal,5.2500E+04,0
+oil,1.3140E+04,0
+gas,7.700E+03,0
+bat,1.008E+04,0
