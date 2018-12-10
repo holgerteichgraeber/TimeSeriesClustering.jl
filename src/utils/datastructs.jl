@@ -1,18 +1,18 @@
 ### Data structures ###
 abstract type InputData end
-abstract type TSInputData <:InputData end
+abstract type TSData <:InputData end
 abstract type OptData <: InputData end
 abstract type ClustResult end
 
 "FullInputData"
-struct FullInputData <: TSInputData
+struct FullInputData <: TSData
  region::String
  N::Int
  data::Dict{String,Array}
 end
 
 "ClustData \n weights: this is the absolute weight. E.g. for a year of 365 days, sum(weights)=365"
-struct ClustData <: TSInputData
+struct ClustData <: TSData
  region::String
  K::Int
  T::Int
@@ -23,7 +23,7 @@ struct ClustData <: TSInputData
 end
 
 "ClustDataMerged"
-struct ClustDataMerged <: TSInputData
+struct ClustDataMerged <: TSData
  region::String
  K::Int
  T::Int
@@ -58,7 +58,12 @@ struct ClustResultBest <: ClustResult
  clust_config::Dict{String,Any}
 end
 
-"OptVariable"
+"""
+struct OptVariable
+  data::Array - includes the optimization variable output in  form of an array
+  axes::Tuple - includes the values of the different axes of the optimization variables
+  type::String - defines the type of the variable being cv- Cost variable, dv - decision variable or ov - operation variable
+"""
 struct OptVariable
  data::Array
  axes::Tuple

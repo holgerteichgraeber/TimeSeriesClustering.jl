@@ -236,7 +236,8 @@ function solve_opt_cep(cep::OptModelCEP,
   status=solve(cep.model)
   objective=getobjectivevalue(cep.model)
   variables=Dict{String,OptVariable}()
-  variables["COST"]=OptVariable(getvalue(cep.model[:COST]),"ov")
+  # cv - Cost variable, dv - decision variable, which is used to fix variables in a dispatch model, ov - operational variable
+  variables["COST"]=OptVariable(getvalue(cep.model[:COST]),"cv")
   variables["CAP"]=OptVariable(getvalue(cep.model[:CAP]),"dv")
   variables["GEN"]=OptVariable(getvalue(cep.model[:GEN]),"ov")
   currency=variables["COST"].axes[2][1]

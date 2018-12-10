@@ -38,8 +38,7 @@ function run_opt(ts_data::ClustData,
                  first_stage_vars::Dict{String,OptVariable}=Dict{String,OptVariable}(),
                  co2_limit::Number=Inf,
                  existing_infrastructure::Bool=false,
-                 storage::Bool=false,
-                 kwargs...)
+                 storage::Bool=false)
   #TODO first_stage_vars
   opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, first_stage_vars=first_stage_vars, co2_limit=co2_limit, existing_infrastructure=existing_infrastructure, storage=storage)
   run_opt(ts_data,opt_data,opt_config;solver=solver)
