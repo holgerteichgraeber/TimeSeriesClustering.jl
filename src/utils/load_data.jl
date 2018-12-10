@@ -61,7 +61,11 @@ function load_cep_data(region::String)
   fix_costs=CSV.read(joinpath(data_path,"fix_costs.csv"),allowmissing=:none)
   cap_costs=CSV.read(joinpath(data_path,"cap_costs.csv"),allowmissing=:none)
   techs=CSV.read(joinpath(data_path,"techs.csv"),allowmissing=:none)
-  lines=CSV.read(joinpath(data_path,"lines.csv"),allowmissing=:none)
+  if isfile(joinpath(data_path,"lines.csv"))
+      lines=CSV.read(joinpath(data_path,"lines.csv"),allowmissing=:none)
+  else
+      lines=DataFrame()
+  end
   # The time for the cap-investion to be paid back is the minimum of the max. financial lifetime and the lifetime of the product (If it's just good for 5 years, you'll have to rebuy one after 5 years)
   # annuityfactor = (1+i)^y*i/((1+i)^y-1) , i-discount_rate and y-payoff years
   techs[:annuityfactor]=map((lifetime,financial_lifetime,discount_rate) -> (1+discount_rate)^(min(financial_lifetime,lifetime))*discount_rate/((1+discount_rate)^(min(financial_lifetime,lifetime))-1), techs[:lifetime],techs[:financial_lifetime],techs[:discount_rate])

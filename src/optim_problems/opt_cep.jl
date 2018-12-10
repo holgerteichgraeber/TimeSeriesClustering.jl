@@ -7,7 +7,7 @@ fetching sets from the time series (ts_data) and capacity expansion model data (
 function setup_opt_cep_set(ts_data::ClustData,
                             opt_data::OptDataCEP,
                             opt_config::Dict{String,Any};
-                            k_ids::Array{Int64})
+                            k_ids::Array{Int64}=Array{Int64,1}())
   set=Dict{String,Array}()
   set["nodes"]=opt_data.nodes[:nodes]
   #Seperate sets for fossil and renewable technology
@@ -159,7 +159,7 @@ function setup_opt_cep_storage!(cep::OptModelCEP,
     #ts_weights  Dict( tech-node ): k
     ts_weights=ts_data.weights
 
-    ## VARIABLE ##
+    ## VARIABLE ##existing_infrastructure
     # Storage
     push!(cep.info,"Variable INTRASTOR[sector, tech, t, k, node] ≥ 0")
     @variable(cep.model, INTRASTOR[sector=set["sector"], tech=set["tech_storage"], t=set["time_T"], k=set["time_K"], node=set["nodes"]] >=0)
@@ -225,7 +225,7 @@ function setup_opt_cep_interstorage!(cep::OptModelCEP,
 
     ## INTERSTORAGE ##
     # Limit the storage of the theoretical seasonal energy part of the battery to its installed power
-    push!(cep.info,"INTERSTOR['el',tech, t, k, node] ≤ Σ_{exist} INTERSTOR[tech,exist,node]*e push!(plots,plot(get_cep_variable_value(model.variables["TRANS"],["trans",:,:])))_p_ratio[tech] ∀ node, tech_storage, t, k")
+    push!(cep.info,"INTERSTOR['el',tech, t, k, node] ≤ Σ_{exist} INTERSTOR[tech,exist,node]*e push!(plots,plot(get_cep_variable_value(model.variables['TRANS'],['trans',:,:])))_p_ratio[tech] ∀ node, tech_storage, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage"], i=set["time_I"]], cep.model[:INTERSTOR]["el",tech,i,node]<=sum(cep.model[:CAP][tech,exist,node] for exist=set["infrastruct"])*findvalindf(techs,:tech,tech,"e_p_ratio"))
     # Looping constraint for entire year
     push!(cep.info,"INTERSTOR['el',tech, '1', node] = INTERSTOR['el',tech, 'end', node] ∀ node, tech_storage, t, k")
@@ -349,8 +349,8 @@ function setup_opt_cep_existing_infrastructure!(cep::OptModelCEP,
 
   ## ASSIGN VALUES ##
   # Assign the existing capacity from the nodes table
-  push!(cep.info,"CAP[tech, 'ex', node] = existing infrastructure ∀ tech, node")
-  @constraint(cep.model, [node=set["nodes"], tech=["tech"]], cep.model[:CAP][tech,"ex",node]==findvalindf(nodes,:nodes,node,tech))
+  push!(cep.info,"CAP[tech, 'ex', node] = existing infrastructure ∀ node, tech")
+  @constraint(cep.model, [node=set["nodes"], tech=set["tech"]], cep.model[:CAP][tech,"ex",node]==findvalindf(nodes,:nodes,node,tech))
   if "transmission" in keys(set)
     push!(cep.info,"TRANS[tech, 'ex', line] = existing infrastructure ∀ tech, node")
     @constraint(cep.model, [line=set["lines"], tech=set["tech_transmission"]], cep.model[:TRANS][tech,"ex",node]==findvalindf(lines,:line,line,:power))

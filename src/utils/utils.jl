@@ -341,7 +341,7 @@ function get_cep_variable_value(variable::OptVariable,
         else
             new_index_num=findfirst(variable.axes[i].==index_set[i])
             if new_index_num==[]
-                @error("$(index_set[i]) not in indexset #$i of Variable $var_name")
+                throw(@error("$(index_set[i]) not in indexset #$i of Variable $var_name"))
             else
                 push!(index_num,new_index_num)
             end
@@ -372,24 +372,66 @@ function get_cep_variable_set(variable::OptVariable,
 end
 
 """
-set_opt_config_cep(descriptor::String, first_stage_vars::Dict{String,OptVariable}, co2_limit::Number, existing_infrastructure::Bool, storage::Bool)
+function set_opt_config_cep(descriptor::String, first_stage_vars::Dict{String,OptVariable}, co2_limit::Number, existing_infrastructure::Bool, storage::Bool)
   Returning Dictionary with the variables as entries
 """
 function set_opt_config_cep(opt_data::OptDataCEP
                             ;kwargs...)
-  # Create new Dictionary
-  config=Dict{String,Any}()
+  # Create new Dictionary and set possible unique categories to false to later check wrong setting
+  config=Dict{String,Any}("transmission"=>false, "storage"=>false, "generation"=>false)
   # Check the existence of the categ (like generation or storage - see techs.csv) and write it into Dictionary
   for categ in unique(opt_data.techs[:categ])
     config[categ]=true
   end
   # Loop through the kwargs and write them into Dictionary
   for kwarg in kwargs
+    # Check for false combination
+    if String(kwarg[1]) in keys(config)
+      if config[String(kwarg[1])]==false && kwarg[2]
+        throw(@error("Option "*String(kwarg[1])*" cannot be selected with input data provided for "*opt_data.region))
+      end
+    end
     config[String(kwarg[1])]=kwarg[2]
   end
+
   # Return Directory with the information
   return config
 end
+
+"""
+function check_opt_data_cep(opt_data::OptDataCEP)
+  Check the consistency of the data
+"""
+function check_opt_data_cep(opt_data::OptDataCEP)
+  # Check tech
+  for tech in opt_data.techs[:tech]
+    if !(in(tech,opt_data.cap_costs[:tech]))
+      throw(@error("Technology "*tech*" not included in Cap_cost-Data"))
+    elseif !(in(tech,opt_data.var_costs[:tech]))
+      throw(@error("Technology "*tech*" not included in Var_cost-Data"))
+    elseif !(in(tech,opt_data.fix_costs[:tech]))
+      throw(@error("Technology "*tech*" not included in Fix_cost-Data"))
+    elseif !(in(Symbol(tech),names(opt_data.nodes)))
+      throw(@error("Technology "*tech*" not included in nodes-Data"))
+    end
+  end
+  # Check lines
+  # Only when Data provided
+  if opt_data.lines!=DataFrame()
+    # Check existence of start and end node
+    for node in opt_data.lines[:node_start]
+      if !(in(node,opt_data.nodes[:nodes]))
+        throw(@error("Node "*node*" set as starting node, but not included in nodes-Data"))
+      end
+    end
+    for node in opt_data.lines[:node_end]
+      if !(in(node,opt_data.nodes[:nodes]))
+        throw(@error("Node "*node*" set as ending node, but not included in nodes-Data"))
+      end
+    end
+  end
+end
+
 
  """
  set_clust_config(;kwargs...)
