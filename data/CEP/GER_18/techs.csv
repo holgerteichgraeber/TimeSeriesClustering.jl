@@ -1,8 +1,8 @@
-tech,categ,sector,fuel,lifetime,financial_lifetime,discount_rate
-pv,renewable,el,none,15,20,0.05
-wind,renewable,el,none,15,20,0.05
-coal,fossil,el,coal,45,20,0.05
-oil,fossil,el,oil,40,20,0.05
-gas,fossil,el,gas,50,20,0.05
-ph_p,storage,el,none,50,20,0.05
-ph_e,storage,el,none,50,20,0.05
+tech,categ,sector,fuel,time_series,lifetime,financial_lifetime,discount_rate
+pv,generation,el,none,solar,15,20,0.05
+wind,generation,el,none,wind,15,20,0.05
+coal,generation,el,coal,none,45,20,0.05
+oil,generation,el,oil,none,40,20,0.05
+gas,generation,el,gas,none,50,20,0.05
+ph_p,storage,el,none,none,50,20,0.05
+ph_e,storage,el,none,none,50,20,0.05

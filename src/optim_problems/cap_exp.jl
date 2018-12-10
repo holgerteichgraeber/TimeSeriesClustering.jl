@@ -1,4 +1,4 @@
- #using ClustForOpt_priv
+#using ClustForOpt_priv
 using JuMP
 using Clp
 using DataFrames
@@ -35,8 +35,8 @@ d=reshape(de,(size(de)[1],1))
  # load growth
 d=1.486*d
 d=d/1000 # GW
- 
- #d = rand(8760,1)  # demand 
+
+ #d = rand(8760,1)  # demand
  # load growth *1.5 (footnote 6 merrick)
 a_s= readtable("/home/hteich/.julia/v0.6/ClustForOpt_priv/data/texas_merrick/TexInsolationFactorV1.txt",separator=' ')[:solar_61]
 a_s=reshape(a_s,(size(a_s)[1],1))
@@ -61,7 +61,7 @@ T = size(d)[2]
 G_names = ["coal","nuclear","gas","wind","solar"] # generators
 n_G = length(G_names)
 
- 
+
   ##### MODEL #####
 m = Model(solver=ClpSolver())
 
@@ -69,24 +69,24 @@ m = Model(solver=ClpSolver())
   ### DESIGN VARIABLES ###
 # generation capacity build
 @variable(m,G_max[1:n_G] >= 0) # GWh
-  
+
  ### OPERATIONAL VARIABLES ####
 # generation of individual generator per time step
 @variable(m,G[1:n_G,1:K,1:T] >=0)
 
  ##### OBJECTIVE FUNCTION #####
  @objective(m,Min,sum(c_cap[g]*G_max[g] for g=1:n_G)  +
-     sum(sum(sum( c_var[g]*G[g,k,t] 
+     sum(sum(sum( c_var[g]*G[g,k,t]
            for k=1:K )
-         for t=1:T ) 
-       for g=1:n_G ) 
+         for t=1:T )
+       for g=1:n_G )
      )
 
  #### CONSTRAINTS ######
  # energy balance constraint
-@constraint(m,[k=1:K,t=1:T], sum(G[g,k,t] for g=1:n_G) >= d[k,t]) 
+@constraint(m,[k=1:K,t=1:T], sum(G[g,k,t] for g=1:n_G) >= d[k,t])
  # maximum power production constraint
-@constraint(m,[g=1:n_G,k=1:K,t=1:T], G[g,k,t] <= G_max[g] * a[g][k,t] ) 
+@constraint(m,[g=1:n_G,k=1:K,t=1:T], G[g,k,t] <= G_max[g] * a[g][k,t] )
 
 
   #### SOLVE ####
@@ -100,11 +100,11 @@ m = Model(solver=ClpSolver())
 
  if true
     using PyPlot
-    
+
     figure()
     bt = zeros(length(G_max))
     for i=2:length(bt)
-      bt[i]=cumsum(G_max)[i-1]  
+      bt[i]=cumsum(G_max)[i-1]
     end
     for i=1:length(G_max)
       bar(1, G_max[i],bottom=bt[i],color=cols[i],label=G_names[i])
@@ -116,7 +116,7 @@ m = Model(solver=ClpSolver())
     figure()
     bt = zeros(length(G_gen))
     for i=2:length(bt)
-      bt[i]=cumsum(G_gen)[i-1]  
+      bt[i]=cumsum(G_gen)[i-1]
     end
     for i=1:length(G_gen)
       bar(1, G_gen[i],bottom=bt[i],color=cols[i],label=G_names[i])
@@ -125,10 +125,7 @@ m = Model(solver=ClpSolver())
     legend()
     title("Power generated")
 
-    
+
  end
 
  # TODO - add clustering, check on paper what to do next
-
-
-

@@ -12,20 +12,20 @@ ts_input_data,~ = load_timeseries_data("DAM", "GER";K=365, T=24) #DAM
 using Gurobi
 env = Gurobi.Env()
 clust_res_ar = []
-for i=1:9
+for i=1:2
   push!(clust_res_ar, run_clust(ts_input_data;method="kmedoids_exact",representation="medoid",iterations=5,n_init=1,gurobi_env=env)) # default k-means
 end
 
  # optimization
 
-opt_res = run_opt("battery",clust_res_ar[5].best_results)
+opt_res = run_opt("battery",clust_res_ar[2].best_results)
  #opt_res = run_opt("gas_turbine",clust_res.best_results[5])
 
  ###
  # run optimization for all k=1:9
 opt_res_all = []
 obj=[]
-for i=1:9
+for i=1:2
   push!(opt_res_all,run_opt("battery", clust_res_ar[i].best_results))
   push!(obj,opt_res_all[i].obj)
 end

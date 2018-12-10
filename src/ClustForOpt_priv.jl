@@ -30,8 +30,8 @@ module ClustForOpt_priv
           get_sup_kw_args,
           InputData,
           FullInputData,
-          ClustInputData,
-          ClustInputDataMerged,
+          ClustData,
+          ClustDataMerged,
           get_EUR_to_USD,
           load_input_data,
           plot_clusters,
@@ -56,7 +56,10 @@ module ClustForOpt_priv
   include(joinpath("utils","utils.jl"))
   include(joinpath("utils","load_data.jl"))
   include(joinpath("optim_problems","run_opt.jl"))
+  include(joinpath("optim_problems","opt_cep.jl"))
   include(joinpath("clustering","run_clust.jl"))
   include(joinpath("clustering","exact_kmedoids.jl"))
+  include(joinpath("clustering","extreme_vals.jl"))
+  include(joinpath("clustering","attribute_weighting.jl"))
 
 end # module ClustForOpt

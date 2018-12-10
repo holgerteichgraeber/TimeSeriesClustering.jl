@@ -32,10 +32,10 @@ function sort_centers(centers::Array,
 end # function
 
 """
-function z_normalize(data::ClustInputData;scope="full")
+function z_normalize(data::ClustData;scope="full")
 scope: "full", "sequence", "hourly"
 """
-function z_normalize(data::ClustInputData;
+function z_normalize(data::ClustData;
                     scope="full"
                     )
  data_norm = Dict{String,Array}()
@@ -45,7 +45,7 @@ function z_normalize(data::ClustInputData;
  for (k,v) in data.data
    data_norm[k],mean[k],sdv[k] = z_normalize(v,scope=scope)
  end
- return ClustInputData(data.region,data.K,data.T,data_norm,data.weights;mean=mean,sdv=sdv)
+ return ClustData(data.region,data.K,data.T,data_norm,data.weights;mean=mean,sdv=sdv)
 end
 
 """
@@ -262,7 +262,7 @@ This is the DEFAULT resize medoids function
 
 Takes in centers (typically medoids) and normalizes them such that the yearly average of the clustered data is the same as the yearly average of the original data.
 """
-function resize_medoids(data::ClustInputData,centers::Array,weights::Array)
+function resize_medoids(data::ClustData,centers::Array,weights::Array)
     (data.T * length(keys(data.data)) != size(centers,1) ) && @error("dimension missmatch between full input data and centers")
     centers_res = zeros(size(centers))
     # go through the attributes within data
@@ -322,26 +322,86 @@ function mapsetindf(df::DataFrame,
                     reference::String,
                     set_to_return::Symbol
                     )
-    return Symbol.(df[df[column_of_reference].==reference,set_to_return])
+    return df[df[column_of_reference].==reference,set_to_return]
 end
 
 """
-function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
-
-apply the different attribute weights based on the dictionary entry for each tech or exact name
+function get_cep_variable_value(variable::OptVariable,index_set::Array)
+  Get the variable data from the specific Scenario by indicating the var_name e.g. "COST" and the index_set like [:;"EUR";"pv"]
 """
-function attribute_weighting(data::ClustInputData,attribute_weights::Dict{String,Float64})
-  for name in keys(data.data)
-    tech=split(name,"-")[1]
-    if name in keys(attribute_weights)
-      attribute_weight=attribute_weights[name]
-      data.data[name].*=attribute_weight
-      data.sdv[name]./=attribute_weight
-    elseif tech in keys(attribute_weights)
-      attribute_weight=attribute_weights[tech]
-      data.data[name].*=attribute_weight
-      data.sdv[name]./=attribute_weight
+function get_cep_variable_value(variable::OptVariable,
+                                index_set::Array
+                                )
+    index_num=[]
+    for i in  1:length(index_set)
+        if index_set[i]==Colon()
+            push!(index_num,Colon())
+        elseif typeof(index_set[i])==Int64
+            push!(index_num,index_set[i])
+        else
+            new_index_num=findfirst(variable.axes[i].==index_set[i])
+            if new_index_num==[]
+                @error("$(index_set[i]) not in indexset #$i of Variable $var_name")
+            else
+                push!(index_num,new_index_num)
+            end
+        end
     end
+    return getindex(variable.data,Tuple(index_num)...)
+end
+
+"""
+function get_cep_variable_value(scenario::Scenario,var_name::String,index_set::Array)
+  Get the variable data from the specific Scenario by indicating the var_name e.g. "COST" and the index_set like [:;"EUR";"pv"]
+"""
+function get_cep_variable_value(scenario::Scenario,
+                                var_name::String,
+                                index_set::Array
+                                )
+    return get_cep_variable_value(scenario.opt_res.variables[var_name], index_set)
+end
+
+"""
+function get_cep_variable_set(scenario::Scenario,var_name::String,num_index_set::Int)
+  Get the variable set from the specific Scenario by indicating the var_name e.g. "COST" and the num_index_set like 1
+"""
+function get_cep_variable_set(variable::OptVariable,
+                              index_set_dim::Int
+                              )
+    return variable.axes[index_set_dim]
+end
+
+"""
+set_opt_config_cep(descriptor::String, first_stage_vars::Dict{String,OptVariable}, co2_limit::Number, existing_infrastructure::Bool, storage::Bool)
+  Returning Dictionary with the variables as entries
+"""
+function set_opt_config_cep(opt_data::OptDataCEP
+                            ;kwargs...)
+  # Create new Dictionary
+  config=Dict{String,Any}()
+  # Check the existence of the categ (like generation or storage - see techs.csv) and write it into Dictionary
+  for categ in unique(opt_data.techs[:categ])
+    config[categ]=true
   end
-  return data
+  # Loop through the kwargs and write them into Dictionary
+  for kwarg in kwargs
+    config[String(kwarg[1])]=kwarg[2]
+  end
+  # Return Directory with the information
+  return config
+end
+
+ """
+ set_clust_config(;kwargs...)
+     Add kwargs to a new Dictionary with the variables as entries
+ """
+function set_clust_config(;kwargs...)
+  #Create new Dictionary
+  config=Dict{String,Any}()
+  # Loop through the kwargs and write them into Dictionary
+  for kwarg in kwargs
+    config[String(kwarg[1])]=kwarg[2]
+  end
+  # Return Directory with the information of kwargs
+  return config
 end
