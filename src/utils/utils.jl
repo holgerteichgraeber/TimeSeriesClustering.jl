@@ -393,13 +393,24 @@ function get_cep_variable_value(scenario::Scenario,
 end
 
 """
-function get_cep_variable_set(scenario::Scenario,var_name::String,num_index_set::Int)
+function get_cep_variable_set(variable::OptVariable,num_index_set::Int)
   Get the variable set from the specific Scenario by indicating the var_name e.g. "COST" and the num_index_set like 1
 """
 function get_cep_variable_set(variable::OptVariable,
                               num_index_set::Int
                               )
     return variable.axes[num_index_set]
+end
+
+"""
+function get_cep_variable_set(scenario::Scenario,var_name::String,num_index_set::Int)
+  Get the variable set from the specific Scenario by indicating the var_name e.g. "COST" and the num_index_set like 1
+"""
+function get_cep_variable_set(scenario::Scenario,
+                              var_name::String,
+                              num_index_set::Int
+                              )
+    return  get_cep_variable_set(scenario.opt_res.variables[var_name], num_index_set)
 end
 
 """
