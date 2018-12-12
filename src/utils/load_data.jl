@@ -24,7 +24,7 @@ function load_timeseries_data( application::String,
       data_df=CSV.read(joinpath(data_path,fulldataname);allowmissing=:none)
       for column in eachcol(data_df, true)
           if findall([:Timestamp,:time,:Time,:Zeit].==(column[1]))==[]
-              dt[dataname*"-"*string(column[1])]=column[2]
+              dt[dataname*"-"*string(column[1])]=Float64.(column[2])
               newnum=length(column[2])
               if newnum!=num && num!=0
                   @error("The TimeSeries have different lengths!")
