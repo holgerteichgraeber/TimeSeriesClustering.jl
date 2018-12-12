@@ -362,8 +362,8 @@ function get_cep_variable_value(scenario::Scenario,
 end
 
 """
-function get_cep_variable_set(scenario::Scenario,var_name::String,num_index_set::Int)
-  Get the variable set from the specific Scenario by indicating the var_name e.g. "COST" and the num_index_set like 1
+function get_cep_variable_set(variable::OptVariable,num_index_set::Int)
+  Get the variable set from the specific variable and the num_index_set like 1
 """
 function get_cep_variable_set(variable::OptVariable,
                               index_set_dim::Int
@@ -372,7 +372,24 @@ function get_cep_variable_set(variable::OptVariable,
 end
 
 """
-function set_opt_config_cep(descriptor::String, first_stage_vars::Dict{String,OptVariable}, co2_limit::Number, existing_infrastructure::Bool, storage::Bool)
+function get_cep_variable_set(scenario::Scenario,var_name::String,num_index_set::Int)
+  Get the variable set from the specific Scenario by indicating the var_name e.g. "COST" and the num_index_set like 1
+"""
+function get_cep_variable_set(scenario::Scenario,
+                              var_name::String,
+                              num_index_set::Int
+                              )
+    return  get_cep_variable_set(scenario.opt_res.variables[var_name], num_index_set)
+end
+
+"""
+function set_opt_config_cep(opt_data::OptDataCEP; kwargs...)
+  kwargs can be whatever you need to run the run_opt
+  it can hold
+    transmission, generation, storage_p, storage_e, existing_infrastructure wiht Bools
+    descritor with a String
+    first_stage_vars with a Dictionary
+  The function also checks if the provided data matches your kwargs options (e.g. it let's you know if you asked for transmission, but you have no tech with it in your data)
   Returning Dictionary with the variables as entries
 """
 function set_opt_config_cep(opt_data::OptDataCEP

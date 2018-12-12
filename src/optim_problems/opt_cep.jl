@@ -1,8 +1,7 @@
 # optimization problems
 """
 function setup_cep_opt_sets(ts_data::ClustData,opt_data::CEPData)
-
-fetching sets from the time series (ts_data) and capacity expansion model data (opt_data) and returning Dictionary with Sets as Symbols
+ fetching sets from the time series (ts_data) and capacity expansion model data (opt_data) and returning Dictionary with Sets as Symbols
 """
 function setup_opt_cep_set(ts_data::ClustData,
                             opt_data::OptDataCEP,
@@ -40,8 +39,7 @@ end
 
 """
 function setup_cep_opt_basic(ts_data::ClustData,opt_data::CEPData)
-
-fetching sets from the time series (ts_data) and capacity expansion model data (opt_data) and returning Dictionary with Sets as Symbols
+  setting up the basic core elements for a CEP-model
 """
 function setup_opt_cep_basic(ts_data::ClustData,
                             opt_data::OptDataCEP,
@@ -106,7 +104,7 @@ end
 
 """
 function setup_opt_cep_fossil!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  add variable and fixed Costs and limit generation to installed capacity for fossil power plants
+  add variable and fixed Costs and limit generation to installed capacity (and limiting time_series, if dependency in techs defined) for fossil and renewable power plants
 """
 function setup_opt_cep_generation_el!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -156,7 +154,8 @@ end
 
 """
 function setup_opt_cep_storage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  basic storage within each period (needs to be matched with intrastorage or interstorage)
+  add variables INTRASTORGEN and INTRASTOR, variable and fixed Costs, limit generation to installed power-capacity, connect intra-storage levels (within period) with generation
+  basis for either intrastorage or interstorage
 """
 function setup_opt_cep_storage!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -195,9 +194,9 @@ function setup_opt_cep_storage!(cep::OptModelCEP,
     # Fix the Generation of the theoretical energy part of the battery to 0
     push!(cep.info,"GEN['el',tech, t, k, node] =0 ∀ node, tech_storage_e, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech,t,k,node]==0)
-    # Connecting each iteration
+    # Connect the previous storage level and the integral of the flows with the new storage level
     push!(cep.info,"INTRASTOR['el',tech, t, k, node] = INTRASTOR['el',tech, t-1, k, node] + Δt ⋅ (STORGEN['el','charge',tech, t, k, node] ⋅ η[tech] - STORGEN['el','discharge',tech, t, k, node] / η[tech])∀ node, tech_storage_e, t, k")
-    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t in set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]==cep.model[:INTRASTOR]["el",tech,t-1,k,node] - cep.model[:INTRASTORGEN]["el","discharge",split(tech,"_")[1]*"_p",t,k,node] / findvalindf(techs,:tech,tech,"efficiency") + cep.model[:INTRASTORGEN]["el","charge",split(tech,"_")[1]*"_p",t,k,node] * findvalindf(techs,:tech,tech,"efficiency"))
+    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t in set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]==cep.model[:INTRASTOR]["el",tech,t-1,k,node] - cep.model[:INTRASTORGEN]["el","discharge",split(tech,"_")[1]*"_p",t,k,node] / findvalindf(techs,:tech,tech,"eff_out") + cep.model[:INTRASTORGEN]["el","charge",split(tech,"_")[1]*"_p",t,k,node] * findvalindf(techs,:tech,tech,"eff_in"))
 
     push!(cep.info,"GEN['el',tech, t, k, node] = INTRASTORGEN['el','discharge',tech, t, k, node] - INTRASTORGEN['el','charge',tech, t, k, node] ∀ node, tech_storage_e, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_p"], t in set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech,t,k,node]==cep.model[:INTRASTORGEN]["el","discharge",tech,t,k,node]-cep.model[:INTRASTORGEN]["el","charge",tech,t,k,node])
@@ -206,7 +205,7 @@ end
 
 """
 function setup_opt_cep_intrastorage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  Looping constraint for each period
+  Looping constraint for each period (same start and end level for all periods) and limit storage to installed energy-capacity
 """
 function setup_opt_cep_intrastorage!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -219,10 +218,10 @@ function setup_opt_cep_intrastorage!(cep::OptModelCEP,
     # Limit the storage of the theoretical energy part of the battery to its installed power
     push!(cep.info,"INTRASTOR['el',tech, t, k, node] ≤ Σ_{infrastruct} CAP[tech,infrastruct,node] ∀ node, tech_storage, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]<=sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"]))
-    # Looping constraint for each period
+    # Set storage level at beginning and end of day equal
     push!(cep.info,"INTRASTOR['el',tech, '0', k, node] = INTRASTOR['el',tech, 't[end]', k, node] ∀ node, tech_storage_e, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,0,k,node]== cep.model[:INTRASTOR]["el",tech,set["time_T_e"][end],k,node])
-    # Looping constraint for each period
+    # Set the storage level at the beginning of each representative day to the same
     push!(cep.info,"INTRASTOR['el',tech, '0', k, node] = INTRASTOR['el',tech, '0', k, node] ∀ node, tech_storage_e, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,0,k,node]== cep.model[:INTRASTOR]["el",tech,0,1,node])
     return cep
@@ -296,7 +295,8 @@ function solve_opt_cep(cep::OptModelCEP,
   status=solve(cep.model)
   objective=getobjectivevalue(cep.model)
   variables=Dict{String,OptVariable}()
-  variables["COST"]=OptVariable(getvalue(cep.model[:COST]),"ov")
+  # cv - Cost variable, dv - decision variable, which is used to fix variables in a dispatch model, ov - operational variable
+  variables["COST"]=OptVariable(getvalue(cep.model[:COST]),"cv")
   variables["CAP"]=OptVariable(getvalue(cep.model[:CAP]),"dv")
   variables["GEN"]=OptVariable(getvalue(cep.model[:GEN]),"ov")
   if opt_config["storage_p"] && opt_config["storage_e"]
