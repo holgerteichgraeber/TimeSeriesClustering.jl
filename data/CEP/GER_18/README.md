@@ -10,6 +10,7 @@ TS for el_demand: ELMOD_DE
 cap_costs: Sektorübergreifende Modellierung und Optimierung eines zukünftigen deutschen Energiesystems unter Berücksichtigung von Energieeffizienzmaßnahmen im Gebäudesektor, A. Palzer Ecoinvent,
 Masterthesis Christiane Reinert,
 Allelein
+Total battery cost of a Li-ion battery is composed of bidirectional umrichter 180EUR/kW and battery with 580EUR/kW in 2013, Energiesysteme Zukunft
 fix_costs: Sektorübergreifende Modellierung und Optimierung eines zukünftigen deutschen Energiesystems unter Berücksichtigung von Energieeffizienzmaßnahmen im Gebäudesektor, A. Palzer, assumption oil and coal similar to GuD fix/cap
 var_costs: varcosts_th(Masterthesis Christiane Reinert)/eff(median(eff in ELMOD-DE))
 ! Costs for transmission expansion are per MW*km!
@@ -21,4 +22,5 @@ Ecoinvent 3.5:
 bat_st_e: battery cell production, Li-ion, CN, 5.4933 kg CO2-Eq per 0.106 kWh
 
 # Other #
-Li-ion battery p_e_ratio: 1.25 - BET 2013
+trans efficiency is 0.9995 per km
+length in km

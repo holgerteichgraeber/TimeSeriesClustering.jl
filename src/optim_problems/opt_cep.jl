@@ -11,9 +11,6 @@ function setup_opt_cep_set(ts_data::ClustData,
   set=Dict{String,Array}()
   set["nodes"]=opt_data.nodes[:nodes]
   #Seperate sets for fossil and renewable technology
-  if opt_config["transmission"]
-    set["lines"]=opt_data.lines[:lines]
-  end
   set["tech"]=Array{String,1}()
   for categ in unique(opt_data.techs[:categ])
     if opt_config[categ]
@@ -23,6 +20,13 @@ function setup_opt_cep_set(ts_data::ClustData,
   end
   set["impact"]=String.(names(opt_data.cap_costs))[2:end]
   set["account"]=["cap_fix","var"]
+  if opt_config["storage_e"] && opt_config["storage_p"]
+    set["dir_storage"]=["charge","discharge"]
+  end
+  if opt_config["transmission"]
+    set["lines"]=opt_data.lines[:lines]
+    set["dir_transmission"]=["uniform","opposite"]
+  end
   if opt_config["existing_infrastructure"]
     set["infrastruct"]=["new","ex"]
   else
@@ -34,7 +38,9 @@ function setup_opt_cep_set(ts_data::ClustData,
   #Or specific variables for each sector ELCAP, HEATCAP
   set["time_K"]=1:ts_data.K
   set["time_T"]=1:ts_data.T
+  set["time_T_e"]=0:ts_data.T
   if opt_config["interstorage"]
+    set["time_I_e"]=0:length(k_ids)
     set["time_I"]=1:length(k_ids)
   end
 
@@ -120,19 +126,19 @@ function setup_opt_cep_generation_el!(cep::OptModelCEP,
     push!(cep.info,"COST['cap_fix',impact,tech] = Σ_{node}CAP[tech,'new',node] ⋅ cap_costs[tech,impact] ∀ impact, tech_generation")
     @constraint(cep.model, [impact=set["impact"], tech=set["tech_generation"]], cep.model[:COST]["cap_fix",impact,tech]==sum(cep.model[:CAP][tech,"new",node] for node=set["nodes"])*(findvalindf(cap_costs,:tech,tech,impact)+findvalindf(fix_costs,:tech,tech,impact)))
 
-    # Limit the generation of dispathables to the existing capacity of dispachable power plants
-    push!(cep.info,"0 ≤ GEN['el',tech, t, k, node] ≤ Σ_{exist} CAP[tech,exist,node] ∀ node, tech_generation{dispatchable}, t, k")
-    # Limit the generation of dispathables to the existing capacity of non-dispachable power plants
-    push!(cep.info,"0 ≤ GEN['el',tech, t, k, node] ≤ Σ_{exist}CAP[tech,exist,node]*ts[tech-node,t,k] ∀ node, tech_generation{non_dispatchable}, t, k")
+    # Limit the generation of dispathables to the infrastructing capacity of dispachable power plants
+    push!(cep.info,"0 ≤ GEN['el',tech, t, k, node] ≤ Σ_{infrastruct} CAP[tech,infrastruct,node] ∀ node, tech_generation{dispatchable}, t, k")
+    # Limit the generation of dispathables to the infrastructing capacity of non-dispachable power plants
+    push!(cep.info,"0 ≤ GEN['el',tech, t, k, node] ≤ Σ_{infrastruct}CAP[tech,infrastruct,node]*ts[tech-node,t,k] ∀ node, tech_generation{non_dispatchable}, t, k")
     for tech in set["tech_generation"]
-      # Limit the generation of dispathables to the existing capacity of dispachable power plants
+      # Limit the generation of dispathables to the infrastructing capacity of dispachable power plants
       if findvalindf(techs,:tech,tech,:time_series)=="none"
       @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], 0 <=cep.model[:GEN]["el",tech, t, k, node])
-      @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]],     cep.model[:GEN]["el",tech, t, k, node] <=sum(cep.model[:CAP][tech,exist,node] for exist=set["infrastruct"]))
+      @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]],     cep.model[:GEN]["el",tech, t, k, node] <=sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"]))
       else
-      # Limit the generation of dispathables to the existing capacity of non-dispachable power plants
+      # Limit the generation of dispathables to the infrastructing capacity of non-dispachable power plants
       @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], 0 <=cep.model[:GEN]["el",tech, t, k, node])
-      @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]],     cep.model[:GEN]["el",tech,t,k,node] <=sum(cep.model[:CAP][tech,exist,node] for exist=set["infrastruct"])*ts[findvalindf(techs,:tech,tech,:time_series)*"-"*node][t,k])
+      @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]],     cep.model[:GEN]["el",tech,t,k,node] <=sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"])*ts[findvalindf(techs,:tech,tech,:time_series)*"-"*node][t,k])
       end
     end
 
@@ -158,30 +164,34 @@ function setup_opt_cep_storage!(cep::OptModelCEP,
     techs=opt_data.techs
     #ts_weights  Dict( tech-node ): k
     ts_weights=ts_data.weights
-
+    #important if segements have differing lengths
+    ts_delta=1
     ## VARIABLE ##existing_infrastructure
-    # Storage
+    # Storage has additional element 0 for storage at hour 0 of day
     push!(cep.info,"Variable INTRASTOR[sector, tech, t, k, node] ≥ 0")
-    @variable(cep.model, INTRASTOR[sector=set["sector"], tech=set["tech_storage"], t=set["time_T"], k=set["time_K"], node=set["nodes"]] >=0)
-
+    @variable(cep.model, INTRASTOR[sector=set["sector"], tech=set["tech_storage_e"], t=set["time_T_e"], k=set["time_K"], node=set["nodes"]] >=0)
+    # Storage generation is necessary for the efficiency
+    push!(cep.info,"Variable INTRASTORGEN[sector, dir, tech, t, k, node] ≥ 0")
+    @variable(cep.model, INTRASTORGEN[sector=set["sector"], dir=set["dir_storage"], tech=set["tech_storage_p"], t=set["time_T"], k=set["time_K"], node=set["nodes"]] >=0)
     ## STORAGE ##
     # Calculate Variable Costs
-    push!(cep.info,"COST['var',impact,tech] = Δt ⋅ Σ_{t,k,node}GEN['el',t,k,node]⋅ ts_weights[k] ⋅ var_costs[tech,impact] ∀ impact, tech_storage")
-    @constraint(cep.model, [impact=set["impact"], tech=set["tech_storage"]], cep.model[:COST]["var",impact,tech]==sum(cep.model[:GEN]["el",tech,t,k,node]*ts_weights[k]*findvalindf(var_costs,:tech,tech,impact) for node=set["nodes"], t=set["time_T"], k=set["time_K"]))
+    push!(cep.info,"COST['var',impact,tech] = 0 ∀ impact, tech_storage")
+    @constraint(cep.model, [impact=set["impact"], tech=[set["tech_storage_p"];set["tech_storage_e"]]], cep.model[:COST]["var",impact,tech]==0)
     # Fix Costs storage
     push!(cep.info,"COST['fix',impact,tech] = Σ_{node}CAP[tech,'new',node] ⋅ cap_costs[tech,impact] ∀ impact, tech_storage")
-    @constraint(cep.model, [tech=set["tech_storage"], impact=set["impact"]], cep.model[:COST]["cap_fix",impact,tech]==sum(cep.model[:CAP][tech,"new",node] for node=set["nodes"])*(findvalindf(cap_costs,:tech,tech,impact)+findvalindf(fix_costs,:tech,tech,impact)))
+    @constraint(cep.model, [tech=[set["tech_storage_p"];set["tech_storage_e"]], impact=set["impact"]], cep.model[:COST]["cap_fix",impact,tech]==sum(cep.model[:CAP][tech,"new",node] for node=set["nodes"])*(findvalindf(cap_costs,:tech,tech,impact)+findvalindf(fix_costs,:tech,tech,impact)))
     # Limit the Generation of the theoretical power part of the battery to its installed power
-    push!(cep.info,"GEN['el',tech, t, k, node] ≤ Σ_{exist} CAP[tech,exist,node] ∀ node, tech_storage, t, k")
-    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage"], t=set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech,t,k,node]<=sum(cep.model[:CAP][tech,exist,node] for exist=set["infrastruct"]))
-    # Limit the storage of the theoretical energy part of the battery to its installed power
-    push!(cep.info,"STOR['el',tech, t, k, node] ≤ Σ_{exist} STOR[tech,exist,node]*e_p_ratio[tech] ∀ node, tech_storage, t, k")
-    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage"], t=set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]<=sum(cep.model[:CAP][tech,exist,node] for exist=set["infrastruct"])*findvalindf(techs,:tech,tech,"e_p_ratio"))
+    push!(cep.info,"INTRASTORGEN['el',dir,tech, t, k, node] ≤ Σ_{infrastruct} CAP[tech,infrastruct,node] ∀ node, dir_storage, tech_storage_p, t, k")
+    @constraint(cep.model, [node=set["nodes"], dir=set["dir_storage"], tech=set["tech_storage_p"], t=set["time_T"], k=set["time_K"]], cep.model[:INTRASTORGEN]["el",dir,tech,t,k,node]<=sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"]))
+    # Fix the Generation of the theoretical energy part of the battery to 0
+    push!(cep.info,"GEN['el',tech, t, k, node] =0 ∀ node, tech_storage_e, t, k")
+    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech,t,k,node]==0)
     # Connecting each iteration
-    push!(cep.info,"INTRASTOR['el',tech, t+1, k, node] = INTRASTOR['el',tech, t, k, node] - GEN['el', tech, t, k, node] ⋅ η[tech] ∀ node, tech_storage, t, k")
-    for t in set["time_T"][1:end-1]
-      @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t+1,k,node]==cep.model[:INTRASTOR]["el",tech,t,k,node] - cep.model[:GEN]["el",tech,t,k,node]*findvalindf(techs,:tech,tech,"efficiency"))
-    end
+    push!(cep.info,"INTRASTOR['el',tech, t, k, node] = INTRASTOR['el',tech, t-1, k, node] + Δt ⋅ (STORGEN['el','charge',tech, t, k, node] ⋅ η[tech] - STORGEN['el','discharge',tech, t, k, node] / η[tech])∀ node, tech_storage_e, t, k")
+    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t in set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]==cep.model[:INTRASTOR]["el",tech,t-1,k,node] - cep.model[:INTRASTORGEN]["el","discharge",split(tech,"_")[1]*"_p",t,k,node] / findvalindf(techs,:tech,tech,"efficiency") + cep.model[:INTRASTORGEN]["el","charge",split(tech,"_")[1]*"_p",t,k,node] * findvalindf(techs,:tech,tech,"efficiency"))
+
+    push!(cep.info,"GEN['el',tech, t, k, node] = INTRASTORGEN['el','discharge',tech, t, k, node] - INTRASTORGEN['el','charge',tech, t, k, node] ∀ node, tech_storage_e, t, k")
+    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_p"], t in set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech,t,k,node]==cep.model[:INTRASTORGEN]["el","discharge",tech,t,k,node]-cep.model[:INTRASTORGEN]["el","charge",tech,t,k,node])
     return cep
 end
 
@@ -196,11 +206,16 @@ function setup_opt_cep_intrastorage!(cep::OptModelCEP,
     set=cep.set
     #techs       tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
     techs=opt_data.techs
-
     ## INTRASTORAGE ##
+    # Limit the storage of the theoretical energy part of the battery to its installed power
+    push!(cep.info,"INTRASTOR['el',tech, t, k, node] ≤ Σ_{infrastruct} CAP[tech,infrastruct,node] ∀ node, tech_storage, t, k")
+    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]<=sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"]))
     # Looping constraint for each period
-    push!(cep.info,"INTRASTOR['el',tech, 't[1]', k, node] = INTRASTOR['el',tech, 't[end]', k, node] - GEN['el', tech, t, k, node] ⋅ η[tech] ∀ node, tech_storage, k")
-    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,1,k,node]== cep.model[:INTRASTOR]["el",tech,set["time_T"][end],k,node]-cep.model[:GEN]["el",tech,set["time_T"][end],k,node]*findvalindf(techs,:tech,tech,"efficiency"))
+    push!(cep.info,"INTRASTOR['el',tech, '0', k, node] = INTRASTOR['el',tech, 't[end]', k, node] ∀ node, tech_storage_e, k")
+    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,0,k,node]== cep.model[:INTRASTOR]["el",tech,set["time_T_e"][end],k,node])
+    # Looping constraint for each period
+    push!(cep.info,"INTRASTOR['el',tech, '0', k, node] = INTRASTOR['el',tech, '0', k, node] ∀ node, tech_storage_e, k")
+    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,0,k,node]== cep.model[:INTRASTOR]["el",tech,0,1,node])
     return cep
 end
 
@@ -220,20 +235,21 @@ function setup_opt_cep_interstorage!(cep::OptModelCEP,
     ## VARIABLE ##
     # Storage
     push!(cep.info,"Variable INTERSTOR[sector, tech, i, node] ≥ 0")
-    @variable(cep.model, INTERSTOR[sector=set["sector"], tech=set["tech_storage"], i=set["time_I"], node=set["nodes"]]>=0)
+    @variable(cep.model, INTERSTOR[sector=set["sector"], tech=set["tech_storage_e"], i=set["time_I_e"], node=set["nodes"]]>=0)
 
 
     ## INTERSTORAGE ##
-    # Limit the storage of the theoretical seasonal energy part of the battery to its installed power
-    push!(cep.info,"INTERSTOR['el',tech, t, k, node] ≤ Σ_{exist} INTERSTOR[tech,exist,node]*e push!(plots,plot(get_cep_variable_value(model.variables['TRANS'],['trans',:,:])))_p_ratio[tech] ∀ node, tech_storage, t, k")
-    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage"], i=set["time_I"]], cep.model[:INTERSTOR]["el",tech,i,node]<=sum(cep.model[:CAP][tech,exist,node] for exist=set["infrastruct"])*findvalindf(techs,:tech,tech,"e_p_ratio"))
     # Looping constraint for entire year
-    push!(cep.info,"INTERSTOR['el',tech, '1', node] = INTERSTOR['el',tech, 'end', node] ∀ node, tech_storage, t, k")
-    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage"]], cep.model[:INTERSTOR]["el",tech,1,node]== cep.model[:INTERSTOR]["el",tech,set["time_I"][end],node] -cep.model[:GEN]["el",tech,set["time_T"][end],k_ids[set["time_I"][end]],node]*findvalindf(techs,:tech,tech,"efficiency"))
+    push!(cep.info,"INTERSTOR['el',tech, '0', node] = INTERSTOR['el',tech, 'end', node] ∀ node, tech_storage, t, k")
+    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"]], cep.model[:INTERSTOR]["el",tech,0,node]== cep.model[:INTERSTOR]["el",tech,set["time_I_e"][end],node])
     # Connecting each iteration
-    push!(cep.info,"INTERSTOR['el',tech, i+1, node] = INTERSTOR['el',tech, i, node] + INTRASTOR['el',tech, 'k[i]', 't[end]', node] - INTRASTOR['el',tech, 'k[i]', 't[1]', node] - GEN['el', tech, 't[end]', 'k[i]', node] ⋅ η[tech] ∀ node, tech_storage, i")
-    for i in set["time_I"][1:end-1]
-        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage"]], cep.model[:INTERSTOR]["el",tech,i+1,node] == cep.model[:INTERSTOR]["el",tech,i,node] + cep.model[:INTRASTOR]["el",tech,set["time_T"][end],k_ids[i],node] - cep.model[:INTRASTOR]["el",tech,1,k_ids[i],node] -cep.model[:GEN]["el",tech,set["time_T"][end],k_ids[i],node]*findvalindf(techs,:tech,tech,"efficiency"))
+    push!(cep.info,"INTERSTOR['el',tech, i+1, node] = INTERSTOR['el',tech, i, node] + INTRASTOR['el',tech, 'k[i]', 't[end]', node] - INTRASTOR['el',tech, 'k[i]', 't[1]', node] - GEN['el', tech, 't[end]', 'k[i]', node] ⋅ η[tech] ∀ node, tech_storage_e, i")
+    # Limiting
+    push!(cep.info,"0 ≤ INTERSTOR['el',tech, i, node] + INTRASTOR['el',tech, t, k[i], node] ≤ Σ_{infrastruct} INTERSTOR[tech,infrastruct,node] ∀ node, tech_storage_e, i, t")
+    for i in set["time_I"]
+        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"]], cep.model[:INTERSTOR]["el",tech,i,node] == cep.model[:INTERSTOR]["el",tech,i-1,node] + cep.model[:INTRASTOR]["el",tech,set["time_T"][end],k_ids[i],node] - cep.model[:INTRASTOR]["el",tech,1,k_ids[i],node])
+        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"]], 0 <= cep.model[:INTERSTOR]["el",tech,i,node]+cep.model[:INTRASTOR]["el",tech,t,k_ids[i],node])
+        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"]], cep.model[:INTERSTOR]["el",tech,i,node]+cep.model[:INTRASTOR]["el",tech,t,k_ids[i],node] <= sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"]))
     end
     return cep
 end
@@ -262,30 +278,29 @@ function setup_opt_cep_transmission!(cep::OptModelCEP,
 
     ## VARIABLE ##
     # Storage
-    push!(cep.info,"Variable FLOW[sector,  tech, t, k, line]")
-    @variable(cep.model, FLOW[sector=set["sector"], tech=set["tech_transmission"], t=set["time_T"], k=set["time_K"], node=set["lines"]])
+    push!(cep.info,"Variable FLOW[sector, dir, tech, t, k, line] ≥ 0")
+    @variable(cep.model, FLOW[sector=set["sector"], dir=set["dir_transmission"], tech=set["tech_transmission"], t=set["time_T"], k=set["time_K"], node=set["lines"]] >= 0)
     push!(cep.info,"Variable TRANS[tech,  infrastruct, lines] ≥ 0")
-    @variable(cep.model, TRANS[tech=set["tech_transmission"], infrastruct=set["infrastruct"], line=set["lines"]]>=0)
+    @variable(cep.model, TRANS[tech=set["tech_transmission"], infrastruct=set["infrastruct"], line=set["lines"]] >= 0)
 
 
     ## TRANSMISSION ##
     # Calculate Variable Costs
     push!(cep.info,"COST['var',impact,tech] = 0 ∀ impact, tech_transmission")
-    @constraint(cep.model, [impact=set["impact"], tech=set["tech_transmission"]], cep.model[:COST]["var",impact,tech]==0)
+    @constraint(cep.model, [impact=set["impact"], tech=set["tech_transmission"]], cep.model[:COST]["var",impact,tech] == 0)
     # Calculate Fixed Costs
-    push!(cep.info,"COST['fix',impact,tech] = Σ_{node}TRANS[tech,'new',line] ⋅ length[line] ⋅ cap_costs[tech,impact] ∀ impact, tech_transmission")
-    @constraint(cep.model, [tech=set["tech_transmission"], impact=set["impact"]], cep.model[:COST]["cap_fix",impact,tech]==sum(cep.model[:TRANS][tech,"new",line]*findvalindf(lines,:lines,line,:length) for line=set["lines"])*(findvalindf(cap_costs,:tech,tech,impact)+findvalindf(fix_costs,:tech,tech,impact)))
+    push!(cep.info,"COST['fix',impact,tech] = Σ_{node}(TRANS[tech,'new',line] ⋅ length[line]) ⋅ cap_costs[tech,impact] ∀ impact, tech_transmission")
+    @constraint(cep.model, [impact=set["impact"], tech=set["tech_transmission"]], cep.model[:COST]["cap_fix",impact,tech] == sum(cep.model[:TRANS][tech,"new",line]*findvalindf(lines,:lines,line,:length) for line=set["lines"])*(findvalindf(cap_costs,:tech,tech,impact)+findvalindf(fix_costs,:tech,tech,impact)))
     # Transmission has no capacity so fix to zero
     push!(cep.info,"CAP[tech, infrastruct, node] = 0 ∀ node, tech_transmission")
-    @constraint(cep.model, [node=set["nodes"], infrastruct=set["infrastruct"], tech=set["tech_transmission"]], cep.model[:CAP][tech,infrastruct,node]==0)
+    @constraint(cep.model, [node=set["nodes"], infrastruct=set["infrastruct"], tech=set["tech_transmission"]], cep.model[:CAP][tech,infrastruct,node] == 0)
     # Limit the flow per line
-    push!(cep.info,"| FLOW['el',tech, t, k, line] | ≤ Σ_{exist}TRANS[tech,exist,line] ∀ line, tech_transmission, t, k")
-    @constraint(cep.model, [line=set["lines"], tech=set["tech_transmission"], t=set["time_T"], k=set["time_K"]], cep.model[:FLOW]["el",tech, t, k, line] <=sum(cep.model[:TRANS][tech,exist,line] for exist=set["infrastruct"]))
-    @constraint(cep.model, [line=set["lines"], tech=set["tech_transmission"], t=set["time_T"], k=set["time_K"]], (-1)*cep.model[:FLOW]["el",tech, t, k, line] <=sum(cep.model[:TRANS][tech,exist,line] for exist=set["infrastruct"]))
+    push!(cep.info,"| FLOW['el', dir, tech, t, k, line] | ≤ Σ_{infrastruct}TRANS[tech,infrastruct,line] ∀ line, tech_transmission, t, k")
+    @constraint(cep.model, [line=set["lines"], dir=set["dir_transmission"], tech=set["tech_transmission"], t=set["time_T"], k=set["time_K"]], cep.model[:FLOW]["el",dir, tech, t, k, line] <= sum(cep.model[:TRANS][tech,infrastruct,line] for infrastruct=set["infrastruct"]))
     # Calculate flow of each line
-    push!(cep.info,"GEN['el',tech, t, k, node] = Σ_{line[node_end]} FLOW['el',tech, t, k, line]-Σ_{line[node_start]} FLOW['el',tech, t, k, line] ∀ tech_transmission, t, k")
+    push!(cep.info,"GEN['el',tech, t, k, node] = Σ_{line_pos_float_to_node} FLOW['el',tech, t, k, line] ⋅ (1-η[tech]⋅length[line]) - Σ_{line_pos} FLOW['el',tech, t, k, line] ∀ tech_transmission, t, k")
     for node in set["nodes"]
-      @constraint(cep.model, [tech=set["tech_transmission"], t=set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech, t, k, node] == sum(cep.model[:FLOW]["el",tech, t, k, pos_line] for pos_line=mapsetindf(lines,:node_end,node,:lines))-sum(cep.model[:FLOW]["el",tech, t, k, neg_line] for neg_line=mapsetindf(lines,:node_start,node,:lines)))
+      @constraint(cep.model, [tech=set["tech_transmission"], t=set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech, t, k, node] == sum(cep.model[:FLOW]["el","uniform",tech, t, k, line_end]*(1-findvalindf(lines,:lines,line_end,:length)*(1-findvalindf(techs, :tech, tech, :efficiency))) - cep.model[:FLOW]["el","opposite",tech, t, k, line_end] for line_end=mapsetindf(lines,:node_end,node,:lines)) + sum(cep.model[:FLOW]["el","opposite",tech, t, k, line_start]*(1-findvalindf(lines,:lines,line_start,:length)*(1-findvalindf(techs, :tech, tech, :efficiency))) - cep.model[:FLOW]["el","uniform",tech, t, k, line_start] for line_start=mapsetindf(lines,:node_start,node,:lines)))
     end
     return cep
 end
@@ -389,7 +404,7 @@ function solve_opt_cep(cep::OptModelCEP,
   variables["COST"]=OptVariable(getvalue(cep.model[:COST]),"ov")
   variables["CAP"]=OptVariable(getvalue(cep.model[:CAP]),"dv")
   variables["GEN"]=OptVariable(getvalue(cep.model[:GEN]),"ov")
-  if opt_config["storage"]
+  if opt_config["storage_p"] && opt_config["storage_e"]
     variables["INTRASTOR"]=OptVariable(getvalue(cep.model[:INTRASTOR]),"ov")
     if opt_config["interstorage"]
       variables["INTERSTOR"]=OptVariable(getvalue(cep.model[:INTERSTOR]),"ov")

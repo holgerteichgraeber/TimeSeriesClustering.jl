@@ -378,7 +378,7 @@ function set_opt_config_cep(descriptor::String, first_stage_vars::Dict{String,Op
 function set_opt_config_cep(opt_data::OptDataCEP
                             ;kwargs...)
   # Create new Dictionary and set possible unique categories to false to later check wrong setting
-  config=Dict{String,Any}("transmission"=>false, "storage"=>false, "generation"=>false)
+  config=Dict{String,Any}("transmission"=>false, "storage_e"=>false, "storage_p"=>false, "generation"=>false)
   # Check the existence of the categ (like generation or storage - see techs.csv) and write it into Dictionary
   for categ in unique(opt_data.techs[:categ])
     config[categ]=true

@@ -14,7 +14,7 @@ function run_opt(ts_data::ClustData,
   cep=setup_opt_cep_basic(ts_data, opt_data, opt_config, solver; k_ids=k_ids)
   setup_opt_cep_variables!(cep, ts_data, opt_data)
   setup_opt_cep_generation_el!(cep, ts_data, opt_data)
-  if opt_config["storage"]
+  if opt_config["storage_p"] && opt_config["storage_e"]
     setup_opt_cep_storage!(cep, ts_data, opt_data)
     if opt_config["interstorage"]
       setup_opt_cep_interstorage!(cep, ts_data, opt_data, k_ids)
@@ -64,7 +64,7 @@ function run_opt(ts_data::ClustData,
    end
   #TODO first_stage_vars
   #Setup the opt_config file based on the data input and
-  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, first_stage_vars=first_stage_vars, co2_limit=co2_limit, existing_infrastructure=existing_infrastructure, storage=storage, interstorage=interstorage, transmission=transmission)
+  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, first_stage_vars=first_stage_vars, co2_limit=co2_limit, existing_infrastructure=existing_infrastructure, storage_e=storage, storage_p=storage, interstorage=interstorage, transmission=transmission)
   #Run the optimization problem
   run_opt(ts_data, opt_data, opt_config; solver=solver, k_ids=k_ids)
 end # run_opt
