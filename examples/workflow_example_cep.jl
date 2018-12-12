@@ -10,7 +10,7 @@ ts_input_data, = load_timeseries_data("CEP", "GER_18";K=365, T=24) #CEP
 cep_input_data_GER=load_cep_data("GER_18")
 
  # run clustering
-ts_clust_res = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1,n_clust=365) # default k-means
+ts_clust_res = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1,n_clust=3) # default k-means
 
  # optimization
-model = run_opt(ts_clust_res.best_results, cep_input_data_GER;solver=GurobiSolver(), co2_limit=10, transmission=true, interstorage=true, k_ids=ts_clust_res.best_ids)
+@time model = run_opt(ts_clust_res.best_results, cep_input_data_GER;solver=GurobiSolver(), co2_limit=10, transmission=true)

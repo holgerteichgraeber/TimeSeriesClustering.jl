@@ -290,40 +290,71 @@ function calc_weights(clustids::Array{Int}, n_clust::Int)
 end
 
 """
-function findvalindf(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::Symbol)
+function find_val_in_df(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::Symbol)
   Take DataFrame(df) Look in Column (column_of_reference) for the reference value (reference) and return in same row the value in column (value_to_return)
 """
-function findvalindf(df::DataFrame,
+function find_val_in_df(df::DataFrame,
                     column_of_reference::Symbol,
                     reference::String,
                     value_to_return::Symbol
                     )
-    return df[findfirst(isequal(reference), df[column_of_reference]),value_to_return]
+    return df[findfirst(df[column_of_reference].==reference),value_to_return]
 end
 
 """
-function findvalindf(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::String)
+function find_val_in_df(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::String)
   Take DataFrame(df) Look in Column (column_of_reference) for the reference value (reference) and return corresponding value in column (value_to_return)
 """
-function findvalindf(df::DataFrame,
+function find_val_in_df(df::DataFrame,
                     column_of_reference::Symbol,
                     reference::String,
                     value_to_return::String
                     )
-    return findvalindf(df,column_of_reference,reference,Symbol(value_to_return))
+    return find_val_in_df(df,column_of_reference,reference,Symbol(value_to_return))
 end
 
 """
-function mapsetindf(df::DataFrame,column_of_reference::Symbol,reference::String,set_to_return::Symbol)
+function find_val_in_df(df::DataFrame,column_of_reference1::Symbol,reference1::String, column_of_reference2::Symbol,reference2::String, value_to_return::Symbol)
+  Take DataFrame(df) Look in Column1 and Column2 (column_of_reference1 and 2) for the reference value (reference1 and 2) and return in same row where both values match in column (value_to_return)
+"""
+function find_val_in_df(df::DataFrame,
+                        column_of_reference1::Symbol,
+                        reference1::String,
+                        column_of_reference2::Symbol,
+                        reference2::String,
+                        value_to_return::Symbol)
+    return df[findfirst((df[column_of_reference1].==reference1).+(df[column_of_reference2].==reference2).==2),value_to_return]
+end
+
+"""
+function find_cost_in_df(costs::DataFrame,nodes::DataFrame,tech::String,node::String,impact_to_return::String)
+  Take DataFrame(df) Look in Column (column_of_reference) for the reference value (reference) and return corresponding value in column (value_to_return)
+"""
+function find_cost_in_df(costs::DataFrame,
+                    nodes::DataFrame,
+                    tech::String,
+                    node::String,
+                    impact_to_return::String
+                    )
+    if find_val_in_df(costs,:tech,tech,:region)=="all"
+      return find_val_in_df(costs,:tech,tech,Symbol(impact_to_return))
+    else
+      return find_val_in_df(costs,:tech,tech,:region,find_val_in_df(nodes,:nodes,node,:region),Symbol(impact_to_return))
+    end
+end
+
+"""
+function map_set_in_df(df::DataFrame,column_of_reference::Symbol,reference::String,set_to_return::Symbol)
   Take DataFrame(df) Look in Column (column_of_reference) for all cases that match the reference value (reference) and return the corresponding sets in Column (set_to_return)
 """
-function mapsetindf(df::DataFrame,
+function map_set_in_df(df::DataFrame,
                     column_of_reference::Symbol,
                     reference::String,
                     set_to_return::Symbol
                     )
     return df[df[column_of_reference].==reference,set_to_return]
 end
+
 
 """
 function get_cep_variable_value(variable::OptVariable,index_set::Array)

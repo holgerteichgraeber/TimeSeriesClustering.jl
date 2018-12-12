@@ -1,6 +1,6 @@
-tech,USD,CO2
-pv,0.0005,0
-wind,0.0005,0
-coal,23,1217.49
-nuc,7.025,0
-gas,41.5,728.71
+tech,region,year,USD,CO2
+pv,TX,2015,0.0005,0
+wind,TX,2015,0.0005,0
+coal,TX,2015,23,1217.49
+nuc,TX,2015,7.025,0
+gas,TX,2015,41.5,728.71
