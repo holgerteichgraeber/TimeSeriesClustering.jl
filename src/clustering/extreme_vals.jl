@@ -1,4 +1,68 @@
 """
+"""
+function run_clust_extr(
+      data::ClustData;
+      norm_op::String="zscore",
+      norm_scope::String="full",
+      method::String="kmeans",
+      representation::String="centroid",
+      n_clust::Int=5,
+      n_init::Int=100,
+      iterations::Int=300,
+      attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
+      simple_extreme_event::Bool=true,
+      extreme_event_selection_method="feasibility"
+      save::String="",
+      get_all_clust_results::Bool=false,
+      kwargs...
+                        # same inputs as in run_clust()
+                        # simple_extreme_days=true
+                        # extreme_day_selection_method="feasibility", "append", "none"
+                        # + extreme_value_descr_ar
+                        # needs input data for optimization problem
+                        )
+    # if simple: simple_extr_val_sel
+    # clust_res = run_clust()
+    # if simple: representation modification
+    # DVs = run_opt().variables["CAP"]
+    # is_feasible = false
+    # while !is_feasible
+    #   for i=1:365
+    #     method that puts one day out of ClustData into its own ClustData struct
+    #     run_opt() single day, given DVs(operations only) 
+    #   end
+    #   is_feasible = [depends on if any day was infeasible]
+    #   if is_feasible: break out of while loop here
+    #   idx_extr_val = feasibility: first infeasible index; append: idx with highest slack variable
+    #   extr_val_output(idx_extr_val)
+    #   representation_modification()
+    #   if append: run_clust()  # really? should representation modification not be afterwards? / figure 2.5 Constantin Thesis
+    #   
+    #   DVs = run_opt().variables["CAP"]
+    # end
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    return 0
+
+end
+
+
+"""
 function simple_extr_val_sel(data::ClustData,
                              extreme_value_descr_ar::Array{SimpleExtremeValueDescr,1};
                              rep_mod_method::String="feasibility"
