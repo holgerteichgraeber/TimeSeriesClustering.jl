@@ -38,9 +38,10 @@ end
 
 
 """
-function run_opt(problem_type,el_price,weight=1,country="",prnt=false)
+function run_opt(ts_data::ClustData,opt_data::OptDataCEP;solver::Any=CbcSolver(),descriptor::String="",     first_stage_vars::Dict{String,OptVariable}=Dict{String,OptVariable}(),co2_limit::Number=Inf,existing_infrastructure::Bool=false,          intrastorage::Bool=false)
 
-Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
+  Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
+  options to tweak the model are to select a co2_limit, existing_infrastructure and intrastorage
 """
 function run_opt(ts_data::ClustData,
                  opt_data::OptDataCEP;

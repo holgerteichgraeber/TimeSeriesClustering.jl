@@ -1,8 +1,7 @@
 # optimization problems
 """
 function setup_cep_opt_sets(ts_data::ClustData,opt_data::CEPData)
-
-fetching sets from the time series (ts_data) and capacity expansion model data (opt_data) and returning Dictionary with Sets as Symbols
+ fetching sets from the time series (ts_data) and capacity expansion model data (opt_data) and returning Dictionary with Sets as Symbols
 """
 function setup_opt_cep_set(ts_data::ClustData,
                             opt_data::OptDataCEP,
@@ -43,14 +42,13 @@ function setup_opt_cep_set(ts_data::ClustData,
     set["time_I_e"]=0:length(k_ids)
     set["time_I"]=1:length(k_ids)
   end
-
   return set
 end
 
+
 """
 function setup_cep_opt_basic(ts_data::ClustData,opt_data::CEPData)
-
-fetching sets from the time series (ts_data) and capacity expansion model data (opt_data) and returning Dictionary with Sets as Symbols
+  setting up the basic core elements for a CEP-model
 """
 function setup_opt_cep_basic(ts_data::ClustData,
                             opt_data::OptDataCEP,
@@ -97,7 +95,7 @@ end
 
 """
 function setup_opt_cep_fossil!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  add variable and fixed Costs and limit generation to installed capacity for fossil power plants
+  add variable and fixed Costs and limit generation to installed capacity (and limiting time_series, if dependency in techs defined) for fossil and renewable power plants
 """
 function setup_opt_cep_generation_el!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -149,7 +147,8 @@ end
 
 """
 function setup_opt_cep_storage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  basic storage within each period (needs to be matched with intrastorage or interstorage)
+  add variables INTRASTORGEN and INTRASTOR, variable and fixed Costs, limit generation to installed power-capacity, connect intra-storage levels (within period) with generation
+  basis for either intrastorage or interstorage
 """
 function setup_opt_cep_storage!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -190,7 +189,7 @@ function setup_opt_cep_storage!(cep::OptModelCEP,
     # Fix the Generation of the theoretical energy part of the battery to 0
     push!(cep.info,"GEN['el',tech, t, k, node] =0 ∀ node, tech_storage_e, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech,t,k,node]==0)
-    # Connecting each iteration
+    # Connect the previous storage level and the integral of the flows with the new storage level
     push!(cep.info,"INTRASTOR['el',tech, t, k, node] = INTRASTOR['el',tech, t-1, k, node] + Δt ⋅ (STORGEN['el','charge',tech, t, k, node] ⋅ η[tech] - STORGEN['el','discharge',tech, t, k, node] / η[tech])∀ node, tech_storage_e, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t in set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]==cep.model[:INTRASTOR]["el",tech,t-1,k,node] - cep.model[:INTRASTORGEN]["el","discharge",split(tech,"_")[1]*"_p",t,k,node] / find_val_in_df(techs,:tech,tech,"efficiency") + cep.model[:INTRASTORGEN]["el","charge",split(tech,"_")[1]*"_p",t,k,node] * find_val_in_df(techs,:tech,tech,"efficiency"))
 
@@ -201,7 +200,7 @@ end
 
 """
 function setup_opt_cep_intrastorage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  Looping constraint for each period
+  Looping constraint for each period (same start and end level for all periods) and limit storage to installed energy-capacity
 """
 function setup_opt_cep_intrastorage!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -311,6 +310,7 @@ function setup_opt_cep_transmission!(cep::OptModelCEP,
     end
     return cep
 end
+
 
 """
 function setup_opt_cep_demand!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
