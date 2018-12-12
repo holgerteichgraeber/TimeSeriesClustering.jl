@@ -372,21 +372,29 @@ function get_cep_variable_set(variable::OptVariable,
 end
 
 """
-set_opt_config_cep(descriptor::String, first_stage_vars::Dict{String,OptVariable}, co2_limit::Number, existing_infrastructure::Bool, storage::Bool)
+function set_opt_config_cep(descriptor::String, first_stage_vars::Dict{String,OptVariable}, co2_limit::Number, existing_infrastructure::Bool, storage::Bool)
   Returning Dictionary with the variables as entries
 """
 function set_opt_config_cep(opt_data::OptDataCEP
                             ;kwargs...)
-  # Create new Dictionary
-  config=Dict{String,Any}()
+  # Create new Dictionary and set possible unique categories to false to later check wrong setting
+  config=Dict{String,Any}("transmission"=>false, "storage_e"=>false, "storage_p"=>false, "generation"=>false)
   # Check the existence of the categ (like generation or storage - see techs.csv) and write it into Dictionary
   for categ in unique(opt_data.techs[:categ])
     config[categ]=true
   end
+  config["transmission"]=false
   # Loop through the kwargs and write them into Dictionary
   for kwarg in kwargs
+    # Check for false combination
+    if String(kwarg[1]) in keys(config)
+      if config[String(kwarg[1])]==false && kwarg[2]
+        throw(@error("Option "*String(kwarg[1])*" cannot be selected with input data provided for "*opt_data.region))
+      end
+    end
     config[String(kwarg[1])]=kwarg[2]
   end
+
   # Return Directory with the information
   return config
 end
