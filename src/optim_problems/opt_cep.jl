@@ -191,7 +191,7 @@ function setup_opt_cep_storage!(cep::OptModelCEP,
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech,t,k,node]==0)
     # Connect the previous storage level and the integral of the flows with the new storage level
     push!(cep.info,"INTRASTOR['el',tech, t, k, node] = INTRASTOR['el',tech, t-1, k, node] + Δt ⋅ (STORGEN['el','charge',tech, t, k, node] ⋅ η[tech] - STORGEN['el','discharge',tech, t, k, node] / η[tech])∀ node, tech_storage_e, t, k")
-    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t in set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]==cep.model[:INTRASTOR]["el",tech,t-1,k,node] - cep.model[:INTRASTORGEN]["el","discharge",split(tech,"_")[1]*"_p",t,k,node] / find_val_in_df(techs,:tech,tech,"efficiency") + cep.model[:INTRASTORGEN]["el","charge",split(tech,"_")[1]*"_p",t,k,node] * find_val_in_df(techs,:tech,tech,"efficiency"))
+    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t in set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]==cep.model[:INTRASTOR]["el",tech,t-1,k,node] - cep.model[:INTRASTORGEN]["el","discharge",split(tech,"_")[1]*"_p",t,k,node] / find_val_in_df(techs,:tech,tech,"eff_out") + cep.model[:INTRASTORGEN]["el","charge",split(tech,"_")[1]*"_p",t,k,node] * find_val_in_df(techs,:tech,tech,"eff_in"))
 
     push!(cep.info,"GEN['el',tech, t, k, node] = INTRASTORGEN['el','discharge',tech, t, k, node] - INTRASTORGEN['el','charge',tech, t, k, node] ∀ node, tech_storage_e, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_p"], t in set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech,t,k,node]==cep.model[:INTRASTORGEN]["el","discharge",tech,t,k,node]-cep.model[:INTRASTORGEN]["el","charge",tech,t,k,node])
@@ -213,10 +213,10 @@ function setup_opt_cep_intrastorage!(cep::OptModelCEP,
     # Limit the storage of the theoretical energy part of the battery to its installed power
     push!(cep.info,"INTRASTOR['el',tech, t, k, node] ≤ Σ_{infrastruct} CAP[tech,infrastruct,node] ∀ node, tech_storage, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]<=sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"]))
-    # Looping constraint for each period
+    # Set storage level at beginning and end of day equal
     push!(cep.info,"INTRASTOR['el',tech, '0', k, node] = INTRASTOR['el',tech, 't[end]', k, node] ∀ node, tech_storage_e, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,0,k,node]== cep.model[:INTRASTOR]["el",tech,set["time_T_e"][end],k,node])
-    # Looping constraint for each period
+    # Set the storage level at the beginning of each representative day to the same
     push!(cep.info,"INTRASTOR['el',tech, '0', k, node] = INTRASTOR['el',tech, '0', k, node] ∀ node, tech_storage_e, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,0,k,node]== cep.model[:INTRASTOR]["el",tech,0,1,node])
     return cep
@@ -306,7 +306,7 @@ function setup_opt_cep_transmission!(cep::OptModelCEP,
     # Calculate the sum of the flows for each node
     push!(cep.info,"GEN['el',tech, t, k, node] = Σ_{line_pos_float_to_node} FLOW['el',tech, t, k, line] ⋅ (1-η[tech]⋅length[line]) - Σ_{line_pos} FLOW['el',tech, t, k, line] ∀ tech_transmission, t, k")
     for node in set["nodes"]
-      @constraint(cep.model, [tech=set["tech_transmission"], t=set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech, t, k, node] == sum(cep.model[:FLOW]["el","uniform",tech, t, k, line_end]*(1-find_val_in_df(lines,:lines,line_end,:length)*(1-find_val_in_df(techs, :tech, tech, :efficiency))) - cep.model[:FLOW]["el","opposite",tech, t, k, line_end] for line_end=map_set_in_df(lines,:node_end,node,:lines)) + sum(cep.model[:FLOW]["el","opposite",tech, t, k, line_start]*(1-find_val_in_df(lines,:lines,line_start,:length)*(1-find_val_in_df(techs, :tech, tech, :efficiency))) - cep.model[:FLOW]["el","uniform",tech, t, k, line_start] for line_start=map_set_in_df(lines,:node_start,node,:lines)))
+      @constraint(cep.model, [tech=set["tech_transmission"], t=set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech, t, k, node] == sum(cep.model[:FLOW]["el","uniform",tech, t, k, line_end]*find_line_eff_in_df(lines,techs,line_end,tech,:eff_out) - cep.model[:FLOW]["el","opposite",tech, t, k, line_end]/find_line_eff_in_df(lines,techs,line_end,tech,:eff_in) for line_end=map_set_in_df(lines,:node_end,node,:lines)) + sum(cep.model[:FLOW]["el","opposite",tech, t, k, line_start]*find_line_eff_in_df(lines,techs,line_start,tech,:eff_out) - cep.model[:FLOW]["el","uniform",tech, t, k, line_start]/find_line_eff_in_df(lines,techs,line_start,tech,:eff_in) for line_start=map_set_in_df(lines,:node_start,node,:lines)))
     end
     return cep
 end

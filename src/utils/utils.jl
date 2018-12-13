@@ -344,6 +344,18 @@ function find_cost_in_df(costs::DataFrame,
 end
 
 """
+function find_line_eff_in_df(lines::DataFrame,techs::DataFrame,line::String,tech::String,eff::Symbol)
+  Take DataFrame(lines and techs) look for the length of this line and the efficiency of this line (eff_in or eff_out) per km and calculate total efficiency
+"""
+function find_line_eff_in_df(lines::DataFrame,
+                            techs::DataFrame,
+                            line::String,
+                            tech::String,
+                            eff::Symbol)
+    return (1-find_val_in_df(lines,:lines,line,:length)*(1-find_val_in_df(techs, :tech, tech, eff)))
+end
+
+"""
 function map_set_in_df(df::DataFrame,column_of_reference::Symbol,reference::String,set_to_return::Symbol)
   Take DataFrame(df) Look in Column (column_of_reference) for all cases that match the reference value (reference) and return the corresponding sets in Column (set_to_return)
 """
@@ -442,7 +454,6 @@ function set_opt_config_cep(opt_data::OptDataCEP
   for categ in unique(opt_data.techs[:categ])
     config[categ]=true
   end
-  config["transmission"]=false
   # Loop through the kwargs and write them into Dictionary
   for kwarg in kwargs
     # Check for false combination
@@ -479,11 +490,6 @@ function check_opt_data_cep(opt_data::OptDataCEP)
   # Only when Data provided
   if opt_data.lines!=DataFrame()
     # Check existence of start and end node
-    for node in opt_data.lines[:node_start]
-      if !(in(node,opt_data.nodes[:nodes]))
-        throw(@error("Node "*node*" set as starting node, but not included in nodes-Data"))
-      end
-    end>>>>>>> 2c952843bb5b4f190b97d12a644689196b712910
     for node in opt_data.lines[:node_end]
       if !(in(node,opt_data.nodes[:nodes]))
         throw(@error("Node "*node*" set as ending node, but not included in nodes-Data"))

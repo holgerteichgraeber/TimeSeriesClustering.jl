@@ -12,7 +12,7 @@ cep_input_data_GER=load_cep_data("GER_18")
 
  # define simple extreme days of interest
  ev1 = SimpleExtremeValueDescr("wind-dena42","max","absolute")
- ev2 = SimpleExtremeValueDescr("pv-dena42","min","integral")
+ ev2 = SimpleExtremeValueDescr("solar-dena42","min","integral")
  ev3 = SimpleExtremeValueDescr("el_demand-dena21","max","absolute")
  ev = [ev1, ev2, ev3]
  # simple extreme day selection
