@@ -1,7 +1,6 @@
 """
-function run_opt_cep()
-
-capacity expansion optimization problem: sets up the problem and runs the problem.
+function run_opt(ts_data::ClustData,opt_data::OptDataCEP,opt_config::Dict{String,Any};solver::Any=CbcSolver())
+  organizing the actual setup and run of the CEP-Problem
 """
 function run_opt(ts_data::ClustData,
                     opt_data::OptDataCEP,
@@ -31,6 +30,10 @@ function run_opt(ts_data::ClustData,opt_data::OptDataCEP;solver::Any=CbcSolver()
 
   Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
   options to tweak the model are to select a co2_limit, existing_infrastructure and intrastorage
+  descritor: String with the name of this paricular model like "kmeans-10-co2-500"
+  co2_limit: A number limiting the kg.-CO2-eq./MWh (normally in a range from 5-1250 kg-CO2-eq/MWh), give Inf or no kw if unlimited
+  existing_infrastructure: true or false to include or exclude existing infrastructure to the model
+  intrastorage: true or false to include or exclude intraday storage
 """
 function run_opt(ts_data::ClustData,
                  opt_data::OptDataCEP;

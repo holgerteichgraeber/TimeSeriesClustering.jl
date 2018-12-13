@@ -103,7 +103,7 @@ end
 
 
 """
-function setup_opt_cep_fossil!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+function setup_opt_cep_generation_el!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
   add variable and fixed Costs and limit generation to installed capacity (and limiting time_series, if dependency in techs defined) for fossil and renewable power plants
 """
 function setup_opt_cep_generation_el!(cep::OptModelCEP,
@@ -197,7 +197,7 @@ function setup_opt_cep_storage!(cep::OptModelCEP,
     # Connect the previous storage level and the integral of the flows with the new storage level
     push!(cep.info,"INTRASTOR['el',tech, t, k, node] = INTRASTOR['el',tech, t-1, k, node] + Δt ⋅ (STORGEN['el','charge',tech, t, k, node] ⋅ η[tech] - STORGEN['el','discharge',tech, t, k, node] / η[tech])∀ node, tech_storage_e, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t in set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]==cep.model[:INTRASTOR]["el",tech,t-1,k,node] - cep.model[:INTRASTORGEN]["el","discharge",split(tech,"_")[1]*"_p",t,k,node] / findvalindf(techs,:tech,tech,"eff_out") + cep.model[:INTRASTORGEN]["el","charge",split(tech,"_")[1]*"_p",t,k,node] * findvalindf(techs,:tech,tech,"eff_in"))
-
+    # Sum the INTRASTORGEN up to calculate the actual GEN of the technology
     push!(cep.info,"GEN['el',tech, t, k, node] = INTRASTORGEN['el','discharge',tech, t, k, node] - INTRASTORGEN['el','charge',tech, t, k, node] ∀ node, tech_storage_e, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_p"], t in set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech,t,k,node]==cep.model[:INTRASTORGEN]["el","discharge",tech,t,k,node]-cep.model[:INTRASTORGEN]["el","charge",tech,t,k,node])
     return cep
@@ -248,7 +248,7 @@ function setup_opt_cep_demand!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_emissions!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP; co2_limit::Number=Inf)
+function setup_opt_cep_co2_limit!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP; co2_limit::Number=Inf)
   Add co2 emission constraint
 """
 function setup_opt_cep_co2_limit!(cep::OptModelCEP,
@@ -285,7 +285,7 @@ function setup_opt_cep_objective!(cep::OptModelCEP,
 end
 
 """
-function solve_cep_opt_model(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+function solve_opt_cep(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
 solving the cep model and writing it's results and co2_limit into an OptResult-Struct
 """
 function solve_opt_cep(cep::OptModelCEP,
@@ -295,7 +295,7 @@ function solve_opt_cep(cep::OptModelCEP,
   status=solve(cep.model)
   objective=getobjectivevalue(cep.model)
   variables=Dict{String,OptVariable}()
-  # cv - Cost variable, dv - decision variable, which is used to fix variables in a dispatch model, ov - operational variable
+  # cv - Cost variable, dv - design variable, which is used to fix variables in a dispatch model, ov - operational variable
   variables["COST"]=OptVariable(getvalue(cep.model[:COST]),"cv")
   variables["CAP"]=OptVariable(getvalue(cep.model[:CAP]),"dv")
   variables["GEN"]=OptVariable(getvalue(cep.model[:GEN]),"ov")
