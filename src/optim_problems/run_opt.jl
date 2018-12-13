@@ -1,35 +1,39 @@
 """
-function run_opt_cep()
-
-capacity expansion optimization problem: sets up the problem and runs the problem.
+function run_opt(ts_data::ClustData,opt_data::OptDataCEP,opt_config::Dict{String,Any};solver::Any=CbcSolver())
+  organizing the actual setup and run of the CEP-Problem
 """
 function run_opt(ts_data::ClustData,
                     opt_data::OptDataCEP,
                     opt_config::Dict{String,Any};
-                    solver::Any=CbcSolver()
-                    )
+                    solver::Any=CbcSolver())
   cep=setup_opt_cep_basic(ts_data, opt_data, opt_config, solver)
   setup_opt_cep_variables!(cep, ts_data, opt_data)
-  if opt_config["existing_infrastructure"]
-      setup_opt_cep_existing_infrastructure!(cep;nodes=nodes,set=set)
-  end
   setup_opt_cep_generation_el!(cep, ts_data, opt_data)
-  if opt_config["storage"]
+  if opt_config["storage_p"] && opt_config["storage_e"]
     setup_opt_cep_storage!(cep, ts_data, opt_data)
+      setup_opt_cep_intrastorage!(cep, ts_data, opt_data)
   end
   if opt_config["co2_limit"]!=Inf
     setup_opt_cep_co2_limit!(cep, ts_data, opt_data; co2_limit=opt_config["co2_limit"])
   end
   setup_opt_cep_demand!(cep, ts_data, opt_data)
+  if opt_config["existing_infrastructure"]
+      setup_opt_cep_existing_infrastructure!(cep, ts_data, opt_data)
+  end
   setup_opt_cep_objective!(cep, ts_data, opt_data)
   return solve_opt_cep(cep, ts_data, opt_data, opt_config)
 end
 
 
 """
-function run_opt(problem_type,el_price,weight=1,country="",prnt=false)
+function run_opt(ts_data::ClustData,opt_data::OptDataCEP;solver::Any=CbcSolver(),descriptor::String="",     first_stage_vars::Dict{String,OptVariable}=Dict{String,OptVariable}(),co2_limit::Number=Inf,existing_infrastructure::Bool=false,          intrastorage::Bool=false)
 
-Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
+  Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
+  options to tweak the model are to select a co2_limit, existing_infrastructure and intrastorage
+  descritor: String with the name of this paricular model like "kmeans-10-co2-500"
+  co2_limit: A number limiting the kg.-CO2-eq./MWh (normally in a range from 5-1250 kg-CO2-eq/MWh), give Inf or no kw if unlimited
+  existing_infrastructure: true or false to include or exclude existing infrastructure to the model
+  intrastorage: true or false to include or exclude intraday storage
 """
 function run_opt(ts_data::ClustData,
                  opt_data::OptDataCEP;
@@ -38,10 +42,18 @@ function run_opt(ts_data::ClustData,
                  first_stage_vars::Dict{String,OptVariable}=Dict{String,OptVariable}(),
                  co2_limit::Number=Inf,
                  existing_infrastructure::Bool=false,
-                 storage::Bool=false)
+                 intrastorage::Bool=false)
+   # Activated inter or intraday storage corresponds with storage
+   if intrastorage
+     storage=true
+   else
+     storage=false
+   end
   #TODO first_stage_vars
-  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, first_stage_vars=first_stage_vars, co2_limit=co2_limit, existing_infrastructure=existing_infrastructure, storage=storage)
-  run_opt(ts_data,opt_data,opt_config;solver=solver)
+  #Setup the opt_config file based on the data input and
+  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, first_stage_vars=first_stage_vars, co2_limit=co2_limit, existing_infrastructure=existing_infrastructure, storage_e=storage, storage_p=storage)
+  #Run the optimization problem
+  run_opt(ts_data, opt_data, opt_config; solver=solver)
 end # run_opt
 
 #TODO Rewrite battery problem

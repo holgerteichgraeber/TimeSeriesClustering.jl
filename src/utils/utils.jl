@@ -362,8 +362,8 @@ function get_cep_variable_value(scenario::Scenario,
 end
 
 """
-function get_cep_variable_set(scenario::Scenario,var_name::String,num_index_set::Int)
-  Get the variable set from the specific Scenario by indicating the var_name e.g. "COST" and the num_index_set like 1
+function get_cep_variable_set(variable::OptVariable,num_index_set::Int)
+  Get the variable set from the specific variable and the num_index_set like 1
 """
 function get_cep_variable_set(variable::OptVariable,
                               index_set_dim::Int
@@ -372,21 +372,50 @@ function get_cep_variable_set(variable::OptVariable,
 end
 
 """
-set_opt_config_cep(descriptor::String, first_stage_vars::Dict{String,OptVariable}, co2_limit::Number, existing_infrastructure::Bool, storage::Bool)
+function get_cep_variable_set(scenario::Scenario,var_name::String,num_index_set::Int)
+  Get the variable set from the specific Scenario by indicating the var_name e.g. "COST" and the num_index_set like 1
+"""
+function get_cep_variable_set(scenario::Scenario,
+                              var_name::String,
+                              num_index_set::Int
+                              )
+    return  get_cep_variable_set(scenario.opt_res.variables[var_name], num_index_set)
+end
+
+"""
+function set_opt_config_cep(opt_data::OptDataCEP; kwargs...)
+  kwargs can be whatever you need to run the run_opt
+  it can hold
+    transmission: true or false
+    generation: true or false
+    storage_p: true or false
+    storage_e: true or false
+    existing_infrastructure: true or false
+    descritor: a String like "kmeans-10-co2-500" to describe this CEP-Model
+    first_stage_vars: a Dictionary containing the OptVariables from a previous run
+  The function also checks if the provided data matches your kwargs options (e.g. it let's you know if you asked for transmission, but you have no tech with it in your data)
   Returning Dictionary with the variables as entries
 """
 function set_opt_config_cep(opt_data::OptDataCEP
                             ;kwargs...)
-  # Create new Dictionary
-  config=Dict{String,Any}()
+  # Create new Dictionary and set possible unique categories to false to later check wrong setting
+  config=Dict{String,Any}("transmission"=>false, "storage_e"=>false, "storage_p"=>false, "generation"=>false)
   # Check the existence of the categ (like generation or storage - see techs.csv) and write it into Dictionary
   for categ in unique(opt_data.techs[:categ])
     config[categ]=true
   end
+  config["transmission"]=false
   # Loop through the kwargs and write them into Dictionary
   for kwarg in kwargs
+    # Check for false combination
+    if String(kwarg[1]) in keys(config)
+      if config[String(kwarg[1])]==false && kwarg[2]
+        throw(@error("Option "*String(kwarg[1])*" cannot be selected with input data provided for "*opt_data.region))
+      end
+    end
     config[String(kwarg[1])]=kwarg[2]
   end
+
   # Return Directory with the information
   return config
 end
