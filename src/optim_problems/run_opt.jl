@@ -29,6 +29,9 @@ function run_opt(ts_data::ClustData,
     setup_opt_cep_co2_limit!(cep, ts_data, opt_data; co2_limit=opt_config["co2_limit"])
   end
   setup_opt_cep_demand!(cep, ts_data, opt_data)
+  if "prev_dc_variables" in keys(opt_config)
+    setup_opt_cep_fix_design_variables!(cep, ts_data, opt_data; prev_dc_variables=opt_config["prev_dc_variables"])
+  end
   if opt_config["existing_infrastructure"]
       setup_opt_cep_existing_infrastructure!(cep, ts_data, opt_data)
   end
@@ -39,9 +42,24 @@ function run_opt(ts_data::ClustData,
   return solve_opt_cep(cep, ts_data, opt_data, opt_config)
 end
 
+"""
+function run_opt_cep()
+
+capacity expansion optimization problem: sets up the problem and runs the problem.
+"""
+function run_opt(ts_data::ClustData,
+                    opt_data::OptDataCEP,
+                    opt_config::Dict{String,Any},
+                    prev_dc_variables::Dict{String,OptVariable};
+                    solver::Any=CbcSolver(),
+                    k_ids::Array{Int64,1}=Array{Int64,1}())
+  # Add the prev_dc_variables to the existing config
+  set_opt_config_cep!(opt_config;prev_dc_variables=prev_dc_variables)
+  return run_opt(ts_data,opt_data,opt_config;solver=solver,k_ids=k_ids)
+end
 
 """
-function run_opt(ts_data::ClustData,opt_data::OptDataCEP;solver::Any=CbcSolver(),descriptor::String="",     first_stage_vars::Dict{String,OptVariable}=Dict{String,OptVariable}(),co2_limit::Number=Inf,existing_infrastructure::Bool=false,          intrastorage::Bool=false)
+function run_opt(ts_data::ClustData,opt_data::OptDataCEP;solver::Any=CbcSolver(),descriptor::String="",     prev_dc_variables::Dict{String,OptVariable}=Dict{String,OptVariable}(),co2_limit::Number=Inf,existing_infrastructure::Bool=false,          intrastorage::Bool=false)
 
   Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
   options to tweak the model are to select a co2_limit, existing_infrastructure and intrastorage
@@ -50,7 +68,6 @@ function run_opt(ts_data::ClustData,
                  opt_data::OptDataCEP;
                  solver::Any=CbcSolver(),
                  descriptor::String="",
-                 first_stage_vars::Dict{String,OptVariable}=Dict{String,OptVariable}(),
                  co2_limit::Number=Inf,
                  existing_infrastructure::Bool=false,
                  limit_infrastructure::Bool=false,
@@ -67,9 +84,9 @@ function run_opt(ts_data::ClustData,
    if interstorage && k_ids==Array{Int64,1}()
      throw(@error("No or empty k_ids provided"))
    end
-  #TODO first_stage_vars
+  #TODO prev_dc_variables
   #Setup the opt_config file based on the data input and
-  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, first_stage_vars=first_stage_vars, co2_limit=co2_limit, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_p=storage, interstorage=interstorage, transmission=transmission)
+  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, co2_limit=co2_limit, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_p=storage, interstorage=interstorage, transmission=transmission)
   #Run the optimization problem
   run_opt(ts_data, opt_data, opt_config; solver=solver, k_ids=k_ids)
 end # run_opt

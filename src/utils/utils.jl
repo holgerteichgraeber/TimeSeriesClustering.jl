@@ -450,12 +450,26 @@ function get_cep_variable_set(scenario::Scenario,
 end
 
 """
+function get_cep_design_variables(opt_result::OptResult)
+  Returns all design variables in this opt_result mathing the type "dv"
+"""
+function get_cep_design_variables(opt_result::OptResult)
+    design_variables=Dict{String,OptVariable}()
+    for (key,val) in opt_result.variables
+        if val.type=="dv"
+            design_variables[key]=val
+        end
+    end
+    return design_variables
+end
+
+"""
 function set_opt_config_cep(opt_data::OptDataCEP; kwargs...)
   kwargs can be whatever you need to run the run_opt
   it can hold
     transmission, generation, storage_p, storage_e, existing_infrastructure wiht Bools
     descritor with a String
-    first_stage_vars with a Dictionary
+    prev_dc_variables with a Dictionary
   The function also checks if the provided data matches your kwargs options (e.g. it let's you know if you asked for transmission, but you have no tech with it in your data)
   Returning Dictionary with the variables as entries
 """
@@ -475,6 +489,22 @@ function set_opt_config_cep(opt_data::OptDataCEP
         throw(@error("Option "*String(kwarg[1])*" cannot be selected with input data provided for "*opt_data.region))
       end
     end
+    config[String(kwarg[1])]=kwarg[2]
+  end
+
+  # Return Directory with the information
+  return config
+end
+
+"""
+function set_opt_config_cep!(config::Dict{String,Any}; kwargs...)
+  add or replace items to an existing config
+  prev_dc_variables: Dict{Sting,OptVariable}
+"""
+function set_opt_config_cep!(config::Dict{String,Any}
+                            ;kwargs...)
+  # Loop through the kwargs and add them to Dictionary
+  for kwarg in kwargs
     config[String(kwarg[1])]=kwarg[2]
   end
 

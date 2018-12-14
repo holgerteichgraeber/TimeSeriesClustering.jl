@@ -87,8 +87,29 @@ function setup_opt_cep_variables!(cep::OptModelCEP,
   # Generation #
   push!(cep.info,"Variable GEN[sector, tech, t, k, node]")
   @variable(cep.model, GEN[sector=set["sector"], tech=set["tech"], t=set["time_T"], k=set["time_K"], node=set["nodes"]])
-  #TODO Include Slack into CEP
-  #@variable(cep, SLACK[t=set["time_T"], k=set["time_K"]]>=0)
+  # Slack variable #
+    push!(cep.info,"Variable SLACK[sector, t, k, node]")
+  @variable(cep.model, SLACK[sector=set["sector"], t=set["time_T"], k=set["time_K"], node=set["nodes"]] >=0)
+  return cep
+end
+
+"""
+function setup_opt_cep_fix_design_variables!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP) set::Dict)
+  Fixing variables CAP based on first stage vars
+"""
+function setup_opt_cep_fix_design_variables!(cep::OptModelCEP,
+                                  ts_data::ClustData,
+                                  opt_data::OptDataCEP;
+                                  prev_dc_variables::Dict{String,OptVariable}=Dict{String,OptVariable}())
+  ## DATA ##
+  set=cep.set
+  cap=prev_dc_variables["CAP"]
+
+  ## VARIABLES ##
+  # Capacity
+  push!(cep.info,"Variable CAP[tech, infrastruct, nodes] = CAP_{first_stage}[tech, infrastruct, nodes]]")
+  push!(cep.info,"CAP[tech, 'ex', node] = existing infrastructure ∀ node, tech")
+  @constraint(cep.model, [node=set["nodes"], tech=set["tech"]], cep.model[:CAP][tech,"new",node]==get_cep_variable_value(cap,[tech, "new", node]))
   return cep
 end
 
@@ -326,13 +347,13 @@ function setup_opt_cep_demand!(cep::OptModelCEP,
 
   ## DEMAND ##
   if "tech_transmission" in keys(set)
-    # Force the demand to match the generation either on copperplate
-    push!(cep.info,"Σ_{tech}GEN['el',tech,t,k,node] = ts[el_demand-node,t,k] ∀ node,t,k")
-    @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], sum(cep.model[:GEN]["el",tech,t,k,node] for tech=set["tech"]) == ts["el_demand-"*node][t,k])
+    # Force the demand to match the generation either with transmission
+    push!(cep.info,"Σ_{tech,node}GEN['el',tech,t,k,node]= Σ_{node}ts[el_demand-node,t,k]-SLACK['el',t,k,node] ∀ t,k")
+    @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], sum(cep.model[:GEN]["el",tech,t,k,node] for tech=set["tech"]) == ts["el_demand-"*node][t,k]-cep.model[:SLACK]["el",t,k,node])
   else
-    # or for each node with transmission
-    push!(cep.info,"Σ_{tech,node}GEN['el',tech,t,k,node] = Σ_{node}ts[el_demand-node,t,k] ∀ t,k")
-    @constraint(cep.model, [t=set["time_T"], k=set["time_K"]], sum(cep.model[:GEN]["el",tech,t,k,node] for node=set["nodes"], tech=set["tech"]) == sum(ts["el_demand-"*node][t,k] for node=set["nodes"]))
+    # or on copperplate
+    push!(cep.info,"Σ_{tech}GEN['el',tech,t,k,node] = ts[el_demand-node,t,k]-SLACK['el',t,k,node] ∀ node,t,k")
+    @constraint(cep.model, [t=set["time_T"], k=set["time_K"]], sum(cep.model[:GEN]["el",tech,t,k,node] for node=set["nodes"], tech=set["tech"]) == sum(ts["el_demand-"*node][t,k]-cep.model[:SLACK]["el",t,k,node] for node=set["nodes"]))
   end
   return cep
 end
@@ -412,8 +433,8 @@ function setup_opt_cep_objective!(cep::OptModelCEP,
 
   ## OBJECTIVE ##
   # Minimize the total €-Costs s.t. the Constraints introduced above
-  push!(cep.info,"min Σ_{account,tech}COST[account,'$(set["impact"][1])',tech] st. above")
-  @objective(cep.model, Min, sum(cep.model[:COST][account,set["impact"][1],tech] for account=set["account"], tech=set["tech"]))
+  push!(cep.info,"min Σ_{account,tech}COST[account,'$(set["impact"][1])',tech] + ΣSLACK ⋅ 1E+10 st. above")
+  @objective(cep.model, Min,  sum(cep.model[:COST][account,set["impact"][1],tech] for account=set["account"], tech=set["tech"]) + sum(cep.model[:SLACK])*1e8)
   return cep
 end
 
@@ -431,6 +452,7 @@ function solve_opt_cep(cep::OptModelCEP,
   variables["COST"]=OptVariable(getvalue(cep.model[:COST]),"cv")
   variables["CAP"]=OptVariable(getvalue(cep.model[:CAP]),"dv")
   variables["GEN"]=OptVariable(getvalue(cep.model[:GEN]),"ov")
+  variables["SLACK"]=OptVariable(getvalue(cep.model[:SLACK]),"ov")
   if opt_config["storage_p"] && opt_config["storage_e"]
     variables["INTRASTOR"]=OptVariable(getvalue(cep.model[:INTRASTOR]),"ov")
     if opt_config["interstorage"]
@@ -442,6 +464,11 @@ function solve_opt_cep(cep::OptModelCEP,
     variables["FLOW"]=OptVariable(getvalue(cep.model[:FLOW]),"ov")
   end
   currency=variables["COST"].axes[2][1]
-  @info("Solved Scenario $(opt_config["descriptor"]): "*String(status)*" min COST[$currency]: $objective s.t. CO₂-Emissions per MWh ≤ $(opt_config["co2_limit"])")
+  slack=sum(variables["SLACK"].data)
+  if slack==0
+    @info("Solved Scenario $(opt_config["descriptor"]): "*String(status)*" min COST[$currency]: $objective s.t. CO₂-Emissions per MWh ≤ $(opt_config["co2_limit"])")
+  else
+    @warn("Solved Scenario $(opt_config["descriptor"]): "*String(status)*" with SLACK $slack MWh s.t. CO₂-Emissions per MWh ≤ $(opt_config["co2_limit"])")
+  end
   return OptResult(status,objective,variables,cep.set,cep.info,opt_config)
 end
