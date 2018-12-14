@@ -1,4 +1,4 @@
-# CA-14 #
+# CA-1 #
 Modeldata from Ey
 
 # Costs #
@@ -6,6 +6,9 @@ Trans from Chrissy Reinert
 
 # Limits #
 pv and wind just mulitiplied with 10
+
+# TS #
+picked region with highest solar and wind installation within california (alt. mean)
 
 # LCA #
 ref plant: 15484 GWh/a (BEW 2001a). Lifetime is assumed to be 80 years

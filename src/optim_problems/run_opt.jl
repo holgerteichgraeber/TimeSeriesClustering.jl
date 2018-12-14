@@ -32,6 +32,9 @@ function run_opt(ts_data::ClustData,
   if opt_config["existing_infrastructure"]
       setup_opt_cep_existing_infrastructure!(cep, ts_data, opt_data)
   end
+  if opt_config["limit_infrastructure"]
+      setup_opt_cep_limit_infrastructure!(cep, ts_data, opt_data)
+  end
   setup_opt_cep_objective!(cep, ts_data, opt_data)
   return solve_opt_cep(cep, ts_data, opt_data, opt_config)
 end
@@ -50,6 +53,7 @@ function run_opt(ts_data::ClustData,
                  first_stage_vars::Dict{String,OptVariable}=Dict{String,OptVariable}(),
                  co2_limit::Number=Inf,
                  existing_infrastructure::Bool=false,
+                 limit_infrastructure::Bool=false,
                  intrastorage::Bool=false,
                  interstorage::Bool=false,
                  transmission::Bool=false,
@@ -65,7 +69,7 @@ function run_opt(ts_data::ClustData,
    end
   #TODO first_stage_vars
   #Setup the opt_config file based on the data input and
-  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, first_stage_vars=first_stage_vars, co2_limit=co2_limit, existing_infrastructure=existing_infrastructure, storage_e=storage, storage_p=storage, interstorage=interstorage, transmission=transmission)
+  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, first_stage_vars=first_stage_vars, co2_limit=co2_limit, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_p=storage, interstorage=interstorage, transmission=transmission)
   #Run the optimization problem
   run_opt(ts_data, opt_data, opt_config; solver=solver, k_ids=k_ids)
 end # run_opt

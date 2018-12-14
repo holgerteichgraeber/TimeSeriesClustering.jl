@@ -8,7 +8,7 @@ function setup_opt_cep_set(ts_data::ClustData,
                             opt_config::Dict{String,Any};
                             k_ids::Array{Int64}=Array{Int64,1}())
   set=Dict{String,Array}()
-  set["nodes"]=opt_data.nodes[:nodes]
+  set["nodes"]=unique(opt_data.nodes[:nodes])
   #Seperate sets for fossil and renewable technology
   set["tech"]=Array{String,1}()
   for categ in unique(opt_data.techs[:categ])
@@ -83,7 +83,7 @@ function setup_opt_cep_variables!(cep::OptModelCEP,
   @variable(cep.model, COST[account=set["account"],impact=set["impact"],tech=set["tech"]])
   # Capacity
   push!(cep.info,"Variable CAP[tech, infrastruct, nodes] ≥ 0]")
-  @variable(cep.model, CAP[tech=set["tech"],infrastruct=set["infrastruct"],node=set["nodes"]]>=0)
+  @variable(cep.model, CAP[tech=set["tech"],infrastruct=set["infrastruct"] ,node=set["nodes"]]>=0)
   # Generation #
   push!(cep.info,"Variable GEN[sector, tech, t, k, node]")
   @variable(cep.model, GEN[sector=set["sector"], tech=set["tech"], t=set["time_T"], k=set["time_K"], node=set["nodes"]])
@@ -103,13 +103,13 @@ function setup_opt_cep_generation_el!(cep::OptModelCEP,
     #QUESTION Will we always have dispatch an no dispatch? Otherwise problem with two sets!
     ## DATA ##
     set=cep.set
-    #nodes: nodes x installed capacity of different tech
+    #nodes: nodes x region, infrastruct, capacity_of_different_tech...
     nodes=opt_data.nodes
-    #cap_costs   tech x impact[USD, CO2]
+    #cap_costs   tech x region, year, impact[USD, CO2]...
     cap_costs=opt_data.cap_costs
-    #var_costs   tech x impact[USD, CO2]
+    #var_costs   tech x region, year, impact[USD, CO2]...
     var_costs=opt_data.var_costs
-    #fix_costs   tech x impact[USD, CO2]
+    #fix_costs   tech x region, year, impact[USD, CO2]...
     fix_costs=opt_data.fix_costs
     #techs       tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
     techs=opt_data.techs
@@ -133,12 +133,12 @@ function setup_opt_cep_generation_el!(cep::OptModelCEP,
     for tech in set["tech_generation"]
       # Limit the generation of dispathables to the infrastructing capacity of dispachable power plants
       if find_val_in_df(techs,:tech,tech,:time_series)=="none"
-      @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], 0 <=cep.model[:GEN]["el",tech, t, k, node])
-      @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]],     cep.model[:GEN]["el",tech, t, k, node] <=sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"]))
+        @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], 0 <=cep.model[:GEN]["el",tech, t, k, node])
+        @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]],     cep.model[:GEN]["el",tech, t, k, node] <=sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"]))
       else
-      # Limit the generation of dispathables to the infrastructing capacity of non-dispachable power plants
-      @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], 0 <=cep.model[:GEN]["el",tech, t, k, node])
-      @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]],     cep.model[:GEN]["el",tech,t,k,node] <=sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"])*ts[find_val_in_df(techs,:tech,tech,:time_series)*"-"*node][t,k])
+        # Limit the generation of dispathables to the infrastructing capacity of non-dispachable power plants
+        @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], 0 <=cep.model[:GEN]["el",tech, t, k, node])
+        @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]],     cep.model[:GEN]["el",tech,t,k,node] <=sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"])*ts[find_val_in_df(techs,:tech,tech,:time_series)*"-"*node][t,k])
       end
     end
 
@@ -155,13 +155,13 @@ function setup_opt_cep_storage!(cep::OptModelCEP,
                             opt_data::OptDataCEP)
     ## DATA ##
     set=cep.set
-    #nodes: nodes x installed capacity of different tech
+    #nodes: nodes x region, infrastruct, capacity_of_different_tech...
     nodes=opt_data.nodes
-    #cap_costs   tech x impact[USD, CO2]
+    #cap_costs   tech x region, year, impact[USD, CO2]...
     cap_costs=opt_data.cap_costs
-    #var_costs   tech x impact[USD, CO2]
+    #var_costs   tech x region, year, impact[USD, CO2]...
     var_costs=opt_data.var_costs
-    #fix_costs   tech x impact[USD, CO2]
+    #fix_costs   tech x region, year, impact[USD, CO2]...
     fix_costs=opt_data.fix_costs
     #techs       tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
     techs=opt_data.techs
@@ -266,13 +266,13 @@ function setup_opt_cep_transmission!(cep::OptModelCEP,
                             opt_data::OptDataCEP)
     ## DATA ##
     set=cep.set
-    #nodes: nodes x installed capacity of different tech
+    #nodes: nodes x region, infrastruct, capacity_of_different_tech...
     nodes=opt_data.nodes
-    #cap_costs   tech x impact[USD, CO2]
+    #cap_costs   tech x region, year, impact[USD, CO2]...
     cap_costs=opt_data.cap_costs
-    #var_costs   tech x impact[USD, CO2]
+    #var_costs   tech x region, year, impact[USD, CO2]...
     var_costs=opt_data.var_costs
-    #fix_costs   tech x impact[USD, CO2]
+    #fix_costs   tech x region, year, impact[USD, CO2]...
     fix_costs=opt_data.fix_costs
     #techs       tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
     techs=opt_data.techs
@@ -330,7 +330,7 @@ function setup_opt_cep_demand!(cep::OptModelCEP,
     push!(cep.info,"Σ_{tech}GEN['el',tech,t,k,node] = ts[el_demand-node,t,k] ∀ node,t,k")
     @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], sum(cep.model[:GEN]["el",tech,t,k,node] for tech=set["tech"]) == ts["el_demand-"*node][t,k])
   else
-    # Force the demand to match the generation either on copperplate
+    # or for each node with transmission
     push!(cep.info,"Σ_{tech,node}GEN['el',tech,t,k,node] = Σ_{node}ts[el_demand-node,t,k] ∀ t,k")
     @constraint(cep.model, [t=set["time_T"], k=set["time_K"]], sum(cep.model[:GEN]["el",tech,t,k,node] for node=set["nodes"], tech=set["tech"]) == sum(ts["el_demand-"*node][t,k] for node=set["nodes"]))
   end
@@ -366,7 +366,7 @@ function setup_opt_cep_existing_infrastructure!(cep::OptModelCEP,
                             opt_data::OptDataCEP)
   ## DATA ##
   set=cep.set
-  #nodes: nodes x installed capacity of different tech
+  #nodes: nodes x region, infrastruct, capacity_of_different_tech...
   nodes=opt_data.nodes
 
   ## ASSIGN VALUES ##
@@ -377,6 +377,26 @@ function setup_opt_cep_existing_infrastructure!(cep::OptModelCEP,
     push!(cep.info,"TRANS[tech, 'ex', line] = existing infrastructure ∀ tech, node")
     @constraint(cep.model, [line=set["lines"], tech=set["tech_transmission"]], cep.model[:TRANS][tech,"ex",node]==find_val_in_df(lines,:line,line,:power))
   end
+  return cep
+end
+
+"""
+function setup_opt_cep_limit_infrastructure!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+  limit infrastructure setup of CAP[tech, sum(infrastuct), node]
+  NOTE just for CAP not for TRANS implemented
+"""
+function setup_opt_cep_limit_infrastructure!(cep::OptModelCEP,
+                            ts_data::ClustData,
+                            opt_data::OptDataCEP)
+  ## DATA ##
+  set=cep.set
+  #nodes: nodes x region, infrastruct, capacity_of_different_tech...
+  nodes=opt_data.nodes
+
+  ## ASSIGN VALUES ##
+  # Limit the capacity for each tech at each node with the limit provided in nodes table in column infrastruct
+  push!(cep.info,"∑_{infrastuct} CAP[tech, , node] <= limit infrastructure ∀ node, tech")
+  @constraint(cep.model, [node=set["nodes"], tech=set["tech"]], sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"]) <= find_val_in_df(nodes,:nodes,node,:infrastruct,"lim",tech))
   return cep
 end
 

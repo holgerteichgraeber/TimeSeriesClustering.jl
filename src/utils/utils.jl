@@ -327,6 +327,19 @@ function find_val_in_df(df::DataFrame,
 end
 
 """
+function find_val_in_df(df::DataFrame,column_of_reference1::Symbol,reference1::String, column_of_reference2::Symbol,reference2::String, value_to_return::String)
+  Take DataFrame(df) Look in Column1 and Column2 (column_of_reference1 and 2) for the reference value (reference1 and 2) and return in same row where both values match in column (value_to_return)
+"""
+function find_val_in_df(df::DataFrame,
+                        column_of_reference1::Symbol,
+                        reference1::String,
+                        column_of_reference2::Symbol,
+                        reference2::String,
+                        value_to_return::String)
+    return find_val_in_df(df, column_of_reference1, reference1, column_of_reference2, reference2, Symbol(value_to_return))
+end
+
+"""
 function find_cost_in_df(costs::DataFrame,nodes::DataFrame,tech::String,node::String,impact_to_return::String)
   Take DataFrame(df) Look in Column (column_of_reference) for the reference value (reference) and return corresponding value in column (value_to_return)
 """
