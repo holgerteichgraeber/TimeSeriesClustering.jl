@@ -73,7 +73,7 @@ function run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables:
   co2_limit: A number limiting the kg.-CO2-eq./MWh (normally in a range from 5-1250 kg-CO2-eq/MWh), give Inf or no kw if unlimited
   slack_cost: Number indicating the slack price/MWh (should be greater than 1e6), give Inf for no slack
   existing_infrastructure: true or false to include or exclude existing infrastructure to the model
-  intrastorage: true or false to include or exclude intraday storage
+  storage: String "no" or "intra" to include intraday storage or "inter" to include interday storage
 """
 function run_opt(ts_data::ClustData,
                  opt_data::OptDataCEP;
@@ -83,15 +83,19 @@ function run_opt(ts_data::ClustData,
                  slack_cost::Number=Inf,
                  existing_infrastructure::Bool=false,
                  limit_infrastructure::Bool=false,
-                 intrastorage::Bool=false,
-                 interstorage::Bool=false,
+                 storage::String="no",
                  transmission::Bool=false,
                  k_ids::Array{Int64,1}=Array{Int64,1}())
    # Activated inter or intraday storage corresponds with storage
-   if interstorage || intrastorage
-     storage=true
+   if storage=="inter"
+       storage=true
+       interstorage=true
+   elseif storage=="intra"
+       storage=true
+       interstorage=false
    else
-     storage=false
+       storage=false
+       interstorage=false
    end
    if interstorage && k_ids==Array{Int64,1}()
      throw(@error("No or empty k_ids provided"))

@@ -11,7 +11,7 @@ cep_data = load_cep_data(state)
 
 ## CLUSTERING ##
 # run aggregation with kmeans
-ts_clust_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1,n_clust=1) # default k-means make sure that n_init is high enough otherwise the results could be crap and drive you crazy
+ts_clust_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1,n_clust=10000) # default k-means make sure that n_init is high enough otherwise the results could be crap and drive you crazy
 
 # run no aggregation just get ts_full_data
 ts_full_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1,n_clust=365) # default k-means
@@ -30,11 +30,11 @@ slack_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descrip
 ex_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="ex",existing_infrastructure=true)
 
 # Intraday storage (just within each period, same storage level at beginning and end)
-intraday_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="intraday",intrastorage=true)
+intraday_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="intraday",storage="intra")
 
 # Interday storage (within each period & between the periods)
 #TODO move k_ids
-interday_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="interday",interstorage=true,k_ids=ts_clust_data.best_ids)
+interday_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="interday",storage="inter",k_ids=ts_clust_data.best_ids)
 
 # Transmission
 transmission_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="transmission",transmission=true)
