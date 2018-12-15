@@ -1,7 +1,6 @@
 """
-function run_opt_cep()
-
-capacity expansion optimization problem: sets up the problem and runs the problem.
+function run_opt(ts_data::ClustData,opt_data::OptDataCEP,opt_config::Dict{String,Any};solver::Any=CbcSolver())
+  organizing the actual setup and run of the CEP-Problem
 """
 function run_opt(ts_data::ClustData,
                     opt_data::OptDataCEP,
@@ -55,9 +54,10 @@ function run_opt(ts_data::ClustData,
                     opt_config::Dict{String,Any},
                     fixed_design_variables::Dict{String,OptVariable};
                     solver::Any=CbcSolver(),
+                    slack_cost::Number=Inf,
                     k_ids::Array{Int64,1}=Array{Int64,1}())
-  # Add the fixed_design_variables to the existing config
-  set_opt_config_cep!(opt_config;fixed_design_variables=fixed_design_variables)
+  # Add the fixed_design_variables and new setting for slack costs to the existing config
+  set_opt_config_cep!(opt_config;fixed_design_variables=fixed_design_variables, slack_cost=slack_cost)
   return run_opt(ts_data,opt_data,opt_config;solver=solver,k_ids=k_ids)
 end
 
@@ -66,6 +66,10 @@ function run_opt(ts_data::ClustData,opt_data::OptDataCEP;solver::Any=CbcSolver()
 
   Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
   options to tweak the model are to select a co2_limit, existing_infrastructure and intrastorage
+  descritor: String with the name of this paricular model like "kmeans-10-co2-500"
+  co2_limit: A number limiting the kg.-CO2-eq./MWh (normally in a range from 5-1250 kg-CO2-eq/MWh), give Inf or no kw if unlimited
+  existing_infrastructure: true or false to include or exclude existing infrastructure to the model
+  intrastorage: true or false to include or exclude intraday storage
 """
 function run_opt(ts_data::ClustData,
                  opt_data::OptDataCEP;

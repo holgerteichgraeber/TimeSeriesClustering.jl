@@ -24,3 +24,5 @@ bat_st_e: battery cell production, Li-ion, CN, 5.4933 kg CO2-Eq per 0.106 kWh
 # Other #
 trans efficiency is 0.9995 per km
 length in km
+length not correct yet
+demand split up needs improvement

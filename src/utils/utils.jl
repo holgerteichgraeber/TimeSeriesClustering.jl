@@ -479,9 +479,14 @@ end
 function set_opt_config_cep(opt_data::OptDataCEP; kwargs...)
   kwargs can be whatever you need to run the run_opt
   it can hold
-    transmission, generation, storage_p, storage_e, existing_infrastructure wiht Bools
-    descritor with a String
-    fixed_design_variables with a Dictionary
+    fixed_design_variables: Dictionary{String,OptVariable}
+    transmission: true or false
+    generation: true or false
+    storage_p: true or false
+    storage_e: true or false
+    existing_infrastructure: true or false
+    descritor: a String like "kmeans-10-co2-500" to describe this CEP-Model
+    first_stage_vars: a Dictionary containing the OptVariables from a previous run
   The function also checks if the provided data matches your kwargs options (e.g. it let's you know if you asked for transmission, but you have no tech with it in your data)
   Returning Dictionary with the variables as entries
 """
@@ -512,6 +517,7 @@ end
 function set_opt_config_cep!(config::Dict{String,Any}; kwargs...)
   add or replace items to an existing config
   fixed_design_variables: Dict{String,OptVariable}
+  slack_cost: Number
 """
 function set_opt_config_cep!(config::Dict{String,Any}
                             ;kwargs...)
