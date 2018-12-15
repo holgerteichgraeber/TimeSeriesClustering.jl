@@ -12,8 +12,10 @@ function run_opt(ts_data::ClustData,
   #Check the consistency of the data provided
   check_opt_data_cep(opt_data)
   cep=setup_opt_cep_basic(ts_data, opt_data, opt_config, solver; k_ids=k_ids)
-  setup_opt_cep_variables!(cep, ts_data, opt_data)
-  setup_opt_cep_generation_el!(cep, ts_data, opt_data)
+  setup_opt_cep_basic_variables!(cep, ts_data, opt_data)
+  if opt_config["slack_cost"]!=Inf
+    setup_opt_cep_slack!(cep, ts_data, opt_data)
+  end
   if opt_config["storage_p"] && opt_config["storage_e"]
     setup_opt_cep_storage!(cep, ts_data, opt_data)
     if opt_config["interstorage"]
@@ -25,12 +27,13 @@ function run_opt(ts_data::ClustData,
   if opt_config["transmission"]
       setup_opt_cep_transmission!(cep, ts_data, opt_data)
   end
+  setup_opt_cep_generation_el!(cep, ts_data, opt_data)
   if opt_config["co2_limit"]!=Inf
     setup_opt_cep_co2_limit!(cep, ts_data, opt_data; co2_limit=opt_config["co2_limit"])
   end
-  setup_opt_cep_demand!(cep, ts_data, opt_data)
-  if "prev_dc_variables" in keys(opt_config)
-    setup_opt_cep_fix_design_variables!(cep, ts_data, opt_data; prev_dc_variables=opt_config["prev_dc_variables"])
+  setup_opt_cep_demand!(cep, ts_data, opt_data; slack_cost=opt_config["slack_cost"])
+  if "fixed_design_variables" in keys(opt_config)
+    setup_opt_cep_fix_design_variables!(cep, ts_data, opt_data; fixed_design_variables=opt_config["fixed_design_variables"])
   end
   if opt_config["existing_infrastructure"]
       setup_opt_cep_existing_infrastructure!(cep, ts_data, opt_data)
@@ -38,7 +41,7 @@ function run_opt(ts_data::ClustData,
   if opt_config["limit_infrastructure"]
       setup_opt_cep_limit_infrastructure!(cep, ts_data, opt_data)
   end
-  setup_opt_cep_objective!(cep, ts_data, opt_data)
+  setup_opt_cep_objective!(cep, ts_data, opt_data; slack_cost=opt_config["slack_cost"])
   return solve_opt_cep(cep, ts_data, opt_data, opt_config)
 end
 
@@ -50,16 +53,16 @@ capacity expansion optimization problem: sets up the problem and runs the proble
 function run_opt(ts_data::ClustData,
                     opt_data::OptDataCEP,
                     opt_config::Dict{String,Any},
-                    prev_dc_variables::Dict{String,OptVariable};
+                    fixed_design_variables::Dict{String,OptVariable};
                     solver::Any=CbcSolver(),
                     k_ids::Array{Int64,1}=Array{Int64,1}())
-  # Add the prev_dc_variables to the existing config
-  set_opt_config_cep!(opt_config;prev_dc_variables=prev_dc_variables)
+  # Add the fixed_design_variables to the existing config
+  set_opt_config_cep!(opt_config;fixed_design_variables=fixed_design_variables)
   return run_opt(ts_data,opt_data,opt_config;solver=solver,k_ids=k_ids)
 end
 
 """
-function run_opt(ts_data::ClustData,opt_data::OptDataCEP;solver::Any=CbcSolver(),descriptor::String="",     prev_dc_variables::Dict{String,OptVariable}=Dict{String,OptVariable}(),co2_limit::Number=Inf,existing_infrastructure::Bool=false,          intrastorage::Bool=false)
+function run_opt(ts_data::ClustData,opt_data::OptDataCEP;solver::Any=CbcSolver(),descriptor::String="",     fixed_design_variables::Dict{String,OptVariable}=Dict{String,OptVariable}(),co2_limit::Number=Inf,existing_infrastructure::Bool=false,          intrastorage::Bool=false)
 
   Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
   options to tweak the model are to select a co2_limit, existing_infrastructure and intrastorage
@@ -69,6 +72,7 @@ function run_opt(ts_data::ClustData,
                  solver::Any=CbcSolver(),
                  descriptor::String="",
                  co2_limit::Number=Inf,
+                 slack_cost::Number=Inf,
                  existing_infrastructure::Bool=false,
                  limit_infrastructure::Bool=false,
                  intrastorage::Bool=false,
@@ -84,9 +88,9 @@ function run_opt(ts_data::ClustData,
    if interstorage && k_ids==Array{Int64,1}()
      throw(@error("No or empty k_ids provided"))
    end
-  #TODO prev_dc_variables
+  #TODO fixed_design_variables
   #Setup the opt_config file based on the data input and
-  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, co2_limit=co2_limit, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_p=storage, interstorage=interstorage, transmission=transmission)
+  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, co2_limit=co2_limit, slack_cost=slack_cost, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_p=storage, interstorage=interstorage, transmission=transmission)
   #Run the optimization problem
   run_opt(ts_data, opt_data, opt_config; solver=solver, k_ids=k_ids)
 end # run_opt

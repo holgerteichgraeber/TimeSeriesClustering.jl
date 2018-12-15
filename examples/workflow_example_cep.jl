@@ -1,23 +1,46 @@
 # This file exemplifies the workflow from data input to optimization result generation
-#QUESTION using ClustForOpt_priv.col in module Main conflicts with an existing identifier., using ClustForOpt_priv.cols in module Main conflicts with an existing identifier.
 
 include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_development.jl")))
 
-# load data
+## LOAD DATA ##
+state="GER_18" # or "GER_1" or "CA_1" or "TX_1"
+# laod ts-data
+ts_input_data, = load_timeseries_data("CEP", state; K=365, T=24) #CEP
+# load cep-data
+cep_data = load_cep_data(state)
 
-ts_input_data, = load_timeseries_data("CEP", "GER_1";K=365, T=24) #CEP
+## CLUSTERING ##
+# run aggregation with kmeans
+ts_clust_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1000,n_clust=1) # default k-means make sure that n_init is high enough otherwise the results could be crap and drive you crazy
 
-cep_data = load_cep_data("GER_1")
-
- # run clustering
-ts_clust_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1000,n_clust=20) # default k-means
-
+# run no aggregation just get ts_full_data
 ts_full_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1,n_clust=365) # default k-means
 
- # optimization
+## OPTIMIZATION EXAMPLES##
+# select solver
+solver=GurobiSolver()
 
-design_result = run_opt(ts_clust_data.best_results,cep_data;solver=GurobiSolver(),co2_limit=1250)
+# tweak the CO2 level
+co2_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="co2",co2_limit=1000) #generally values between 1250 and 10 are interesting
 
-operation_result = run_opt(ts_full_data.best_results,cep_data,design_result.opt_config;solver=GurobiSolver(),co2_limit=1250,prev_dc_variables=get_cep_design_variables(design_result))
+# Include a Slack-Variable
+slack_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="slack",slack_cost=1e8)
 
-plot(get_cep_variable_value(operation_result.variables["SLACK"],[1,:,:,1]),legend=false)
+# Include existing infrastructure for no COST
+ex_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="ex",existing_infrastructure=true)
+
+# Intraday storage (just within each period, same storage level at beginning and end)
+intraday_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="intraday",intrastorage=true)
+
+# Interday storage (within each period & between the periods)
+#TODO move k_ids
+interday_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="interday",interstorage=true,k_ids=ts_clust_data.best_ids)
+
+# Transmission
+transmission_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="transmission",transmission=true)
+
+# Desing with clusered data and operation with ts_full_data
+# First solve the clustered case
+design_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="design&operation",slack_cost=1e8)
+# Use the design variable results for the operational run
+operation_result = run_opt(ts_full_data.best_results,cep_data,design_result.opt_config,get_cep_design_variables(design_result);solver=solver)

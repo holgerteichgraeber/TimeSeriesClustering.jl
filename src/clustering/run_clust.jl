@@ -29,6 +29,7 @@ function run_clust(
       n_clust::Int=5,
       n_init::Int=100,
       iterations::Int=300,
+      data_round_digits::Int=6,
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
       save::String="",
       get_all_clust_results::Bool=false,
@@ -71,7 +72,7 @@ function run_clust(
     cost_best,ind_mincost = findmin(cost)  # along dimension 2, only store indice
 
     # save in merged format as array
-    b_merged = ClustDataMerged(data_norm_merged.region,n_clust,data_norm_merged.T,centers[ind_mincost],data_norm_merged.data_type,weights[ind_mincost])
+    b_merged = ClustDataMerged(data_norm_merged.region,n_clust,data_norm_merged.T,round.(centers[ind_mincost]; digits=data_round_digits),data_norm_merged.data_type,weights[ind_mincost])
     # transfer into ClustData format
     best_results = ClustData(b_merged)
     best_ids = clustids[ind_mincost]
@@ -86,7 +87,6 @@ function run_clust(
     return clust_result
 end
 
-#QUESTION still needed?
 """
 function run_clust(
       data::ClustData,
@@ -118,11 +118,12 @@ function run_clust(
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
+      data_round_digits::Int=6,
       kwargs...
     )
     results_ar = Array{ClustResult,1}(undef,length(n_clust_ar))
     for i=1:length(n_clust_ar)
-      results_ar[i] = run_clust(data;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_init=n_init,n_clust=n_clust_ar[i],iterations=iterations,save=save,kwargs...)
+      results_ar[i] = run_clust(data;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_init=n_init,n_clust=n_clust_ar[i],iterations=iterations,save=save,data_round_digits=data_round_digits,kwargs...)
     end
     return results_ar
 end

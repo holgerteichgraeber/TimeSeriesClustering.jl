@@ -464,12 +464,24 @@ function get_cep_design_variables(opt_result::OptResult)
 end
 
 """
+function get_cep_slack_variables(opt_result::OptResult)
+  Returns the SLACK variable of this opt_result matching "sv"
+"""
+function get_cep_slack_variable(opt_result::OptResult)
+    if "SLACK" in keys(opt_result.variables)
+      return opt_result.variables["SLACK"]
+    else
+      throw(@error("SLACK-Variable not provided in $(opt_result.descriptor)"))
+    end
+end
+
+"""
 function set_opt_config_cep(opt_data::OptDataCEP; kwargs...)
   kwargs can be whatever you need to run the run_opt
   it can hold
     transmission, generation, storage_p, storage_e, existing_infrastructure wiht Bools
     descritor with a String
-    prev_dc_variables with a Dictionary
+    fixed_design_variables with a Dictionary
   The function also checks if the provided data matches your kwargs options (e.g. it let's you know if you asked for transmission, but you have no tech with it in your data)
   Returning Dictionary with the variables as entries
 """
@@ -499,7 +511,7 @@ end
 """
 function set_opt_config_cep!(config::Dict{String,Any}; kwargs...)
   add or replace items to an existing config
-  prev_dc_variables: Dict{Sting,OptVariable}
+  fixed_design_variables: Dict{String,OptVariable}
 """
 function set_opt_config_cep!(config::Dict{String,Any}
                             ;kwargs...)
