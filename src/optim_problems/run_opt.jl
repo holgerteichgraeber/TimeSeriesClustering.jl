@@ -45,9 +45,12 @@ function run_opt(ts_data::ClustData,
 end
 
 """
-function run_opt_cep()
-
-capacity expansion optimization problem: sets up the problem and runs the problem.
+function run_opt(ts_data::ClustData,opt_data::OptDataCEP;solver::Any=CbcSolver(),slack_cost::Number=Inf)
+  Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
+  run operational optimization problem
+  provide the fixed design variables and the opt_config of the previous step (design run or another opterational run)
+  what you can add to the opt_config:
+  slack_cost: Number indicating the slack price/MWh (should be greater than 1e6), give Inf for no slack
 """
 function run_opt(ts_data::ClustData,
                     opt_data::OptDataCEP,
@@ -62,12 +65,13 @@ function run_opt(ts_data::ClustData,
 end
 
 """
-function run_opt(ts_data::ClustData,opt_data::OptDataCEP;solver::Any=CbcSolver(),descriptor::String="",     fixed_design_variables::Dict{String,OptVariable}=Dict{String,OptVariable}(),co2_limit::Number=Inf,existing_infrastructure::Bool=false,          intrastorage::Bool=false)
+function run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables::Dict{String,OptVariable};solver::Any=CbcSolver(),descriptor::String="",   ,co2_limit::Number=Inf,slack_cost::Number=Inf,existing_infrastructure::Bool=false, intrastorage::Bool=false)
 
   Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
   options to tweak the model are to select a co2_limit, existing_infrastructure and intrastorage
   descritor: String with the name of this paricular model like "kmeans-10-co2-500"
   co2_limit: A number limiting the kg.-CO2-eq./MWh (normally in a range from 5-1250 kg-CO2-eq/MWh), give Inf or no kw if unlimited
+  slack_cost: Number indicating the slack price/MWh (should be greater than 1e6), give Inf for no slack
   existing_infrastructure: true or false to include or exclude existing infrastructure to the model
   intrastorage: true or false to include or exclude intraday storage
 """

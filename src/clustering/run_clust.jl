@@ -9,6 +9,7 @@ function run_clust(
       n_clust::Int=5,
       n_init::Int=100,
       iterations::Int=300,
+      data_round_digits::Int=6,
       save::String="",
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
       get_all_clust_results::Bool=false,
@@ -98,6 +99,7 @@ function run_clust(
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
+      data_round_digits::Int=6,
       kwargs...
     )
 
