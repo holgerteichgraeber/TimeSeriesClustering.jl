@@ -67,8 +67,11 @@ function z_normalize(data::Array;
       seq_mean[i] = mean(data[:,i])
       seq_sdv[i] = std(data[:,i])
       isnan(seq_sdv[i]) &&  (seq_sdv[i] =1)
-      data_norm[:,i] = data[:,i] - seq_mean[i]
-      data_norm[:,i] = data_norm[:,i]/seq_sdv[i]
+        data_norm[:,i] = data[:,i] .- seq_mean[i]
+      # handle edge case sdv=0
+      if seq_sdv[i]!=0
+        data_norm[:,i] = data_norm[:,i]./seq_sdv[i]
+      end
     end
     return data_norm,seq_mean,seq_sdv
   elseif scope == "hourly"
@@ -78,15 +81,22 @@ function z_normalize(data::Array;
     for i=1:size(data)[1]
       hourly_mean[i] = mean(data[i,:])
       hourly_sdv[i] = std(data[i,:])
-      isnan(hourly_sdv[i]) &&  (hourly_sdv[i] =1)
-      data_norm[i,:] = data[i,:] - hourly_mean[i]
-      data_norm[i,:] = data_norm[i,:]/hourly_sdv[i]
+      data_norm[i,:] = data[i,:] .- hourly_mean[i]
+      # handle edge case sdv=0
+      if hourly_sdv[i] !=0
+        data_norm[i,:] = data_norm[i,:]./hourly_sdv[i]
+      end 
     end
     return data_norm, hourly_mean, hourly_sdv
   elseif scope == "full"
     hourly_mean = mean(data)*ones(size(data)[1])
     hourly_sdv = std(data)*ones(size(data)[1])
-    data_norm = (data.-hourly_mean[1])/hourly_sdv[1]
+    # handle edge case sdv=0
+    if hourly_sdv[1] != 0
+      data_norm = (data.-hourly_mean[1])/hourly_sdv[1]
+    else
+      data_norm = (data.-hourly_mean[1])
+    end
     return data_norm, hourly_mean, hourly_sdv #TODO change the output here to an immutable struct with three fields - use struct - "composite type"
   else
     @error("scope _ ",scope," _ not defined.")
