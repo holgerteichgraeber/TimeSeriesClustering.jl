@@ -41,7 +41,6 @@ function z_normalize(data::ClustData;
  data_norm = Dict{String,Array}()
  mean= Dict{String,Array}()
  sdv= Dict{String,Array}()
- #QUESTION Normalization is for each tech AND EACH NODE - Is that how we want that to be?
  for (k,v) in data.data
    data_norm[k],mean[k],sdv[k] = z_normalize(v,scope=scope)
  end
@@ -67,8 +66,11 @@ function z_normalize(data::Array;
       seq_mean[i] = mean(data[:,i])
       seq_sdv[i] = std(data[:,i])
       isnan(seq_sdv[i]) &&  (seq_sdv[i] =1)
-      data_norm[:,i] = data[:,i] - seq_mean[i]
-      data_norm[:,i] = data_norm[:,i]/seq_sdv[i]
+        data_norm[:,i] = data[:,i] .- seq_mean[i]
+      # handle edge case sdv=0
+      if seq_sdv[i]!=0
+        data_norm[:,i] = data_norm[:,i]./seq_sdv[i]
+      end
     end
     return data_norm,seq_mean,seq_sdv
   elseif scope == "hourly"
@@ -78,15 +80,22 @@ function z_normalize(data::Array;
     for i=1:size(data)[1]
       hourly_mean[i] = mean(data[i,:])
       hourly_sdv[i] = std(data[i,:])
-      isnan(hourly_sdv[i]) &&  (hourly_sdv[i] =1)
-      data_norm[i,:] = data[i,:] - hourly_mean[i]
-      data_norm[i,:] = data_norm[i,:]/hourly_sdv[i]
+      data_norm[i,:] = data[i,:] .- hourly_mean[i]
+      # handle edge case sdv=0
+      if hourly_sdv[i] !=0
+        data_norm[i,:] = data_norm[i,:]./hourly_sdv[i]
+      end 
     end
     return data_norm, hourly_mean, hourly_sdv
   elseif scope == "full"
     hourly_mean = mean(data)*ones(size(data)[1])
     hourly_sdv = std(data)*ones(size(data)[1])
-    data_norm = (data.-hourly_mean[1])/hourly_sdv[1]
+    # handle edge case sdv=0
+    if hourly_sdv[1] != 0
+      data_norm = (data.-hourly_mean[1])/hourly_sdv[1]
+    else
+      data_norm = (data.-hourly_mean[1])
+    end
     return data_norm, hourly_mean, hourly_sdv #TODO change the output here to an immutable struct with three fields - use struct - "composite type"
   else
     @error("scope _ ",scope," _ not defined.")
@@ -290,40 +299,96 @@ function calc_weights(clustids::Array{Int}, n_clust::Int)
 end
 
 """
-function findvalindf(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::Symbol)
+function find_val_in_df(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::Symbol)
   Take DataFrame(df) Look in Column (column_of_reference) for the reference value (reference) and return in same row the value in column (value_to_return)
 """
-function findvalindf(df::DataFrame,
+function find_val_in_df(df::DataFrame,
                     column_of_reference::Symbol,
                     reference::String,
                     value_to_return::Symbol
                     )
-    return df[findfirst(isequal(reference), df[column_of_reference]),value_to_return]
+    return df[findfirst(df[column_of_reference].==reference),value_to_return]
 end
 
 """
-function findvalindf(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::String)
+function find_val_in_df(df::DataFrame,column_of_reference::Symbol,reference::String,value_to_return::String)
   Take DataFrame(df) Look in Column (column_of_reference) for the reference value (reference) and return corresponding value in column (value_to_return)
 """
-function findvalindf(df::DataFrame,
+function find_val_in_df(df::DataFrame,
                     column_of_reference::Symbol,
                     reference::String,
                     value_to_return::String
                     )
-    return findvalindf(df,column_of_reference,reference,Symbol(value_to_return))
+    return find_val_in_df(df,column_of_reference,reference,Symbol(value_to_return))
 end
 
 """
-function mapsetindf(df::DataFrame,column_of_reference::Symbol,reference::String,set_to_return::Symbol)
+function find_val_in_df(df::DataFrame,column_of_reference1::Symbol,reference1::String, column_of_reference2::Symbol,reference2::String, value_to_return::Symbol)
+  Take DataFrame(df) Look in Column1 and Column2 (column_of_reference1 and 2) for the reference value (reference1 and 2) and return in same row where both values match in column (value_to_return)
+"""
+function find_val_in_df(df::DataFrame,
+                        column_of_reference1::Symbol,
+                        reference1::String,
+                        column_of_reference2::Symbol,
+                        reference2::String,
+                        value_to_return::Symbol)
+    return df[findfirst((df[column_of_reference1].==reference1).+(df[column_of_reference2].==reference2).==2),value_to_return]
+end
+
+"""
+function find_val_in_df(df::DataFrame,column_of_reference1::Symbol,reference1::String, column_of_reference2::Symbol,reference2::String, value_to_return::String)
+  Take DataFrame(df) Look in Column1 and Column2 (column_of_reference1 and 2) for the reference value (reference1 and 2) and return in same row where both values match in column (value_to_return)
+"""
+function find_val_in_df(df::DataFrame,
+                        column_of_reference1::Symbol,
+                        reference1::String,
+                        column_of_reference2::Symbol,
+                        reference2::String,
+                        value_to_return::String)
+    return find_val_in_df(df, column_of_reference1, reference1, column_of_reference2, reference2, Symbol(value_to_return))
+end
+
+"""
+function find_cost_in_df(costs::DataFrame,nodes::DataFrame,tech::String,node::String,impact_to_return::String)
+  Take DataFrame(df) Look in Column (column_of_reference) for the reference value (reference) and return corresponding value in column (value_to_return)
+"""
+function find_cost_in_df(costs::DataFrame,
+                    nodes::DataFrame,
+                    tech::String,
+                    node::String,
+                    impact_to_return::String
+                    )
+    if find_val_in_df(costs,:tech,tech,:region)=="all"
+      return find_val_in_df(costs,:tech,tech,Symbol(impact_to_return))
+    else
+      return find_val_in_df(costs,:tech,tech,:region,find_val_in_df(nodes,:nodes,node,:region),Symbol(impact_to_return))
+    end
+end
+
+"""
+function find_line_eff_in_df(lines::DataFrame,techs::DataFrame,line::String,tech::String,eff::Symbol)
+  Take DataFrame(lines and techs) look for the length of this line and the efficiency of this line (eff_in or eff_out) per km and calculate total efficiency
+"""
+function find_line_eff_in_df(lines::DataFrame,
+                            techs::DataFrame,
+                            line::String,
+                            tech::String,
+                            eff::Symbol)
+    return (1-find_val_in_df(lines,:lines,line,:length)*(1-find_val_in_df(techs, :tech, tech, eff)))
+end
+
+"""
+function map_set_in_df(df::DataFrame,column_of_reference::Symbol,reference::String,set_to_return::Symbol)
   Take DataFrame(df) Look in Column (column_of_reference) for all cases that match the reference value (reference) and return the corresponding sets in Column (set_to_return)
 """
-function mapsetindf(df::DataFrame,
+function map_set_in_df(df::DataFrame,
                     column_of_reference::Symbol,
                     reference::String,
                     set_to_return::Symbol
                     )
     return df[df[column_of_reference].==reference,set_to_return]
 end
+
 
 """
 function get_cep_variable_value(variable::OptVariable,index_set::Array)
@@ -341,7 +406,7 @@ function get_cep_variable_value(variable::OptVariable,
         else
             new_index_num=findfirst(variable.axes[i].==index_set[i])
             if new_index_num==[]
-                @error("$(index_set[i]) not in indexset #$i of Variable $var_name")
+                throw(@error("$(index_set[i]) not in indexset #$i of Variable $var_name"))
             else
                 push!(index_num,new_index_num)
             end
@@ -366,9 +431,9 @@ function get_cep_variable_set(variable::OptVariable,num_index_set::Int)
   Get the variable set from the specific variable and the num_index_set like 1
 """
 function get_cep_variable_set(variable::OptVariable,
-                              index_set_dim::Int
+                              num_index_set::Int
                               )
-    return variable.axes[index_set_dim]
+    return variable.axes[num_index_set]
 end
 
 """
@@ -383,9 +448,47 @@ function get_cep_variable_set(scenario::Scenario,
 end
 
 """
+function get_cep_variable_set(scenario::Scenario,var_name::String,num_index_set::Int)
+  Get the variable set from the specific Scenario by indicating the var_name e.g. "COST" and the num_index_set like 1
+"""
+function get_cep_variable_set(scenario::Scenario,
+                              var_name::String,
+                              num_index_set::Int
+                              )
+    return  get_cep_variable_set(scenario.opt_res.variables[var_name], num_index_set)
+end
+
+"""
+function get_cep_design_variables(opt_result::OptResult)
+  Returns all design variables in this opt_result mathing the type "dv"
+"""
+function get_cep_design_variables(opt_result::OptResult)
+    design_variables=Dict{String,OptVariable}()
+    for (key,val) in opt_result.variables
+        if val.type=="dv"
+            design_variables[key]=val
+        end
+    end
+    return design_variables
+end
+
+"""
+function get_cep_slack_variables(opt_result::OptResult)
+  Returns the SLACK variable of this opt_result matching "sv"
+"""
+function get_cep_slack_variable(opt_result::OptResult)
+    if "SLACK" in keys(opt_result.variables)
+      return opt_result.variables["SLACK"]
+    else
+      throw(@error("SLACK-Variable not provided in $(opt_result.descriptor)"))
+    end
+end
+
+"""
 function set_opt_config_cep(opt_data::OptDataCEP; kwargs...)
   kwargs can be whatever you need to run the run_opt
   it can hold
+    fixed_design_variables: Dictionary{String,OptVariable}
     transmission: true or false
     generation: true or false
     storage_p: true or false
@@ -404,7 +507,6 @@ function set_opt_config_cep(opt_data::OptDataCEP
   for categ in unique(opt_data.techs[:categ])
     config[categ]=true
   end
-  config["transmission"]=false
   # Loop through the kwargs and write them into Dictionary
   for kwarg in kwargs
     # Check for false combination
@@ -419,6 +521,53 @@ function set_opt_config_cep(opt_data::OptDataCEP
   # Return Directory with the information
   return config
 end
+
+"""
+function set_opt_config_cep!(config::Dict{String,Any}; kwargs...)
+  add or replace items to an existing config
+  fixed_design_variables: Dict{String,OptVariable}
+  slack_cost: Number
+"""
+function set_opt_config_cep!(config::Dict{String,Any}
+                            ;kwargs...)
+  # Loop through the kwargs and add them to Dictionary
+  for kwarg in kwargs
+    config[String(kwarg[1])]=kwarg[2]
+  end
+
+  # Return Directory with the information
+  return config
+end
+
+"""
+function check_opt_data_cep(opt_data::OptDataCEP)
+  Check the consistency of the data
+"""
+function check_opt_data_cep(opt_data::OptDataCEP)
+  # Check tech
+  for tech in opt_data.techs[:tech]
+    if !(in(tech,opt_data.cap_costs[:tech]))
+      throw(@error("Technology "*tech*" not included in Cap_cost-Data"))
+    elseif !(in(tech,opt_data.var_costs[:tech]))
+      throw(@error("Technology "*tech*" not included in Var_cost-Data"))
+    elseif !(in(tech,opt_data.fix_costs[:tech]))
+      throw(@error("Technology "*tech*" not included in Fix_cost-Data"))
+    elseif !(in(Symbol(tech),names(opt_data.nodes)))
+      throw(@error("Technology "*tech*" not included in nodes-Data"))
+    end
+  end
+  # Check lines
+  # Only when Data provided
+  if opt_data.lines!=DataFrame()
+    # Check existence of start and end node
+    for node in opt_data.lines[:node_end]
+      if !(in(node,opt_data.nodes[:nodes]))
+        throw(@error("Node "*node*" set as ending node, but not included in nodes-Data"))
+      end
+    end
+  end
+end
+
 
  """
  set_clust_config(;kwargs...)
