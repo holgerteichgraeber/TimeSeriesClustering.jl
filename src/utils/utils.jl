@@ -72,7 +72,6 @@ function z_normalize(data::Array;
       if seq_sdv[i]!=0
         data_norm[:,i] = data_norm[:,i]./seq_sdv[i]
       else
-        data_norm[:,i] = data_norm[:,i]
       end
     end
     return data_norm,seq_mean,seq_sdv
