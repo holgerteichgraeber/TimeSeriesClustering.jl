@@ -69,7 +69,11 @@ function load_cep_data(region::String)
   # The time for the cap-investion to be paid back is the minimum of the max. financial lifetime and the lifetime of the product (If it's just good for 5 years, you'll have to rebuy one after 5 years)
   # annuityfactor = (1+i)^y*i/((1+i)^y-1) , i-discount_rate and y-payoff years
   techs[:annuityfactor]=map((lifetime,financial_lifetime,discount_rate) -> (1+discount_rate)^(min(financial_lifetime,lifetime))*discount_rate/((1+discount_rate)^(min(financial_lifetime,lifetime))-1), techs[:lifetime],techs[:financial_lifetime],techs[:discount_rate])
+  # Only the currency value (in column 4) should be changed from the annuityfactor
   cap_costs[4]=map((tech, EUR) -> find_val_in_df(techs,:tech,tech,:annuityfactor)*EUR, cap_costs[:tech], cap_costs[4])
-  cap_costs[:CO2]=map((tech, CO2) -> CO2/find_val_in_df(techs,:tech,tech,:lifetime), cap_costs[:tech], cap_costs[:CO2])
+  # Emissions (column 5 and on) are just devided by the lifetime, without discount_rate
+  for name in names(cap_costs)[5:end]
+      cap_costs[name]=map((tech, emission) -> emission/find_val_in_df(techs,:tech,tech,:lifetime), cap_costs[:tech], cap_costs[name])
+  end
   return OptDataCEP(region,nodes,var_costs,fix_costs,cap_costs,techs,lines)
 end #load_pricedata

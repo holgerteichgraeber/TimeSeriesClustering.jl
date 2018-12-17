@@ -13,3 +13,6 @@ ref plant: 15484 GWh/a (BEW 2001a). Lifetime is assumed to be 80 years
 4930800000/(15484 000 MWh/a*80a)(80a*8760h/a) → CO2-eq/MW
 
 php and geo not included in LCA yet
+
+# Other #
+trans efficiency is 0.9995 per km

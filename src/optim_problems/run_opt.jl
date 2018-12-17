@@ -15,13 +15,12 @@ function run_opt(ts_data::ClustData,
   if opt_config["slack_cost"]!=Inf
     setup_opt_cep_slack!(cep, ts_data, opt_data)
   end
-  if opt_config["storage_p"] && opt_config["storage_e"]
+  if opt_config["storage_p"] && opt_config["storage_e"] && opt_config["interstorage"]
     setup_opt_cep_storage!(cep, ts_data, opt_data)
-    if opt_config["interstorage"]
-      setup_opt_cep_interstorage!(cep, ts_data, opt_data, k_ids)
-    else
-      setup_opt_cep_intrastorage!(cep, ts_data, opt_data)
-    end
+    setup_opt_cep_interstorage!(cep, ts_data, opt_data, k_ids)
+  elseif opt_config["storage_p"] && opt_config["storage_e"] && !(opt_config["interstorage"])
+    setup_opt_cep_storage!(cep, ts_data, opt_data)
+    setup_opt_cep_intrastorage!(cep, ts_data, opt_data)
   end
   if opt_config["transmission"]
       setup_opt_cep_transmission!(cep, ts_data, opt_data)
@@ -45,7 +44,7 @@ function run_opt(ts_data::ClustData,
 end
 
 """
-function run_opt(ts_data::ClustData,opt_data::OptDataCEP;solver::Any=CbcSolver(),slack_cost::Number=Inf)
+function run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables::Dict{String,OptVariable};solver::Any=CbcSolver(),slack_cost::Number=Inf)
   Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
   run operational optimization problem
   provide the fixed design variables and the opt_config of the previous step (design run or another opterational run)
@@ -73,7 +72,7 @@ function run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables:
   co2_limit: A number limiting the kg.-CO2-eq./MWh (normally in a range from 5-1250 kg-CO2-eq/MWh), give Inf or no kw if unlimited
   slack_cost: Number indicating the slack price/MWh (should be greater than 1e6), give Inf for no slack
   existing_infrastructure: true or false to include or exclude existing infrastructure to the model
-  storage: String "no" or "intra" to include intraday storage or "inter" to include interday storage
+  storage: String "no" for no storage or "intra" to include intraday or "inter" to include interday storage
 """
 function run_opt(ts_data::ClustData,
                  opt_data::OptDataCEP;
@@ -100,7 +99,6 @@ function run_opt(ts_data::ClustData,
    if interstorage && k_ids==Array{Int64,1}()
      throw(@error("No or empty k_ids provided"))
    end
-  #TODO fixed_design_variables
   #Setup the opt_config file based on the data input and
   opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, co2_limit=co2_limit, slack_cost=slack_cost, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_p=storage, interstorage=interstorage, transmission=transmission)
   #Run the optimization problem

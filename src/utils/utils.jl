@@ -41,7 +41,6 @@ function z_normalize(data::ClustData;
  data_norm = Dict{String,Array}()
  mean= Dict{String,Array}()
  sdv= Dict{String,Array}()
- #QUESTION Normalization is for each tech AND EACH NODE - Is that how we want that to be?
  for (k,v) in data.data
    data_norm[k],mean[k],sdv[k] = z_normalize(v,scope=scope)
  end

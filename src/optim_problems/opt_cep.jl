@@ -31,7 +31,6 @@ function setup_opt_cep_set(ts_data::ClustData,
   else
     set["infrastruct"]=["new"]
   end
-  #QUESTION How to integrate different secotors?
   set["sector"]=unique(opt_data.techs[:sector])
   #Different set: set["sector"]=unique(opt_data.techs[:sector]) .. CAP[node,tech,sector]
   #Or specific variables for each sector ELCAP, HEATCAP
@@ -136,7 +135,6 @@ function setup_opt_cep_generation_el!(cep::OptModelCEP, ts_data::ClustData, opt_
 function setup_opt_cep_generation_el!(cep::OptModelCEP,
                             ts_data::ClustData,
                             opt_data::OptDataCEP)
-    #QUESTION Will we always have dispatch an no dispatch? Otherwise problem with two sets!
     ## DATA ##
     set=cep.set
     #nodes: nodes x region, infrastruct, capacity_of_different_tech...

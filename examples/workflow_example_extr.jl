@@ -1,5 +1,4 @@
 # This file exemplifies the workflow from data input to optimization result generation
-#QUESTION using ClustForOpt_priv.col in module Main conflicts with an existing identifier., using ClustForOpt_priv.cols in module Main conflicts with an existing identifier.
 
 include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_development.jl")))
 #using ClustForOpt_priv
