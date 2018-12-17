@@ -1,7 +1,9 @@
 """
 """
 function run_clust_extr(
-      data::ClustData;
+      data::ClustData,
+      extr_value_descr_ar::Array{SimpleExtremeValueDescr,1};
+      rep_mod_method::String="feasibility",
       norm_op::String="zscore",
       norm_scope::String="full",
       method::String="kmeans",
@@ -11,7 +13,7 @@ function run_clust_extr(
       iterations::Int=300,
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
       simple_extreme_event::Bool=true,
-      extreme_event_selection_method="feasibility"
+      extreme_event_selection_method="feasibility",
       save::String="",
       get_all_clust_results::Bool=false,
       kwargs...
@@ -21,10 +23,22 @@ function run_clust_extr(
                         # + extreme_value_descr_ar
                         # needs input data for optimization problem
                         )
-    # if simple: simple_extr_val_sel
-    # clust_res = run_clust()
+    # QUESTION: should keyword arguments be specified or rather be kwargs? kwargs may not work because the subsequent functions would through an error that some of the keyword arguments are not supported
+    # simple extreme value selection
+    use_simple_extr = !isempty(extr_value_descr_ar)
+    if use_simple_extr
+       data_mod,extr_vals,extr_idcs = simple_extr_val_sel(data,extr_value_descr_ar;rep_mod_method=rep_mod_method)
+    else
+       data_mod=data
+    end
+    # run initial clustering 
+    clust_res = run_clust(data_mod;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_clust=n_clust,n_init=n_init,iterations=iterations,attribute_weights=attribute_weights,save=save,get_all_clust_results=get_all_clust_results,kwargs...)
     # if simple: representation modification
-    # DVs = run_opt().variables["CAP"]
+    clust_data=clust_res.best_results
+    if use_simple_extr
+      clust_data = representation_modification(extr_vals,clust_data)
+    end
+    # DVs = run_opt().variables["CAP"]  # how to make this generic, so that it alwasy takes dvs - write get_opt_dvs()
     # is_feasible = false
     # while !is_feasible
     #   for i=1:365
@@ -56,10 +70,23 @@ function run_clust_extr(
     #
     #
     #
-    #
-    return 0
+    
+    
+    return ClustResult(clust_res,clust_data) # TODO: adjust clust_config in these functions
 
 end
+
+"""
+wrapper function without simple extreme values
+"""
+function run_clust_extr(
+      data::ClustData;
+      kwargs...
+      )
+   return run_clust_extr(data,[];kwargs...)   
+      
+end
+
 
 
 """

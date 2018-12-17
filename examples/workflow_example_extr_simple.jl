@@ -16,21 +16,13 @@ cep_input_data_GER=load_cep_data("GER_18")
  ev3 = SimpleExtremeValueDescr("el_demand-dena21","max","absolute")
  ev = [ev1, ev2, ev3]
  # simple extreme day selection
- #ts_input_data_mod,extr_vals,extr_idcs = simple_extr_val_sel(ts_input_data,ev;rep_mod_method="feasibility")
+ ts_input_data_mod,extr_vals,extr_idcs = simple_extr_val_sel(ts_input_data,ev;rep_mod_method="feasibility")
 
  # run clustering
-#ts_clust_res = run_clust(ts_input_data_mod;method="kmeans",representation="centroid",n_init=10,n_clust=5) # default k-means
+ts_clust_res = run_clust(ts_input_data_mod;method="kmeans",representation="centroid",n_init=10,n_clust=5) # default k-means
 
 # representation modification
-#ts_clust_extr = representation_modification(extr_vals,ts_clust_res.best_results)
-
- ts_clust_res = run_clust_extr(ts_input_data,ev;rep_mod_method="feasibility",method="kmeans",representation="centroid",n_init=10,n_clust=5) 
+ts_clust_extr = representation_modification(extr_vals,ts_clust_res.best_results)
 
  # optimization
-opt_res = run_opt(ts_clust_res.best_results,cep_input_data_GER;solver=GurobiSolver(),co2_limit=1000.0)
-
-#TODO: write functions to get generation, capacity etc.
-
-# TODO: write plotting functions in other package
-
-
+opt_res = run_opt(ts_clust_extr,cep_input_data_GER;solver=GurobiSolver(),co2_limit=1000.0)

@@ -353,3 +353,25 @@ function ClustDataMerged(data::ClustData)
  end
  ClustDataMerged(data.region,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv)
 end
+
+"""
+constructor for ClustResultBest
+
+function ClustResult(clust_res::ClustResultBest,clust_data_mod::ClustData)
+
+adjusts ClustResult best_results. To be used to modify clustered data with extreme values.
+"""
+function ClustResult(clust_res::ClustResultBest,clust_data_mod::ClustData)
+  return ClustResultBest(clust_data_mod,clust_res.best_ids,clust_res.best_cost,clust_res.data_type,clust_res.clust_config)
+end
+
+"""
+constructor for ClustResultAll
+
+function ClustResult(clust_res::ClustResultAll,clust_data_mod::ClustData)
+
+adjusts ClustResult best_results. To be used to modify clustered data with extreme values.
+"""
+function ClustResult(clust_res::ClustResultAll,clust_data_mod::ClustData)
+  return ClustResultAll(clust_data_mod,clust_res.best_ids,clust_res.best_cost,clust_res.data_type,clust_res.clust_config,clust_res.centers,clust_res.weights,clust_res.clustids,clust_res.cost,clust_res.iter)
+end
