@@ -46,7 +46,7 @@ end
 """
 function run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables::Dict{String,OptVariable};solver::Any=CbcSolver(),slack_cost::Number=Inf)
   Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
-  run operational optimization problem
+  This problem runs the operational optimization problem only, with fixed design variables.
   provide the fixed design variables and the opt_config of the previous step (design run or another opterational run)
   what you can add to the opt_config:
   slack_cost: Number indicating the slack price/MWh (should be greater than 1e6), give Inf for no slack
@@ -72,7 +72,7 @@ function run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables:
   co2_limit: A number limiting the kg.-CO2-eq./MWh (normally in a range from 5-1250 kg-CO2-eq/MWh), give Inf or no kw if unlimited
   slack_cost: Number indicating the slack price/MWh (should be greater than 1e6), give Inf for no slack
   existing_infrastructure: true or false to include or exclude existing infrastructure to the model
-  storage: String "no" for no storage or "intra" to include intraday or "inter" to include interday storage
+  storage: String "non" for no storage or "intra" to include intraday or "inter" to include interday storage
 """
 function run_opt(ts_data::ClustData,
                  opt_data::OptDataCEP;
@@ -82,7 +82,7 @@ function run_opt(ts_data::ClustData,
                  slack_cost::Number=Inf,
                  existing_infrastructure::Bool=false,
                  limit_infrastructure::Bool=false,
-                 storage::String="no",
+                 storage::String="non",
                  transmission::Bool=false,
                  k_ids::Array{Int64,1}=Array{Int64,1}())
    # Activated inter or intraday storage corresponds with storage
@@ -92,9 +92,13 @@ function run_opt(ts_data::ClustData,
    elseif storage=="intra"
        storage=true
        interstorage=false
-   else
+   elseif storage =="non"
        storage=false
        interstorage=false
+  else
+      storage=false
+      interstorage=false
+      @warn("String indicating storage not identified as 'non', 'inter' or 'intra' → no storage")
    end
    if interstorage && k_ids==Array{Int64,1}()
      throw(@error("No or empty k_ids provided"))
