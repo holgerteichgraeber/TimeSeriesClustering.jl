@@ -1,8 +1,8 @@
-tech,USD,CO2
-pv,2.388E+03,0
-wind,3.098E+04,0
-coal,2.815E+04,0
-nuc,9.204E+04,0
-gas,1.196E+04,0
-bat_e,5.808E+03,0
-bat_p,0,0
+tech,region,year,USD,CO2
+pv,TX,2008,2388.00,0
+wind,TX,2008,30980.00,0
+coal,TX,2008,28150.00,0
+nuc,TX,2008,92040.00,0
+gas,TX,2008,11960.00,0
+bat_e,TX,2008,5.808E+03,0
+bat_p,TX,2008,0,0

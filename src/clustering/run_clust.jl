@@ -71,7 +71,9 @@ function run_clust(
     cost_best,ind_mincost = findmin(cost)  # along dimension 2, only store indice
 
     # save in merged format as array
-    b_merged = ClustDataMerged(data_norm_merged.region,n_clust,data_norm_merged.T,centers[ind_mincost],data_norm_merged.data_type,weights[ind_mincost])
+    # NOTE if you need clustered data more precise than 8 digits change the following line accordingly
+     n_digits_data_round=8 # Gurobi throws warning when rounding errors on order~1e-13 are passed in. Rounding errors occur in clustering of many zeros (e.g. solar).
+     b_merged = ClustDataMerged(data_norm_merged.region,n_clust,data_norm_merged.T,round.(centers[ind_mincost]; digits=n_digits_data_round),data_norm_merged.data_type,weights[ind_mincost])
     # transfer into ClustData format
     best_results = ClustData(b_merged)
     best_ids = clustids[ind_mincost]
@@ -86,7 +88,6 @@ function run_clust(
     return clust_result
 end
 
-#QUESTION still needed?
 """
 function run_clust(
       data::ClustData,

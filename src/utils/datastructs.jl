@@ -113,7 +113,7 @@ end
 """
 struct OptDataCEP <: OptData
    region::String          name of state or region data belongs to
-   nodes::DataFrame        nodes x installed capacity of different tech
+   nodes::DataFrame        nodes x region, infrastruct, capacity_of_different_tech...
    var_costs::DataFrame    tech x [USD, CO2]
    fix_costs::DataFrame    tech x [USD, CO2]
    cap_costs::DataFrame    tech x [USD, CO2]
@@ -127,6 +127,7 @@ struct OptDataCEP <: OptData
    fix_costs::DataFrame
    cap_costs::DataFrame
    techs::DataFrame
+   lines::DataFrame
 end
 
 """

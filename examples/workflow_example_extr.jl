@@ -1,5 +1,4 @@
 # This file exemplifies the workflow from data input to optimization result generation
-#QUESTION using ClustForOpt_priv.col in module Main conflicts with an existing identifier., using ClustForOpt_priv.cols in module Main conflicts with an existing identifier.
 
 include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_development.jl")))
 #using ClustForOpt_priv
@@ -25,4 +24,4 @@ ts_clust_res = run_clust(ts_input_data_mod;method="kmeans",representation="centr
 ts_clust_extr = representation_modification(extr_vals,ts_clust_res.best_results)
 
  # optimization
-opt_res = run_opt(ts_clust_extr,cep_input_data_GER;solver=GurobiSolver(),co2limit=1000.0)
+opt_res = run_opt(ts_clust_extr,cep_input_data_GER;solver=GurobiSolver(),co2_limit=1000.0)

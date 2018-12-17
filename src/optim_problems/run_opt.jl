@@ -5,55 +5,108 @@ function run_opt(ts_data::ClustData,opt_data::OptDataCEP,opt_config::Dict{String
 function run_opt(ts_data::ClustData,
                     opt_data::OptDataCEP,
                     opt_config::Dict{String,Any};
-                    solver::Any=CbcSolver())
-  cep=setup_opt_cep_basic(ts_data, opt_data, opt_config, solver)
-  setup_opt_cep_variables!(cep, ts_data, opt_data)
-  setup_opt_cep_generation_el!(cep, ts_data, opt_data)
-  if opt_config["storage_p"] && opt_config["storage_e"]
-    setup_opt_cep_storage!(cep, ts_data, opt_data)
-      setup_opt_cep_intrastorage!(cep, ts_data, opt_data)
+                    solver::Any=CbcSolver(),
+                    k_ids::Array{Int64,1}=Array{Int64,1}()
+                    )
+  #Check the consistency of the data provided
+  check_opt_data_cep(opt_data)
+  cep=setup_opt_cep_basic(ts_data, opt_data, opt_config, solver; k_ids=k_ids)
+  setup_opt_cep_basic_variables!(cep, ts_data, opt_data)
+  if opt_config["slack_cost"]!=Inf
+    setup_opt_cep_slack!(cep, ts_data, opt_data)
   end
+  if opt_config["storage_p"] && opt_config["storage_e"] && opt_config["interstorage"]
+    setup_opt_cep_storage!(cep, ts_data, opt_data)
+    setup_opt_cep_interstorage!(cep, ts_data, opt_data, k_ids)
+  elseif opt_config["storage_p"] && opt_config["storage_e"] && !(opt_config["interstorage"])
+    setup_opt_cep_storage!(cep, ts_data, opt_data)
+    setup_opt_cep_intrastorage!(cep, ts_data, opt_data)
+  end
+  if opt_config["transmission"]
+      setup_opt_cep_transmission!(cep, ts_data, opt_data)
+  end
+  setup_opt_cep_generation_el!(cep, ts_data, opt_data)
   if opt_config["co2_limit"]!=Inf
     setup_opt_cep_co2_limit!(cep, ts_data, opt_data; co2_limit=opt_config["co2_limit"])
   end
-  setup_opt_cep_demand!(cep, ts_data, opt_data)
+  setup_opt_cep_demand!(cep, ts_data, opt_data; slack_cost=opt_config["slack_cost"])
+  if "fixed_design_variables" in keys(opt_config)
+    setup_opt_cep_fix_design_variables!(cep, ts_data, opt_data; fixed_design_variables=opt_config["fixed_design_variables"])
+  end
   if opt_config["existing_infrastructure"]
       setup_opt_cep_existing_infrastructure!(cep, ts_data, opt_data)
   end
-  setup_opt_cep_objective!(cep, ts_data, opt_data)
+  if opt_config["limit_infrastructure"]
+      setup_opt_cep_limit_infrastructure!(cep, ts_data, opt_data)
+  end
+  setup_opt_cep_objective!(cep, ts_data, opt_data; slack_cost=opt_config["slack_cost"])
   return solve_opt_cep(cep, ts_data, opt_data, opt_config)
 end
 
+"""
+function run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables::Dict{String,OptVariable};solver::Any=CbcSolver(),slack_cost::Number=Inf)
+  Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
+  This problem runs the operational optimization problem only, with fixed design variables.
+  provide the fixed design variables and the opt_config of the previous step (design run or another opterational run)
+  what you can add to the opt_config:
+  slack_cost: Number indicating the slack price/MWh (should be greater than 1e6), give Inf for no slack
+"""
+function run_opt(ts_data::ClustData,
+                    opt_data::OptDataCEP,
+                    opt_config::Dict{String,Any},
+                    fixed_design_variables::Dict{String,OptVariable};
+                    solver::Any=CbcSolver(),
+                    slack_cost::Number=Inf,
+                    k_ids::Array{Int64,1}=Array{Int64,1}())
+  # Add the fixed_design_variables and new setting for slack costs to the existing config
+  set_opt_config_cep!(opt_config;fixed_design_variables=fixed_design_variables, slack_cost=slack_cost)
+  return run_opt(ts_data,opt_data,opt_config;solver=solver,k_ids=k_ids)
+end
 
 """
-function run_opt(ts_data::ClustData,opt_data::OptDataCEP;solver::Any=CbcSolver(),descriptor::String="",     first_stage_vars::Dict{String,OptVariable}=Dict{String,OptVariable}(),co2_limit::Number=Inf,existing_infrastructure::Bool=false,          intrastorage::Bool=false)
+function run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables::Dict{String,OptVariable};solver::Any=CbcSolver(),descriptor::String="",   ,co2_limit::Number=Inf,slack_cost::Number=Inf,existing_infrastructure::Bool=false, intrastorage::Bool=false)
 
   Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
   options to tweak the model are to select a co2_limit, existing_infrastructure and intrastorage
   descritor: String with the name of this paricular model like "kmeans-10-co2-500"
   co2_limit: A number limiting the kg.-CO2-eq./MWh (normally in a range from 5-1250 kg-CO2-eq/MWh), give Inf or no kw if unlimited
+  slack_cost: Number indicating the slack price/MWh (should be greater than 1e6), give Inf for no slack
   existing_infrastructure: true or false to include or exclude existing infrastructure to the model
-  intrastorage: true or false to include or exclude intraday storage
+  storage: String "non" for no storage or "intra" to include intraday or "inter" to include interday storage
 """
 function run_opt(ts_data::ClustData,
                  opt_data::OptDataCEP;
                  solver::Any=CbcSolver(),
                  descriptor::String="",
-                 first_stage_vars::Dict{String,OptVariable}=Dict{String,OptVariable}(),
                  co2_limit::Number=Inf,
+                 slack_cost::Number=Inf,
                  existing_infrastructure::Bool=false,
-                 intrastorage::Bool=false)
+                 limit_infrastructure::Bool=false,
+                 storage::String="non",
+                 transmission::Bool=false,
+                 k_ids::Array{Int64,1}=Array{Int64,1}())
    # Activated inter or intraday storage corresponds with storage
-   if intrastorage
-     storage=true
-   else
-     storage=false
+   if storage=="inter"
+       storage=true
+       interstorage=true
+   elseif storage=="intra"
+       storage=true
+       interstorage=false
+   elseif storage =="non"
+       storage=false
+       interstorage=false
+  else
+      storage=false
+      interstorage=false
+      @warn("String indicating storage not identified as 'non', 'inter' or 'intra' → no storage")
    end
-  #TODO first_stage_vars
+   if interstorage && k_ids==Array{Int64,1}()
+     throw(@error("No or empty k_ids provided"))
+   end
   #Setup the opt_config file based on the data input and
-  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, first_stage_vars=first_stage_vars, co2_limit=co2_limit, existing_infrastructure=existing_infrastructure, storage_e=storage, storage_p=storage)
+  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, co2_limit=co2_limit, slack_cost=slack_cost, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_p=storage, interstorage=interstorage, transmission=transmission)
   #Run the optimization problem
-  run_opt(ts_data, opt_data, opt_config; solver=solver)
+  run_opt(ts_data, opt_data, opt_config; solver=solver, k_ids=k_ids)
 end # run_opt
 
 #TODO Rewrite battery problem

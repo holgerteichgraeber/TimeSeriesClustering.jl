@@ -6,7 +6,7 @@ include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_develo
 #using Gurobi
 
 # load data
-ts_input_data,~ = load_timeseries_data("DAM", "GER";K=365, T=24) #DAM
+ts_input_data, = load_timeseries_data("DAM", "GER";K=365, T=24) #DAM
 
  # run clustering
 using Gurobi
