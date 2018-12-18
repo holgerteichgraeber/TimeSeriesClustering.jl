@@ -27,7 +27,7 @@ function run_clust_extr(
       k_ids::Array{Int64,1}=Array{Int64,1}(),
       kwargs...
                         # simple_extreme_days=true
-                        # extreme_day_selection_method="feasibility", "append", "none"
+                        # extreme_day_selection_method="feasibility", "slack", "none"
                         # + extreme_value_descr_ar
                         # needs input data for optimization problem
                         )
@@ -46,29 +46,46 @@ function run_clust_extr(
     if use_simple_extr
       clust_data = representation_modification(extr_vals,clust_data)
     end
+    
+    if extreme_event_selection_method=="none"
+      return ClustResult(clust_res,clust_data) # TODO: adjust clust_config in these functions
+    elseif (extreme_event_selection_method !="feasibility") && (extreme_event_selection_method != "slack")
+      @warn "extreme_event_selection_method - "*extreme_event_selection_method*" - does not match any of the three predefined keywords: feasibility, append, none. The function assumes -none-."
+      return ClustResult(clust_res,clust_data) # TODO: adjust clust_config in these functions
+    end
+
     # initial design and operations optimization
-    d_o_opt = run_opt(clust_data,opt_data;solver=solver,descriptor=descriptor,co2_limit=co2_limit,slack_cost=slack_cost,existing_infrastructure=existing_infrastructure,limit_infrastructure=limit_infrastructure,storage=storage,transmission=transmission,k_ids=k_ids)
+    d_o_opt = run_opt(clust_data,opt_data;solver=solver,descriptor=descriptor,co2_limit=co2_limit,existing_infrastructure=existing_infrastructure,limit_infrastructure=limit_infrastructure,storage=storage,transmission=transmission,slack_cost=Inf)
     dvs = get_cep_design_variables(d_o_opt)
     
     # convert ts_data into K individual ClustData structs
     ts_data_mod_indiv_ar = clustData_individual(ts_data_mod) 
     is_feasible = false # indicates if optimization result from clustered input data is feasible on operatoins optimization with full input data 
+    if extreme_event_selection_method=="feasibility"
+      eval_res = Symbol[] 
+    elseif extreme_event_selection_method=="slack"
+      eval_res = OptVariable[] 
+    end 
     i=0 
     while !is_feasible
       i+=1
-      ### TODO: Pick up here on TUESDAY
       o_opt_individual = OptResult[]
-      status = Symbol[]
-      slack_vars = []
+      # run individual optimization with fixed design
       for k=1:ts_data_mod.K
-        # if feasibility:
-           # run without slack,store status
-        # if append
-           # run with slack, store slack
-        push!(o_opt_individual,run_opt())
-       
+        if extreme_event_selection_method=="feasibility"
+           push!(o_opt_individual,run_opt(ts_data_mod_indiv_ar[k],opt_data,d_o_opt.opt_config,dvs;solver=solver,slack_cost=Inf))
+           push!(eval_res,o_opt_individual[k].status)
+        elseif extreme_event_selection_method=="slack"
+           slack_cost==Inf && (@warn "extreme_event_selection_method is -slack-,but slack cost are Inf")
+           push!(o_opt_individual,run_opt(ts_data_mod_indiv_ar[k],opt_data,d_o_opt.opt_config,dvs;solver=solver,slack_cost=slack_cost))
+           push!(eval_res,get_cep_slack_variables(o_opt_individual[k]))
+        end 
       end
-
+      is_feasible = check_indiv_opt_feasibility(eval_res)
+      println(eval_res, "feasibility: ",is_feasible, " i=",i)
+      is_feasible && return ClustResult(clust_res,clust_data) # TODO: adjust clust_config in these functions
+    
+    
     end
     # while !is_feasible
     #   for i=1:365
@@ -107,17 +124,21 @@ function run_clust_extr(
 end
 
 """
-wrapper function without simple extreme values
+    function run_clust_extr(
+          ts_data::ClustData,
+          opt_data::OptDataCEP;
+          kwargs...
+          )
+
+Clustering and extreme value selection WITHOUT simple extreme values.
 """
 function run_clust_extr(
-      data::ClustData;
+      ts_data::ClustData,
+      opt_data::OptDataCEP;
       kwargs...
       )
-   return run_clust_extr(data,[];kwargs...)   
-      
+      return run_clust_extr(ts_data,opt_data,SimpleExtremeValueDescr[];kwargs...)
 end
-
-
 
 """
 function simple_extr_val_sel(data::ClustData,

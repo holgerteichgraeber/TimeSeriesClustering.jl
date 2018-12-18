@@ -474,14 +474,32 @@ end
 
 """
 function get_cep_slack_variables(opt_result::OptResult)
-  Returns the SLACK variable of this opt_result matching "sv"
+  Returns the SLACK variables of this opt_result matching "sv"
 """
-function get_cep_slack_variable(opt_result::OptResult)
+function get_cep_slack_variables(opt_result::OptResult)
     if "SLACK" in keys(opt_result.variables)
       return opt_result.variables["SLACK"]
     else
       throw(@error("SLACK-Variable not provided in $(opt_result.descriptor)"))
     end
+end
+
+"""
+     function check_indiv_opt_feasibility(status::Array{Symbol,1})
+
+checks feasibility of optimization problem based on status
+"""
+function check_indiv_opt_feasibility(status::Array{Symbol,1})
+    return (sum(status.!=:Optimal) == 0)
+end
+
+"""
+    function check_indiv_opt_feasibility(slack_vars::Array{OptVariable,1})
+
+checks feasibility of optimization problem based on slack variables
+"""
+function check_indiv_opt_feasibility(slack_vars::Array{OptVariable,1})
+    return all(sum.([slack_vars[i].data for i=1:length(slack_vars)]) .== 0)
 end
 
 """
