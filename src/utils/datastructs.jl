@@ -307,6 +307,25 @@ function ClustData(data::FullInputData,
 end
 
 """
+function ClustData_individual(data::ClustData)
+
+Takes a ClustData struct and returns an array of ClustData structs that contains each period individually.
+"""
+function clustData_individual(data::ClustData)
+  clust_data_indiv = ClustData[]
+  for kk=1:data.K
+    # initialize new dict
+    data_dict_indiv = Dict{String,Array}()
+    # fill dict with data
+    for (k,v) in data.data
+      data_dict_indiv[k] = v[:,kk:kk]  # kk:kk instead of k ensures that it returns a two-dimensional array instead of a vector during array slicing with singleton dimension
+    end
+    push!(clust_data_indiv,ClustData(data.region,1,data.T,data_dict_indiv,[data.weights[kk]];mean=data.mean,sdv=data.sdv))    
+  end
+  return clust_data_indiv
+end
+
+"""
 constructor 1: construct ClustDataMerged
 function ClustDataMerged(region::String,
                        K::Int,
@@ -356,8 +375,6 @@ function ClustDataMerged(data::ClustData)
 end
 
 """
-constructor for ClustResultBest
-
 function ClustResult(clust_res::ClustResultBest,clust_data_mod::ClustData)
 
 adjusts ClustResult best_results. To be used to modify clustered data with extreme values.
@@ -367,8 +384,6 @@ function ClustResult(clust_res::ClustResultBest,clust_data_mod::ClustData)
 end
 
 """
-constructor for ClustResultAll
-
 function ClustResult(clust_res::ClustResultAll,clust_data_mod::ClustData)
 
 adjusts ClustResult best_results. To be used to modify clustered data with extreme values.

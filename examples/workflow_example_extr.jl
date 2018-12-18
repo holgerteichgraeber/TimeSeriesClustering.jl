@@ -23,7 +23,7 @@ cep_input_data_GER=load_cep_data("GER_18")
 # representation modification
 #ts_clust_extr = representation_modification(extr_vals,ts_clust_res.best_results)
 
- ts_clust_res = run_clust_extr(ts_input_data,ev;rep_mod_method="feasibility",method="kmeans",representation="centroid",n_init=10,n_clust=5) 
+ ts_clust_res = run_clust_extr(ts_input_data,cep_input_data_GER,ev;rep_mod_method="feasibility",method="kmeans",representation="centroid",n_init=10,n_clust=5,solver=GurobiSolver()) 
 
  # optimization
 opt_res = run_opt(ts_clust_res.best_results,cep_input_data_GER;solver=GurobiSolver(),co2_limit=1000.0)

@@ -1,9 +1,9 @@
 """
 """
 function run_clust_extr(
-      data::ClustData,
+      ts_data::ClustData,
+      opt_data::OptDataCEP,
       extr_value_descr_ar::Array{SimpleExtremeValueDescr,1};
-      rep_mod_method::String="feasibility",
       norm_op::String="zscore",
       norm_scope::String="full",
       method::String="kmeans",
@@ -12,12 +12,20 @@ function run_clust_extr(
       n_init::Int=100,
       iterations::Int=300,
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
-      simple_extreme_event::Bool=true,
       extreme_event_selection_method="feasibility",
+      rep_mod_method::String="feasibility",
       save::String="",
       get_all_clust_results::Bool=false,
+      solver::Any=CbcSolver(),
+      descriptor::String="",
+      co2_limit::Number=Inf,
+      slack_cost::Number=Inf,
+      existing_infrastructure::Bool=false,
+      limit_infrastructure::Bool=false,
+      storage::String="non",
+      transmission::Bool=false,
+      k_ids::Array{Int64,1}=Array{Int64,1}(),
       kwargs...
-                        # same inputs as in run_clust()
                         # simple_extreme_days=true
                         # extreme_day_selection_method="feasibility", "append", "none"
                         # + extreme_value_descr_ar
@@ -27,19 +35,41 @@ function run_clust_extr(
     # simple extreme value selection
     use_simple_extr = !isempty(extr_value_descr_ar)
     if use_simple_extr
-       data_mod,extr_vals,extr_idcs = simple_extr_val_sel(data,extr_value_descr_ar;rep_mod_method=rep_mod_method)
+       ts_data_mod,extr_vals,extr_idcs = simple_extr_val_sel(ts_data,extr_value_descr_ar;rep_mod_method=rep_mod_method)
     else
-       data_mod=data
+       ts_data_mod=ts_data
     end
     # run initial clustering 
-    clust_res = run_clust(data_mod;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_clust=n_clust,n_init=n_init,iterations=iterations,attribute_weights=attribute_weights,save=save,get_all_clust_results=get_all_clust_results,kwargs...)
+    clust_res = run_clust(ts_data_mod;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_clust=n_clust,n_init=n_init,iterations=iterations,attribute_weights=attribute_weights,save=save,get_all_clust_results=get_all_clust_results,kwargs...)
     # if simple: representation modification
     clust_data=clust_res.best_results
     if use_simple_extr
       clust_data = representation_modification(extr_vals,clust_data)
     end
-    # DVs = run_opt().variables["CAP"]  # how to make this generic, so that it alwasy takes dvs - write get_opt_dvs()
-    # is_feasible = false
+    # initial design and operations optimization
+    d_o_opt = run_opt(clust_data,opt_data;solver=solver,descriptor=descriptor,co2_limit=co2_limit,slack_cost=slack_cost,existing_infrastructure=existing_infrastructure,limit_infrastructure=limit_infrastructure,storage=storage,transmission=transmission,k_ids=k_ids)
+    dvs = get_cep_design_variables(d_o_opt)
+    
+    # convert ts_data into K individual ClustData structs
+    ts_data_mod_indiv_ar = clustData_individual(ts_data_mod) 
+    is_feasible = false # indicates if optimization result from clustered input data is feasible on operatoins optimization with full input data 
+    i=0 
+    while !is_feasible
+      i+=1
+      ### TODO: Pick up here on TUESDAY
+      o_opt_individual = OptResult[]
+      status = Symbol[]
+      slack_vars = []
+      for k=1:ts_data_mod.K
+        # if feasibility:
+           # run without slack,store status
+        # if append
+           # run with slack, store slack
+        push!(o_opt_individual,run_opt())
+       
+      end
+
+    end
     # while !is_feasible
     #   for i=1:365
     #     method that puts one day out of ClustData into its own ClustData struct
