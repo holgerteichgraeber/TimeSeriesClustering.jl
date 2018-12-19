@@ -84,7 +84,8 @@ function run_opt(ts_data::ClustData,
                  limit_infrastructure::Bool=false,
                  storage::String="non",
                  transmission::Bool=false,
-                 k_ids::Array{Int64,1}=Array{Int64,1}())
+                 k_ids::Array{Int64,1}=Array{Int64,1}(),
+                 print_flag::Bool=true)
    # Activated inter or intraday storage corresponds with storage
    if storage=="inter"
        storage=true
@@ -104,7 +105,7 @@ function run_opt(ts_data::ClustData,
      throw(@error("No or empty k_ids provided"))
    end
   #Setup the opt_config file based on the data input and
-  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, co2_limit=co2_limit, slack_cost=slack_cost, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_p=storage, interstorage=interstorage, transmission=transmission)
+  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, co2_limit=co2_limit, slack_cost=slack_cost, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_p=storage, interstorage=interstorage, transmission=transmission, print_flag=print_flag)
   #Run the optimization problem
   run_opt(ts_data, opt_data, opt_config; solver=solver, k_ids=k_ids)
 end # run_opt

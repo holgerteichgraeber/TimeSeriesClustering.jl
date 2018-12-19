@@ -504,9 +504,9 @@ function solve_opt_cep(cep::OptModelCEP,
   end
   currency=variables["COST"].axes[2][1]
   if slack==0
-    @info("Solved Scenario $(opt_config["descriptor"]): "*String(status)*" min COST[$currency]: $objective s.t. CO₂-Emissions per MWh ≤ $(opt_config["co2_limit"])")
+    opt_config["print_flag"] && @info("Solved Scenario $(opt_config["descriptor"]): "*String(status)*" min COST[$currency]: $objective s.t. CO₂-Emissions per MWh ≤ $(opt_config["co2_limit"])")
   else
-    @warn("Solved Scenario $(opt_config["descriptor"]): "*String(status)*" with SLACK $slack MWh s.t. CO₂-Emissions per MWh ≤ $(opt_config["co2_limit"])")
+    opt_config["print_flag"] && @info("Solved Scenario $(opt_config["descriptor"]): "*String(status)*" with SLACK $slack MWh s.t. CO₂-Emissions per MWh ≤ $(opt_config["co2_limit"])")
   end
   return OptResult(status,objective,variables,cep.set,cep.info,opt_config)
 end
