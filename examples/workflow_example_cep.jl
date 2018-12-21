@@ -21,20 +21,21 @@ ts_full_data = run_clust(ts_input_data;method="kmeans",representation="centroid"
 solver=GurobiSolver(OutputFlag=0)
 
 # tweak the CO2 level
-co2_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="co2",co2_limit=1000) #generally values between 1250 and 10 are interesting
+co2_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="co2",co2_limit=1000) #generally values between 1250 and 10 are seasonalesting
 
 # Include a Slack-Variable
 slack_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="slack",slack_cost=1e8)
+
 
 # Include existing infrastructure at no COST
 ex_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="ex",existing_infrastructure=true)
 
 # Intraday storage (just within each period, same storage level at beginning and end)
-intraday_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="intraday",storage="intra")
+simpleday_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="simple storage",storage="simple")
 
 # Interday storage (within each period & between the periods)
 #TODO move k_ids
-interday_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="interday",storage="inter",k_ids=ts_clust_data.best_ids)
+seasonalday_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="seasonal storage",storage="seasonal",k_ids=ts_clust_data.best_ids)
 
 # Transmission
 transmission_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="transmission",transmission=true)
@@ -43,4 +44,4 @@ transmission_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,
 # First solve the clustered case
 design_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="design&operation")
 # Use the design variable results for the operational run
-operation_result = run_opt(ts_full_data.best_results,cep_data,design_result.opt_config,get_cep_design_variables(design_result);solver=solver,slack_cost=1e8);
+operation_result = run_opt(ts_full_data.best_results,cep_data,design_result.opt_config,get_cep_design_variables(design_result);solver=solver,slack_cost=1e8)
