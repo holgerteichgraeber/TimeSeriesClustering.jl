@@ -113,13 +113,13 @@ end
 """
 struct OptVariable
   data::Array - includes the optimization variable output in  form of an array
-  sets::Array{String,1} - includes the names of the different axes and is equivalent to the sets in the optimization formulation
+  axes_names::Array{String,1} - includes the names of the different axes and is equivalent to the sets in the optimization formulation
   axes::Tuple - includes the values of the different axes of the optimization variables
   type::String - defines the type of the variable being cv- Cost variable, dv - decision variable or ov - operation variable
 """
 struct OptVariable
  data::Array
- sets::Array{String,1}
+ axes_names::Array{String,1}
  axes::Tuple
  type::String
 end
@@ -132,16 +132,16 @@ function OptVariable(cep::OptModelCEP,
                      variable::Symbol,
                      type::String)
   jumparray=getvalue(cep.model[variable])
-  sets=Array{String,1}()
+  axes_names=Array{String,1}()
   for axe in jumparray.indexsets
     for (name, val) in cep.set
       if axe==val
-        push!(sets, name)
+        push!(axes_names, name)
         break
       end
     end
   end
-  OptVariable(jumparray.innerArray,sets,jumparray.indexsets,type)
+  OptVariable(jumparray.innerArray,axes_names,jumparray.indexsets,type)
 end
 
 "OptResult"
