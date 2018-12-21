@@ -1,4 +1,8 @@
 """
+
+ts_data: The full input data 365. Used for individual opt run
+ts_data_mod: The input data used for clustering (365, or 365-extreme values in the case of append)
+clust_data: The clustered data: n_clust + extreme values 
 """
 function run_clust_extr(
       ts_data::ClustData,
@@ -25,6 +29,7 @@ function run_clust_extr(
       storage::String="non",
       transmission::Bool=false,
       k_ids::Array{Int64,1}=Array{Int64,1}(),
+      print_flag::Bool=true,
       kwargs...
                         # simple_extreme_days=true
                         # extreme_day_selection_method="feasibility", "slack", "none"
@@ -34,14 +39,17 @@ function run_clust_extr(
     # QUESTION: should keyword arguments be specified or rather be kwargs? kwargs may not work because the subsequent functions would through an error that some of the keyword arguments are not supported
     # simple extreme value selection
     use_simple_extr = !isempty(extr_value_descr_ar)
+    extr_vals=ClustData
+    extr_idcs=Int[]
+    ts_data_mod=ts_data
     if use_simple_extr
        ts_data_mod,extr_vals,extr_idcs = simple_extr_val_sel(ts_data,extr_value_descr_ar;rep_mod_method=rep_mod_method)
-    else
-       ts_data_mod=ts_data
     end
+    
     # run initial clustering 
     clust_res = run_clust(ts_data_mod;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_clust=n_clust,n_init=n_init,iterations=iterations,attribute_weights=attribute_weights,save=save,get_all_clust_results=get_all_clust_results,kwargs...)
-    # if simple: representation modification
+   
+   # if simple: representation modification
     clust_data=clust_res.best_results
     if use_simple_extr
       clust_data = representation_modification(extr_vals,clust_data)
@@ -53,39 +61,52 @@ function run_clust_extr(
       @warn "extreme_event_selection_method - "*extreme_event_selection_method*" - does not match any of the three predefined keywords: feasibility, append, none. The function assumes -none-."
       return ClustResult(clust_res,clust_data) # TODO: adjust clust_config in these functions
     end
-
-    # initial design and operations optimization
-    d_o_opt = run_opt(clust_data,opt_data;solver=solver,descriptor=descriptor,co2_limit=co2_limit,existing_infrastructure=existing_infrastructure,limit_infrastructure=limit_infrastructure,storage=storage,transmission=transmission,slack_cost=Inf)
-    dvs = get_cep_design_variables(d_o_opt)
     
-    # convert ts_data into K individual ClustData structs
-    ts_data_mod_indiv_ar = clustData_individual(ts_data_mod) 
+    # convert ts_data into N individual ClustData structs
+    ts_data_indiv_ar = clustData_individual(ts_data) 
     is_feasible = false # indicates if optimization result from clustered input data is feasible on operatoins optimization with full input data 
     if extreme_event_selection_method=="feasibility"
       eval_res = Symbol[] 
     elseif extreme_event_selection_method=="slack"
       eval_res = OptVariable[] 
     end 
+    
     i=0 
     while !is_feasible
       i+=1
-      o_opt_individual = OptResult[]
+      # initial design and operations optimization
+      d_o_opt = run_opt(clust_data,opt_data;solver=solver,descriptor=descriptor,co2_limit=co2_limit,existing_infrastructure=existing_infrastructure,limit_infrastructure=limit_infrastructure,storage=storage,transmission=transmission,slack_cost=Inf,print_flag=print_flag)
+      dvs = get_cep_design_variables(d_o_opt)
+      
       # run individual optimization with fixed design
-      for k=1:ts_data_mod.K
+      o_opt_individual = OptResult[]
+      for k=1:ts_data.K
         if extreme_event_selection_method=="feasibility"
-           push!(o_opt_individual,run_opt(ts_data_mod_indiv_ar[k],opt_data,d_o_opt.opt_config,dvs;solver=solver,slack_cost=Inf))
+           push!(o_opt_individual,run_opt(ts_data_indiv_ar[k],opt_data,d_o_opt.opt_config,dvs;solver=solver,slack_cost=Inf))
            push!(eval_res,o_opt_individual[k].status)
         elseif extreme_event_selection_method=="slack"
            slack_cost==Inf && (@warn "extreme_event_selection_method is -slack-,but slack cost are Inf")
-           push!(o_opt_individual,run_opt(ts_data_mod_indiv_ar[k],opt_data,d_o_opt.opt_config,dvs;solver=solver,slack_cost=slack_cost))
+           push!(o_opt_individual,run_opt(ts_data_indiv_ar[k],opt_data,d_o_opt.opt_config,dvs;solver=solver,slack_cost=slack_cost))
            push!(eval_res,get_cep_slack_variables(o_opt_individual[k]))
         end 
       end
       is_feasible = check_indiv_opt_feasibility(eval_res)
-      println(eval_res, "feasibility: ",is_feasible, " i=",i)
+      println("feasibility: ",is_feasible, " i=",i)  # TODO - delete this line
       is_feasible && return ClustResult(clust_res,clust_data) # TODO: adjust clust_config in these functions
-    
-    
+     
+      # get infeasible value
+      idx_infeas = get_index_inf(eval_res)
+      push!(extr_idcs,idx_infeas)
+      extr_val_inf = extreme_val_output(ts_data,idx_infeas,rep_mod_method=rep_mod_method)
+      # add extr_val_inf to extr_vals (using representation modification method)
+      extr_vals = representation_modification(extr_val_inf,extr_vals)
+      if rep_mod_method=="append"
+        ts_data_mod = input_data_modification(ts_data,extr_idcs)
+        clust_res = run_clust(ts_data_mod;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_clust=n_clust,n_init=n_init,iterations=iterations,attribute_weights=attribute_weights,save=save,get_all_clust_results=get_all_clust_results,kwargs...)
+        clust_data=clust_res.best_results
+      end
+      clust_data = representation_modification(extr_vals,clust_data) 
+
     end
     # while !is_feasible
     #   for i=1:365
@@ -339,6 +360,7 @@ Merges the clustered data and extreme vals into one ClustData struct. Weights ar
 function representation_modification(extr_vals::ClustData,
                                      clust_data::ClustData,
                                      )
+                                     #TODO: The input order of extr_vals and clust_data should probably be reversed. Usually, we return the modified version of the first input argument.
   K_mod = clust_data.K + extr_vals.K
   data_mod=Dict{String,Array}()
   for dt in keys(clust_data.data)

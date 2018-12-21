@@ -480,7 +480,7 @@ function get_cep_slack_variables(opt_result::OptResult)
     if "SLACK" in keys(opt_result.variables)
       return opt_result.variables["SLACK"]
     else
-      throw(@error("SLACK-Variable not provided in $(opt_result.descriptor)"))
+      @error("SLACK-Variable not provided in $(opt_result.descriptor)")
     end
 end
 
@@ -501,6 +501,26 @@ checks feasibility of optimization problem based on slack variables
 function check_indiv_opt_feasibility(slack_vars::Array{OptVariable,1})
     return all(sum.([slack_vars[i].data for i=1:length(slack_vars)]) .== 0)
 end
+
+"""
+     function get_index_inf(status::Array{Symbol,1})
+
+Finds first day in array that is infeasible
+"""
+function get_index_inf(status::Array{Symbol,1})
+  return findfirst(x->x.!=:Optimal,status)
+end
+
+"""
+     function get_index_inf(slack_vars::Array{OptVariable,1})
+
+Finds day that contains the maximum slack variable, returns index of that day
+"""
+function get_index_inf(slack_vars::Array{OptVariable,1})
+  # TODO: make optional to choose integrally maximum slack day
+  return findmax([findmax(slack_vars[i].data)[1] for i=1:length(slack_vars)])[2] 
+end
+
 
 """
 function set_opt_config_cep(opt_data::OptDataCEP; kwargs...)
