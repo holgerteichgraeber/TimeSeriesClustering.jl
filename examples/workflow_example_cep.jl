@@ -43,4 +43,4 @@ transmission_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,
 # First solve the clustered case
 design_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="design&operation")
 # Use the design variable results for the operational run
-operation_result = run_opt(ts_full_data.best_results,cep_data,design_result.opt_config,get_cep_design_variables(design_result);solver=solver,slack_cost=1e8)
+operation_result = run_opt(ts_full_data.best_results,cep_data,design_result.opt_config,get_cep_design_variables(design_result);solver=solver,slack_cost=1e8);
