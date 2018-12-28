@@ -65,22 +65,24 @@ function run_clust_extr(
     # convert ts_data into N individual ClustData structs
     ts_data_indiv_ar = clustData_individual(ts_data) 
     is_feasible = false # indicates if optimization result from clustered input data is feasible on operatoins optimization with full input data 
-    if extreme_event_selection_method=="feasibility"
-      eval_res = Symbol[] 
-    elseif extreme_event_selection_method=="slack"
-      eval_res = OptVariable[] 
-    end 
     
     i=0 
-    while !is_feasible
+    while !is_feasible 
       i+=1
+      println("beg: ",clust_data)
       # initial design and operations optimization
       d_o_opt = run_opt(clust_data,opt_data;solver=solver,descriptor=descriptor,co2_limit=co2_limit,existing_infrastructure=existing_infrastructure,limit_infrastructure=limit_infrastructure,storage=storage,transmission=transmission,slack_cost=Inf,print_flag=print_flag)
       dvs = get_cep_design_variables(d_o_opt)
-      
+      #println("opt_res: ", d_o_opt.variables["CAP"]) 
       # run individual optimization with fixed design
       o_opt_individual = OptResult[]
+      if extreme_event_selection_method=="feasibility"
+        eval_res = Symbol[] 
+      elseif extreme_event_selection_method=="slack"
+        eval_res = OptVariable[] 
+      end 
       for k=1:ts_data.K
+        # TODO: include in run_opt an option to turn off warnings. This optimization is often infeasible, and it currently gives a warning every time. There should be an option for this case to turn it off. 
         if extreme_event_selection_method=="feasibility"
            push!(o_opt_individual,run_opt(ts_data_indiv_ar[k],opt_data,d_o_opt.opt_config,dvs;solver=solver,slack_cost=Inf))
            push!(eval_res,o_opt_individual[k].status)
@@ -92,20 +94,31 @@ function run_clust_extr(
       end
       is_feasible = check_indiv_opt_feasibility(eval_res)
       println("feasibility: ",is_feasible, " i=",i)  # TODO - delete this line
+      #println(eval_res) 
       is_feasible && return ClustResult(clust_res,clust_data) # TODO: adjust clust_config in these functions
      
       # get infeasible value
       idx_infeas = get_index_inf(eval_res)
       push!(extr_idcs,idx_infeas)
+      println(idx_infeas)
       extr_val_inf = extreme_val_output(ts_data,idx_infeas,rep_mod_method=rep_mod_method)
       # add extr_val_inf to extr_vals (using representation modification method)
-      extr_vals = representation_modification(extr_val_inf,extr_vals)
+      if typeof(extr_vals)==DataType
+        extr_vals=extr_val_inf
+      else
+        extr_vals = representation_modification(extr_val_inf,extr_vals)
+      end
       if rep_mod_method=="append"
         ts_data_mod = input_data_modification(ts_data,extr_idcs)
         clust_res = run_clust(ts_data_mod;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_clust=n_clust,n_init=n_init,iterations=iterations,attribute_weights=attribute_weights,save=save,get_all_clust_results=get_all_clust_results,kwargs...)
         clust_data=clust_res.best_results
+        clust_data = representation_modification(extr_vals,clust_data) 
+      elseif rep_mod_method == "feasibility"
+        clust_data = representation_modification(extr_val_inf,clust_data) 
+      else 
+        @error "rep_mod_method does not exist" # TODO: Write automatic check functions for the different options
       end
-      clust_data = representation_modification(extr_vals,clust_data) 
+      println("end: ",extr_vals)
 
     end
     # while !is_feasible
