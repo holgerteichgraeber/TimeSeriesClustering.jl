@@ -59,6 +59,7 @@ function run_opt(ts_data::ClustData,
                     slack_cost::Number=Inf,
                     k_ids::Array{Int64,1}=Array{Int64,1}())
   # Add the fixed_design_variables and new setting for slack costs to the existing config
+  # TODO: Think about changing opt config as a deepcopy function.Possible issue: the opt_config of the original  problem is modified as well.
   set_opt_config_cep!(opt_config;fixed_design_variables=fixed_design_variables, slack_cost=slack_cost)
   return run_opt(ts_data,opt_data,opt_config;solver=solver,k_ids=k_ids)
 end

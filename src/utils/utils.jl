@@ -499,7 +499,7 @@ end
 checks feasibility of optimization problem based on slack variables
 """
 function check_indiv_opt_feasibility(slack_vars::Array{OptVariable,1})
-    return all(sum.([slack_vars[i].data for i=1:length(slack_vars)]) .== 0)
+    return all(sum.([slack_vars[i].data for i=1:length(slack_vars)]) .<= 1e-9) # use 1e-9 as a tolerance level for nonzero values
 end
 
 """
@@ -514,7 +514,7 @@ end
 """
      function get_index_inf(slack_vars::Array{OptVariable,1})
 
-Finds day that contains the maximum slack variable, returns index of that day
+Finds day that contains the maximum absolute slack variable, returns index of that day
 """
 function get_index_inf(slack_vars::Array{OptVariable,1})
   # TODO: make optional to choose integrally maximum slack day
@@ -621,3 +621,16 @@ function set_clust_config(;kwargs...)
   # Return Directory with the information of kwargs
   return config
 end
+
+"""
+function set_clust_config!(config::Dict{String,Any};kwargs...)
+"""
+function set_clust_config!(config::Dict{String,Any};kwargs...)
+  # Loop through the kwargs and add them to Dictionary
+  for kwarg in kwargs
+    config[String(kwarg[1])]=kwarg[2]
+  end
+  # Return Directory with the information
+  return config
+end
+

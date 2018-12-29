@@ -69,11 +69,9 @@ function run_clust_extr(
     i=0 
     while !is_feasible 
       i+=1
-      println("beg: ",clust_data)
       # initial design and operations optimization
       d_o_opt = run_opt(clust_data,opt_data;solver=solver,descriptor=descriptor,co2_limit=co2_limit,existing_infrastructure=existing_infrastructure,limit_infrastructure=limit_infrastructure,storage=storage,transmission=transmission,slack_cost=Inf,print_flag=print_flag)
       dvs = get_cep_design_variables(d_o_opt)
-      #println("opt_res: ", d_o_opt.variables["CAP"]) 
       # run individual optimization with fixed design
       o_opt_individual = OptResult[]
       if extreme_event_selection_method=="feasibility"
@@ -90,11 +88,10 @@ function run_clust_extr(
            slack_cost==Inf && (@warn "extreme_event_selection_method is -slack-,but slack cost are Inf")
            push!(o_opt_individual,run_opt(ts_data_indiv_ar[k],opt_data,d_o_opt.opt_config,dvs;solver=solver,slack_cost=slack_cost))
            push!(eval_res,get_cep_slack_variables(o_opt_individual[k]))
-        end 
+         end 
       end
       is_feasible = check_indiv_opt_feasibility(eval_res)
       println("feasibility: ",is_feasible, " i=",i)  # TODO - delete this line
-      #println(eval_res) 
       is_feasible && return ClustResult(clust_res,clust_data) # TODO: adjust clust_config in these functions
      
       # get infeasible value
@@ -118,7 +115,6 @@ function run_clust_extr(
       else 
         @error "rep_mod_method does not exist" # TODO: Write automatic check functions for the different options
       end
-      println("end: ",extr_vals)
 
     end
     # while !is_feasible

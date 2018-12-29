@@ -31,7 +31,7 @@ ev3 = SimpleExtremeValueDescr("el_demand-node61","max","absolute")
 #ts_clust_extr = representation_modification(extr_vals,ts_clust_res.best_results)
 
 #without simple extreme days
- ts_clust_res = run_clust_extr(ts_input_data,cep_input_data_GER;rep_mod_method="feasibility",method="kmeans",representation="centroid",n_init=10,n_clust=5,solver=solver,storage="intra",extreme_event_selection_method="slack",slack_cost=1e4,print_flag=false) 
+ ts_clust_res = run_clust_extr(ts_input_data,cep_input_data_GER;rep_mod_method="feasibility",method="kmeans",representation="centroid",n_init=10,n_clust=5,solver=solver,storage="intra",extreme_event_selection_method="slack",slack_cost=1e5,print_flag=false) 
  #ts_clust_res = run_clust_extr(ts_input_data,cep_input_data_GER;rep_mod_method="feasibility",method="kmeans",representation="centroid",n_init=10,n_clust=5,solver=solver,storage="intra",extreme_event_selection_method="feasibility",print_flag=false) 
 
 #with simple extreme days
