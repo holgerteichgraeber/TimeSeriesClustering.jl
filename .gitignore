@@ -3,6 +3,7 @@
 *core*
 *.asv
 *.swn
+*.swm
 *.swo
 *.eps
 *.png

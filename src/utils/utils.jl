@@ -623,7 +623,10 @@ function set_clust_config(;kwargs...)
 end
 
 """
-function set_clust_config!(config::Dict{String,Any};kwargs...)
+    function set_clust_config!(config::Dict{String,Any};kwargs...)
+
+add or replace items to an existing config
+e.g. extreme value selection information
 """
 function set_clust_config!(config::Dict{String,Any};kwargs...)
   # Loop through the kwargs and add them to Dictionary

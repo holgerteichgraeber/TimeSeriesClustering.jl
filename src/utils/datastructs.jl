@@ -375,19 +375,61 @@ function ClustDataMerged(data::ClustData)
 end
 
 """
-function ClustResult(clust_res::ClustResultBest,clust_data_mod::ClustData)
+function ClustResult(clust_res::ClustResultBest,clust_data_mod::ClustData;kwargs...)
 
 adjusts ClustResult best_results. To be used to modify clustered data with extreme values.
+Adds kwargs to clust_config (can e.g. be used to add extreme value information)
 """
-function ClustResult(clust_res::ClustResultBest,clust_data_mod::ClustData)
-  return ClustResultBest(clust_data_mod,clust_res.best_ids,clust_res.best_cost,clust_res.data_type,clust_res.clust_config)
+function ClustResult(clust_res::ClustResultBest,
+                     clust_data_mod::ClustData;
+                     kwargs...)
+  clust_config=clust_res.clust_config
+  set_clust_config!(clust_config;kwargs...)
+  return ClustResultBest(clust_data_mod,clust_res.best_ids,clust_res.best_cost,clust_res.data_type,clust_config)
+end
+
+
+"""
+function ClustResult(clust_res::ClustResultBest,clust_data_mod::ClustData;kwargs...)
+
+adjusts ClustResult best_results. To be used to modify clustered data with extreme values.
+Wrapper function that makes explicit the arguments that it adds (extreme value arguments) to clust config
+"""
+function ClustResult(clust_res::ClustResultBest,
+                     clust_data_mod::ClustData,
+                     extr_idcs::Array{Int,1},
+                     rep_mod_method::String,
+                     simple_extr_value_descr_ar::Array{SimpleExtremeValueDescr,1},
+                     extreme_event_selection_method::String
+                     )
+  return ClustResult(clust_res,clust_data_mod;extr_idcs=extr_idcs,rep_mod_method=rep_mod_method,simple_extr_value_descr_ar=simple_extr_value_descr_ar,extreme_event_selection_method=extreme_event_selection_method)
 end
 
 """
-function ClustResult(clust_res::ClustResultAll,clust_data_mod::ClustData)
+function ClustResult(clust_res::ClustResultAll,clust_data_mod::ClustData;kwargs...)
 
 adjusts ClustResult best_results. To be used to modify clustered data with extreme values.
 """
-function ClustResult(clust_res::ClustResultAll,clust_data_mod::ClustData)
-  return ClustResultAll(clust_data_mod,clust_res.best_ids,clust_res.best_cost,clust_res.data_type,clust_res.clust_config,clust_res.centers,clust_res.weights,clust_res.clustids,clust_res.cost,clust_res.iter)
+function ClustResult(clust_res::ClustResultAll,
+                     clust_data_mod::ClustData;
+                     kwargs...)
+  clust_config=clust_res.clust_config
+  set_clust_config!(clust_config;kwargs...)
+  return ClustResultAll(clust_data_mod,clust_res.best_ids,clust_res.best_cost,clust_res.data_type,clust_config,clust_res.centers,clust_res.weights,clust_res.clustids,clust_res.cost,clust_res.iter)
+end
+
+"""
+function ClustResult(clust_res::ClustResultAll,clust_data_mod::ClustData;kwargs...)
+
+adjusts ClustResult all. To be used to modify clustered data with extreme values.
+Wrapper function that makes explicit the arguments that it adds (extreme value arguments) to clust config
+"""
+function ClustResult(clust_res::ClustResultAll,
+                     clust_data_mod::ClustData,
+                     extr_idcs::Array{Int,1},
+                     rep_mod_method::String,
+                     simple_extr_value_descr_ar::Array{SimpleExtremeValueDescr,1},
+                     extreme_event_selection_method::String
+                     )
+  return ClustResult(clust_res,clust_data_mod;extr_idcs=extr_idcs,rep_mod_method=rep_mod_method,simple_extr_value_descr_ar=simple_extr_value_descr_ar,extreme_event_selection_method=extreme_event_selection_method)
 end

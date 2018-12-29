@@ -7,7 +7,7 @@ clust_data: The clustered data: n_clust + extreme values
 function run_clust_extr(
       ts_data::ClustData,
       opt_data::OptDataCEP,
-      extr_value_descr_ar::Array{SimpleExtremeValueDescr,1};
+      simple_extr_value_descr_ar::Array{SimpleExtremeValueDescr,1};
       norm_op::String="zscore",
       norm_scope::String="full",
       method::String="kmeans",
@@ -16,7 +16,7 @@ function run_clust_extr(
       n_init::Int=100,
       iterations::Int=300,
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
-      extreme_event_selection_method="feasibility",
+      extreme_event_selection_method::String="feasibility",
       rep_mod_method::String="feasibility",
       save::String="",
       get_all_clust_results::Bool=false,
@@ -38,12 +38,12 @@ function run_clust_extr(
                         )
     # QUESTION: should keyword arguments be specified or rather be kwargs? kwargs may not work because the subsequent functions would through an error that some of the keyword arguments are not supported
     # simple extreme value selection
-    use_simple_extr = !isempty(extr_value_descr_ar)
+    use_simple_extr = !isempty(simple_extr_value_descr_ar)
     extr_vals=ClustData
     extr_idcs=Int[]
     ts_data_mod=ts_data
     if use_simple_extr
-       ts_data_mod,extr_vals,extr_idcs = simple_extr_val_sel(ts_data,extr_value_descr_ar;rep_mod_method=rep_mod_method)
+       ts_data_mod,extr_vals,extr_idcs = simple_extr_val_sel(ts_data,simple_extr_value_descr_ar;rep_mod_method=rep_mod_method)
     end
     
     # run initial clustering 
@@ -56,10 +56,11 @@ function run_clust_extr(
     end
     
     if extreme_event_selection_method=="none"
-      return ClustResult(clust_res,clust_data) # TODO: adjust clust_config in these functions
+     return ClustResult(clust_res,clust_data,extr_idcs,rep_mod_method,simple_extr_value_descr_ar,extreme_event_selection_method) 
     elseif (extreme_event_selection_method !="feasibility") && (extreme_event_selection_method != "slack")
       @warn "extreme_event_selection_method - "*extreme_event_selection_method*" - does not match any of the three predefined keywords: feasibility, append, none. The function assumes -none-."
-      return ClustResult(clust_res,clust_data) # TODO: adjust clust_config in these functions
+      
+     return ClustResult(clust_res,clust_data,extr_idcs,rep_mod_method,simple_extr_value_descr_ar,extreme_event_selection_method) 
     end
     
     # convert ts_data into N individual ClustData structs
@@ -92,7 +93,7 @@ function run_clust_extr(
       end
       is_feasible = check_indiv_opt_feasibility(eval_res)
       println("feasibility: ",is_feasible, " i=",i)  # TODO - delete this line
-      is_feasible && return ClustResult(clust_res,clust_data) # TODO: adjust clust_config in these functions
+      is_feasible && return ClustResult(clust_res,clust_data,extr_idcs,rep_mod_method,simple_extr_value_descr_ar,extreme_event_selection_method) 
      
       # get infeasible value
       idx_infeas = get_index_inf(eval_res)
@@ -115,42 +116,8 @@ function run_clust_extr(
       else 
         @error "rep_mod_method does not exist" # TODO: Write automatic check functions for the different options
       end
-
     end
-    # while !is_feasible
-    #   for i=1:365
-    #     method that puts one day out of ClustData into its own ClustData struct
-    #     run_opt() single day, given DVs(operations only) 
-    #   end
-    #   is_feasible = [depends on if any day was infeasible]
-    #   if is_feasible: break out of while loop here
-    #   idx_extr_val = feasibility: first infeasible index; append: idx with highest slack variable
-    #   extr_val_output(idx_extr_val)
-    #   representation_modification()
-    #   if append: run_clust()  # really? should representation modification not be afterwards? / figure 2.5 Constantin Thesis
-    #   
-    #   DVs = run_opt().variables["CAP"]
-    # end
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-    
-    
-    return ClustResult(clust_res,clust_data) # TODO: adjust clust_config in these functions
-
+    return ClustResult(clust_res,clust_data,extr_idcs,rep_mod_method,simple_extr_value_descr_ar,extreme_event_selection_method) # TODO: adjust clust_config in these functions
 end
 
 """
