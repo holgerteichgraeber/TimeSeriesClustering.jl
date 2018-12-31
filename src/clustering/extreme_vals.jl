@@ -37,6 +37,7 @@ function run_clust_extr(
                         # needs input data for optimization problem
                         )
     # QUESTION: should keyword arguments be specified or rather be kwargs? kwargs may not work because the subsequent functions would through an error that some of the keyword arguments are not supported
+    # TODO: Specify keywords arguemnt as three seperate arrays, one for clustering, and one for extreme values, one for optimization problem
     # simple extreme value selection
     use_simple_extr = !isempty(simple_extr_value_descr_ar)
     extr_vals=ClustData
