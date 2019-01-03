@@ -397,11 +397,12 @@ function setup_opt_cep_co2_limit!(cep::OptModelCEP,
   set=cep.set
   #ts          Dict( tech-node ): t x k
   ts=ts_data.data
-
+  w = ts_data.weights
+  
   ## EMISSIONS ##
   # Limit the Emissions with co2_limit if it exists
   push!(cep.info,"ΣCOST_{account,tech}[account,'$(set["impact"][1])',tech] ≤ co2_limit*Σ_{node,t,k}ts[el_demand-node,t,k]")
-  @constraint(cep.model, sum(cep.model[:COST][account,"CO2",tech] for account=set["account"], tech=set["tech"])<= co2_limit*sum(sum(ts["el_demand-"*node]) for node=set["nodes"]))
+  @constraint(cep.model, sum(cep.model[:COST][account,"CO2",tech] for account=set["account"], tech=set["tech"])<= co2_limit*sum(sum(ts["el_demand-"*node]*w) for node=set["nodes"]))
   return cep
 end
 
