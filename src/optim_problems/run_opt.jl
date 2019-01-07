@@ -99,7 +99,7 @@ function run_opt(ts_data::ClustData,
   else
       storage=false
       seasonalstorage=false
-      @warn("String indicating storage not identified as 'non', 'seasonal' or 'simple' → no storage")
+      @warn("String indicating storage not identified as 'none', 'seasonal' or 'simple' → no storage")
    end
    if seasonalstorage && k_ids==Array{Int64,1}()
      throw(@error("No or empty k_ids provided"))
