@@ -149,13 +149,16 @@ function setup_opt_cep_generation_el!(cep::OptModelCEP,
     techs=opt_data.techs
     #ts          Dict( tech-node ): t x k
     ts=ts_data.data
-    #ts_weights  Dict( tech-node ): k
+    #ts_weights: k - weight of each period:
     ts_weights=ts_data.weights
+    #ts_deltas:  t x k - Δt of each segment x period
+    ts_deltas=ones(length(set["time_T"]),length(set["time_K"]))
+
 
     ## GENERATION ELECTRICITY ##
     # Calculate Variable Costs
-    push!(cep.info,"COST['var',impact,tech] = Δt ⋅ Σ_{t,k,node}GEN['el',t,k,node]⋅ ts_weights[k] ⋅ var_costs[tech,impact] ∀ impact, tech_generation")
-    @constraint(cep.model, [impact=set["impact"], tech=set["tech_generation"]], cep.model[:COST]["var",impact,tech]==sum(cep.model[:GEN]["el",tech,t,k,node]*ts_weights[k]*find_cost_in_df(var_costs,nodes,tech,node,impact) for node=set["nodes"], t=set["time_T"], k=set["time_K"]))
+    push!(cep.info,"COST['var',impact,tech] = Σ_{t,k,node}GEN['el',t,k,node]⋅ ts_weights[k] ⋅ Δt[t,k] ⋅ var_costs[tech,impact] ∀ impact, tech_generation")
+    @constraint(cep.model, [impact=set["impact"], tech=set["tech_generation"]], cep.model[:COST]["var",impact,tech]==sum(cep.model[:GEN]["el",tech,t,k,node]*ts_weights[k]*ts_deltas[t,k]*find_cost_in_df(var_costs,nodes,tech,node,impact) for node=set["nodes"], t=set["time_T"], k=set["time_K"]))
     # Calculate Fixed Costs
     push!(cep.info,"COST['cap_fix',impact,tech] = Σ_{node}CAP[tech,'new',node] ⋅ cap_costs[tech,impact] ∀ impact, tech_generation")
     @constraint(cep.model, [impact=set["impact"], tech=set["tech_generation"]], cep.model[:COST]["cap_fix",impact,tech]==sum(cep.model[:CAP][tech,"new",node] *(find_cost_in_df(cap_costs,nodes,tech,node,impact)+find_cost_in_df(fix_costs,nodes,tech,node,impact)) for node=set["nodes"]))
@@ -199,10 +202,9 @@ function setup_opt_cep_storage!(cep::OptModelCEP,
     fix_costs=opt_data.fix_costs
     #techs       tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
     techs=opt_data.techs
-    #ts_weights  Dict( tech-node ): k
-    ts_weights=ts_data.weights
-    #important if segements have differing lengths
-    ts_delta=1
+    #ts_deltas:  t x k - Δt of each segment x period
+    ts_deltas=ones(length(set["time_T"]),length(set["time_K"]))
+
     ## VARIABLE ##existing_infrastructure
     # Storage has additional element 0 for storage at hour 0 of day
     push!(cep.info,"Variable INTRASTOR[sector, tech, t, k, node] ≥ 0 in MW")
@@ -224,8 +226,8 @@ function setup_opt_cep_storage!(cep::OptModelCEP,
     push!(cep.info,"GEN['el',tech, t, k, node] =0 ∀ node, tech_storage_e, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech,t,k,node]==0)
     # Connect the previous storage level and the integral of the flows with the new storage level
-    push!(cep.info,"INTRASTOR['el',tech, t, k, node] = INTRASTOR['el',tech, t-1, k, node] + Δt ⋅ (STORGEN['el','charge',tech, t, k, node] ⋅ η[tech] - STORGEN['el','discharge',tech, t, k, node] / η[tech])∀ node, tech_storage_e, t, k")
-    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t in set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]==cep.model[:INTRASTOR]["el",tech,t-1,k,node] - cep.model[:INTRASTORGEN]["el","discharge",split(tech,"_")[1]*"_p",t,k,node] / find_val_in_df(techs,:tech,tech,"eff_out") + cep.model[:INTRASTORGEN]["el","charge",split(tech,"_")[1]*"_p",t,k,node] * find_val_in_df(techs,:tech,tech,"eff_in"))
+    push!(cep.info,"INTRASTOR['el',tech, t, k, node] = INTRASTOR['el',tech, t-1, k, node] + Δt[t,k] ⋅ (STORGEN['el','charge',tech, t, k, node] ⋅ η[tech] - STORGEN['el','discharge',tech, t, k, node] / η[tech])∀ node, tech_storage_e, t, k")
+    @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t in set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]==cep.model[:INTRASTOR]["el",tech,t-1,k,node] + ts_deltas[t,k] * (cep.model[:INTRASTORGEN]["el","charge",split(tech,"_")[1]*"_p",t,k,node] * find_val_in_df(techs,:tech,tech,"eff_in") - cep.model[:INTRASTORGEN]["el","discharge",split(tech,"_")[1]*"_p",t,k,node] / find_val_in_df(techs,:tech,tech,"eff_out")))
     # Sum the INTRASTORGEN up to calculate the actual GEN of the technology
     push!(cep.info,"GEN['el',tech, t, k, node] = INTRASTORGEN['el','discharge',tech, t, k, node] - INTRASTORGEN['el','charge',tech, t, k, node] ∀ node, tech_storage_e, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_p"], t in set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech,t,k,node]==cep.model[:INTRASTORGEN]["el","discharge",tech,t,k,node]-cep.model[:INTRASTORGEN]["el","charge",tech,t,k,node])
@@ -313,8 +315,6 @@ function setup_opt_cep_transmission!(cep::OptModelCEP,
     techs=opt_data.techs
     #lines       lines x [node_start,node_end,reactance,resistance,power,voltage,circuits,length]
     lines=opt_data.lines
-    #ts_weights  Dict( tech-node ): k
-    ts_weights=ts_data.weights
 
     ## VARIABLE ##
     # Add varibale FLOW
@@ -359,18 +359,20 @@ function setup_opt_cep_demand!(cep::OptModelCEP,
   set=cep.set
   #ts          Dict( tech-node ): t x k
   ts=ts_data.data
-  # Δt for the future
-  ts_delta=1
+  #ts_weights: k - weight of each period:
+  ts_weights=ts_data.weights
+  #ts_deltas:  t x k - Δt of each segment x period
+  ts_deltas=ones(length(set["time_T"]),length(set["time_K"]))
 
   ## DEMAND ##
   if "tech_transmission" in keys(set) && slack_cost!=Inf
     # Force the demand and slack to match the generation either with transmission
-    push!(cep.info,"Σ_{tech}GEN['el',tech,t,k,node] = ts[el_demand-node,t,k]-SLACK['el',t,k,node]/Δt ∀ node,t,k")
-    @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], sum(cep.model[:GEN]["el",tech,t,k,node] for tech=set["tech"]) == ts["el_demand-"*node][t,k]-cep.model[:SLACK]["el",t,k,node]/ts_delta)
+    push!(cep.info,"Σ_{tech}GEN['el',tech,t,k,node] = ts[el_demand-node,t,k]-SLACK['el',t,k,node]/(Δt[t,k]*ts_weights[k]) ∀ node,t,k")
+    @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], sum(cep.model[:GEN]["el",tech,t,k,node] for tech=set["tech"]) == ts["el_demand-"*node][t,k]-cep.model[:SLACK]["el",t,k,node]/(ts_deltas[t,k]*ts_weights[k]))
   elseif !("tech_transmission" in keys(set)) && slack_cost!=Inf
     # or on copperplate
-    push!(cep.info,"Σ_{tech,node}GEN['el',tech,t,k,node]= Σ_{node}ts[el_demand-node,t,k]-SLACK['el',t,k,node]/Δt ∀ t,k")
-    @constraint(cep.model, [t=set["time_T"], k=set["time_K"]], sum(cep.model[:GEN]["el",tech,t,k,node] for node=set["nodes"], tech=set["tech"]) == sum(ts["el_demand-"*node][t,k]-cep.model[:SLACK]["el",t,k,node] for node=set["nodes"]))
+    push!(cep.info,"Σ_{tech,node}GEN['el',tech,t,k,node]= Σ_{node}ts[el_demand-node,t,k]-SLACK['el',t,k,node]/(Δt[t,k]*ts_weights[k]) ∀ t,k")
+    @constraint(cep.model, [t=set["time_T"], k=set["time_K"]], sum(cep.model[:GEN]["el",tech,t,k,node] for node=set["nodes"], tech=set["tech"]) == sum(ts["el_demand-"*node][t,k]-cep.model[:SLACK]["el",t,k,node]/(ts_deltas[t,k]*ts_weights[k]) for node=set["nodes"]))
   elseif "tech_transmission" in keys(set) && slack_cost==Inf
     # Force the demand without slack to match the generation either with transmission
     for node in set["nodes"]
@@ -397,12 +399,15 @@ function setup_opt_cep_co2_limit!(cep::OptModelCEP,
   set=cep.set
   #ts          Dict( tech-node ): t x k
   ts=ts_data.data
-  w = ts_data.weights
-  
+  #ts_weights: k - weight of each period:
+  ts_weights=ts_data.weights
+  #ts_deltas:  t x k - Δt of each segment x period
+  ts_deltas=ones(length(set["time_T"]),length(set["time_K"]))
+
   ## EMISSIONS ##
   # Limit the Emissions with co2_limit if it exists
   push!(cep.info,"ΣCOST_{account,tech}[account,'$(set["impact"][1])',tech] ≤ co2_limit*Σ_{node,t,k}ts[el_demand-node,t,k]")
-  @constraint(cep.model, sum(cep.model[:COST][account,"CO2",tech] for account=set["account"], tech=set["tech"])<= co2_limit*sum(sum(ts["el_demand-"*node]*w) for node=set["nodes"]))
+  @constraint(cep.model, sum(cep.model[:COST][account,"CO2",tech] for account=set["account"], tech=set["tech"])<= co2_limit*sum(ts["el_demand-"*node][t,k]*ts_deltas[t,k]*ts_weights[k] for t=set["time_T"], k=set["time_K"], node=set["nodes"]))
   return cep
 end
 
