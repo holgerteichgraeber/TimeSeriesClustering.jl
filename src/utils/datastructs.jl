@@ -115,7 +115,7 @@ struct OptVariable
   data::Array - includes the optimization variable output in  form of an array
   axes_names::Array{String,1} - includes the names of the different axes and is equivalent to the sets in the optimization formulation
   axes::Tuple - includes the values of the different axes of the optimization variables
-  type::String - defines the type of the variable being cv- Cost variable, dv - decision variable or ov - operation variable
+  type::String - defines the type of the variable being cv - cost variable - dv -design variable - ov - operating variable - sv - slack variable
 """
 struct OptVariable
  data::Array

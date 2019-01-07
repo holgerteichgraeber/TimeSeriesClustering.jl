@@ -234,6 +234,7 @@ end
 
 """
 function setup_opt_cep_simplestorage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+  Adding only intra-day storage:
   Looping constraint for each period (same start and end level for all periods) and limit storage to installed energy-capacity
 """
 function setup_opt_cep_simplestorage!(cep::OptModelCEP,
@@ -258,6 +259,7 @@ end
 
 """
 function setup_opt_cep_seasonalstorage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+  Adding inter-day storage:
   add variable INTERSTOR, calculate seasonal-storage-level and limit total storage to installed energy-capacity
 """
 function setup_opt_cep_seasonalstorage!(cep::OptModelCEP,
@@ -280,9 +282,9 @@ function setup_opt_cep_seasonalstorage!(cep::OptModelCEP,
     # Set storage level at the beginning of the year equal to the end of the year
     push!(cep.info,"INTERSTOR['el',tech, '0', node] = INTERSTOR['el',tech, 'end', node] ∀ node, tech_storage, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"]], cep.model[:INTERSTOR]["el",tech,0,node]== cep.model[:INTERSTOR]["el",tech,set["time_I_e"][end],node])
-    # Connect the previous seasonalday-storage level and the daily difference of the corresponding simpleday-storage with the new seasonalday-storage level
+    # Connect the previous seasonal-storage level and the daily difference of the corresponding simple-storage with the new seasonal-storage level
     push!(cep.info,"INTERSTOR['el',tech, i+1, node] = INTERSTOR['el',tech, i, node] + INTRASTOR['el',tech, 'k[i]', 't[end]', node] - INTRASTOR['el',tech, 'k[i]', 't[1]', node] - GEN['el', tech, 't[end]', 'k[i]', node] ⋅ η[tech] ∀ node, tech_storage_e, i")
-    # Limit the total storage (seasonal and simpleday) to be greater than zero and less than total storage cap
+    # Limit the total storage (seasonal and simple) to be greater than zero and less than total storage cap
     push!(cep.info,"0 ≤ INTERSTOR['el',tech, i, node] + INTRASTOR['el',tech, t, k[i], node] ≤ Σ_{infrastruct} INTERSTOR[tech,infrastruct,node] ∀ node, tech_storage_e, i, t")
     for i in set["time_I"]
         @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"]], cep.model[:INTERSTOR]["el",tech,i,node] == cep.model[:INTERSTOR]["el",tech,i-1,node] + cep.model[:INTRASTOR]["el",tech,set["time_T"][end],k_ids[i],node] - cep.model[:INTRASTOR]["el",tech,1,k_ids[i],node])

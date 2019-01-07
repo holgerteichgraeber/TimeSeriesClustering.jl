@@ -64,7 +64,7 @@ function run_opt(ts_data::ClustData,
 end
 
 """
-function run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables::Dict{String,OptVariable};solver::Any=CbcSolver(),descriptor::String="",   ,co2_limit::Number=Inf,slack_cost::Number=Inf,existing_infrastructure::Bool=false, simplestorage::Bool=false)
+function run_opt(ts_data::ClustData,opt_data::OptDataCEP;solver::Any=CbcSolver(),descriptor::String="",co2_limit::Number=Inf,slack_cost::Number=Inf,existing_infrastructure::Bool=false,limit_infrastructure::Bool=false,storage::String="none",transmission::Bool=false,print_flag::Bool=true,k_ids::Array{Int64,1}=Array{Int64,1}())
 
   Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
   options to tweak the model are to select a co2_limit, existing_infrastructure and simplestorage
@@ -72,7 +72,7 @@ function run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables:
   co2_limit: A number limiting the kg.-CO2-eq./MWh (normally in a range from 5-1250 kg-CO2-eq/MWh), give Inf or no kw if unlimited
   slack_cost: Number indicating the slack price/MWh (should be greater than 1e6), give Inf for no slack
   existing_infrastructure: true or false to include or exclude existing infrastructure to the model
-  storage: String "non" for no storage or "simple" to include simpleday or "seasonal" to include seasonalday storage
+  storage: String "none" for no storage or "simple" to include simple (only intra-day storage) or "seasonal" to include seasonal storage (inter-day)
 """
 function run_opt(ts_data::ClustData,
                  opt_data::OptDataCEP;
@@ -82,18 +82,18 @@ function run_opt(ts_data::ClustData,
                  slack_cost::Number=Inf,
                  existing_infrastructure::Bool=false,
                  limit_infrastructure::Bool=false,
-                 storage::String="non",
+                 storage::String="none",
                  transmission::Bool=false,
                  print_flag::Bool=true,
                  k_ids::Array{Int64,1}=Array{Int64,1}())
-   # Activated seasonal or simpleday storage corresponds with storage
+   # Activated seasonal or simple storage corresponds with storage
    if storage=="seasonal"
        storage=true
        seasonalstorage=true
    elseif storage=="simple"
        storage=true
        seasonalstorage=false
-   elseif storage =="non"
+   elseif storage =="none"
        storage=false
        seasonalstorage=false
   else
