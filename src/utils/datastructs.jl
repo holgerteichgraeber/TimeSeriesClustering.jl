@@ -104,6 +104,7 @@ end
 struct OptResult
  status::Symbol
  objective::Float64
+ total_demand::Float64
  variables::Dict{String,OptVariable}
  model_set::Dict{String,Array}
  model_info::Array{String}

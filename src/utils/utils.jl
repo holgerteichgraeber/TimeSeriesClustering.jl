@@ -84,7 +84,7 @@ function z_normalize(data::Array;
       # handle edge case sdv=0
       if hourly_sdv[i] !=0
         data_norm[i,:] = data_norm[i,:]./hourly_sdv[i]
-      end 
+      end
     end
     return data_norm, hourly_mean, hourly_sdv
   elseif scope == "full"
@@ -582,4 +582,29 @@ function set_clust_config(;kwargs...)
   end
   # Return Directory with the information of kwargs
   return config
+end
+
+"""
+function get_total_demand(cep::OptModelCEP, ts_data::ClustData)
+"""
+function get_total_demand(cep::OptModelCEP,
+                          ts_data::ClustData)
+  ## DATA ##
+  set=cep.set
+  #ts          Dict( tech-node ): t x k
+  ts=ts_data.data
+  #ts_weights: k - weight of each period:
+  ts_weights=ts_data.weights
+  #ts_deltas:  t x k - Δt of each segment x period
+  ts_deltas=1
+  total_demand=0
+  for node in set["nodes"]
+    for t in set["time_T"]
+      for k in set["time_K"]
+        total_demand+=ts["el_demand-"*node][t,k]*ts_deltas*ts_weights[k]
+      end
+    end
+  end
+
+  return total_demand
 end

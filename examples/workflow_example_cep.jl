@@ -11,7 +11,7 @@ cep_data = load_cep_data(state)
 
 ## CLUSTERING ##
 # run aggregation with kmeans
-ts_clust_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=5,n_clust=5) # default k-means make sure that n_init is high enough otherwise the results could be crap and drive you crazy
+ts_clust_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1000,n_clust=5) # default k-means make sure that n_init is high enough otherwise the results could be crap and drive you crazy
 
 # run no aggregation just get ts_full_data
 ts_full_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1,n_clust=365) # default k-means
@@ -24,7 +24,7 @@ solver=GurobiSolver(OutputFlag=0)
 co2_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="co2",co2_limit=1000) #generally values between 1250 and 10 are interesting
 
 # Include a Slack-Variable
-slack_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="slack",slack_cost=1e8)
+slack_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="slack",lost_cost=Dict{String,Number}("el_load"=>1e6, "CO2_emission"=>700))
 
 # Include existing infrastructure at no COST
 ex_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="ex",existing_infrastructure=true)
@@ -41,6 +41,6 @@ transmission_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,
 
 # Desing with clusered data and operation with ts_full_data
 # First solve the clustered case
-design_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="design&operation")
+design_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="design&operation", co2_limit=1)
 # Use the design variable results for the operational run
-operation_result = run_opt(ts_full_data.best_results,cep_data,design_result.opt_config,get_cep_design_variables(design_result);solver=solver,slack_cost=1e8)
+operation_result = run_opt(ts_full_data.best_results,cep_data,design_result.opt_config,get_cep_design_variables(design_result);solver=solver,lost_cost=Dict{String,Number}("el_load"=>1e6, "CO2_emission"=>700))
