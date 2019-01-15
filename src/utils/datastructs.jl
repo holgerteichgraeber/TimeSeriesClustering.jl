@@ -77,17 +77,6 @@ struct SimpleExtremeValueDescr
    end
 end
 
-"OptResult"
-struct OptResult
- status::Symbol
- objective::Float64
- total_demand::Float64
- variables::Dict{String,OptVariable}
- model_set::Dict{String,Array}
- model_info::Array{String}
- opt_config::Dict{String,Any}
-end
-
 """
 struct OptDataCEP <: OptData
    region::String          name of state or region data belongs to
@@ -158,6 +147,7 @@ end
 struct OptResult
  status::Symbol
  objective::Float64
+ total_demand::Float64
  variables::Dict{String,OptVariable}
  model_set::Dict{String,Array}
  model_info::Array{String}

@@ -30,9 +30,9 @@ function run_opt(ts_data::ClustData,
   end
   setup_opt_cep_generation_el!(cep, ts_data, opt_data)
   if opt_config["co2_limit"]!=Inf
-    setup_opt_cep_co2_limit!(cep, ts_data, opt_data, opt_config["lost_emission_cost"]; co2_limit=opt_config["co2_limit"])
+    setup_opt_cep_co2_limit!(cep, ts_data, opt_data; co2_limit=opt_config["co2_limit"],  lost_emission_cost=opt_config["lost_emission_cost"])
   end
-  setup_opt_cep_demand!(cep, ts_data, opt_data, opt_config["lost_load_cost"])
+  setup_opt_cep_demand!(cep, ts_data, opt_data; lost_load_cost=opt_config["lost_load_cost"])
   if "fixed_design_variables" in keys(opt_config)
     setup_opt_cep_fix_design_variables!(cep, ts_data, opt_data; fixed_design_variables=opt_config["fixed_design_variables"])
   end
@@ -42,7 +42,7 @@ function run_opt(ts_data::ClustData,
   if opt_config["limit_infrastructure"]
       setup_opt_cep_limit_infrastructure!(cep, ts_data, opt_data)
   end
-  setup_opt_cep_objective!(cep, ts_data, opt_data, opt_config["lost_load_cost"], opt_config["lost_emission_cost"])
+  setup_opt_cep_objective!(cep, ts_data, opt_data; lost_load_cost=opt_config["lost_load_cost"], lost_emission_cost=opt_config["lost_emission_cost"])
   return solve_opt_cep(cep, ts_data, opt_data, opt_config)
 end
 
@@ -124,7 +124,7 @@ function run_opt(ts_data::ClustData,
   lost_emission_cost=Dict{String,Number}("CO2"=>lost_CO2_emission_cost)
 
   #Setup the opt_config file based on the data input and
-  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, co2_limit=co2_limit, lost_load_cost=lost_load_cost, lost_emission_cost=lost_emission_cost, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_p=storage, seasonalstorage=seasonastorage, transmission=transmission, print_flag=print_flag)
+  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, co2_limit=co2_limit, lost_load_cost=lost_load_cost, lost_emission_cost=lost_emission_cost, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_p=storage, seasonalstorage=seasonalstorage, transmission=transmission, print_flag=print_flag)
   #Run the optimization problem
   run_opt(ts_data, opt_data, opt_config; solver=solver, k_ids=k_ids)
 end # run_opt

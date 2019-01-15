@@ -380,8 +380,8 @@ function setup_opt_cep_demand!(cep::OptModelCEP, ts_data::ClustData, opt_data::O
 """
 function setup_opt_cep_demand!(cep::OptModelCEP,
                             ts_data::ClustData,
-                            opt_data::OptDataCEP,
-                            lost_load_cost::Dict{String,Number})
+                            opt_data::OptDataCEP;
+                            lost_load_cost::Dict{String,Number}=Dict{String,Number}("el"=>Inf))
   ## DATA ##
   set=cep.set
   #ts          Dict( tech-node ): t x k
@@ -416,9 +416,9 @@ function setup_opt_cep_co2_limit!(cep::OptModelCEP, ts_data::ClustData, opt_data
 """
 function setup_opt_cep_co2_limit!(cep::OptModelCEP,
                             ts_data::ClustData,
-                            opt_data::OptDataCEP,
-                            lost_emission_cost::Dict{String,Number};
-                            co2_limit::Number=Inf)
+                            opt_data::OptDataCEP;
+                            co2_limit::Number=Inf,
+                            lost_emission_cost::Dict{String,Number}=Dict{String,Number}("CO2"=>Inf))
   ## DATA ##
   set=cep.set
   #ts          Dict( tech-node ): t x k
@@ -492,9 +492,9 @@ function setup_opt_cep_objective!(cep::OptModelCEP, ts_data::ClustData, opt_data
 """
 function setup_opt_cep_objective!(cep::OptModelCEP,
                             ts_data::ClustData,
-                            opt_data::OptDataCEP,
-                            lost_load_cost::Dict{String,Number},
-                            lost_emission_cost::Dict{String,Number})
+                            opt_data::OptDataCEP;
+                            lost_load_cost::Dict{String,Number}=Dict{String,Number}("el"=>Inf),
+                            lost_emission_cost::Dict{String,Number}=Dict{String,Number}("CO2"=>Inf))
   ## DATA ##
   set=cep.set
 
@@ -529,18 +529,18 @@ function solve_opt_cep(cep::OptModelCEP,
   total_demand=get_total_demand(cep,ts_data)
   variables=Dict{String,OptVariable}()
   # cv - Cost variable, dv - design variable, which is used to fix variables in a dispatch model, ov - operational variable
-  variables["COST"]=OptVariable(getvalue(cep.model[:COST]),"cv")
-  variables["CAP"]=OptVariable(getvalue(cep.model[:CAP]),"dv")
-  variables["GEN"]=OptVariable(getvalue(cep.model[:GEN]),"ov")
+  variables["COST"]=OptVariable(cep,:COST,"cv")
+  variables["CAP"]=OptVariable(cep,:CAP,"dv")
+  variables["GEN"]=OptVariable(cep,:GEN,"ov")
   lost_load=0
   lost_emission=0
   if opt_config["lost_load_cost"]["el"]!=Inf
-    variables["SLACK"]=OptVariable(getvalue(cep.model[:SLACK]),"sv")
-    variables["LL"]=OptVariable(getvalue(cep.model[:LL]),"sv")
+    variables["SLACK"]=OptVariable(cep,:SLACK,"sv")
+    variables["LL"]=OptVariable(cep,:LL,"sv")
     lost_load=sum(variables["LL"].data)
   end
   if opt_config["lost_emission_cost"]["CO2"]!=Inf
-    variables["LE"]=OptVariable(getvalue(cep.model[:LE]),"sv")
+    variables["LE"]=OptVariable(cep,:LE,"sv")
     lost_emission=sum(variables["LE"].data)
   end
   if opt_config["storage_p"] && opt_config["storage_e"]
