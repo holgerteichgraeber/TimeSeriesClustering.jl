@@ -175,7 +175,7 @@ function setup_opt_cep_generation_el!(cep::OptModelCEP,
 
     ## GENERATION ELECTRICITY ##
     # Calculate Variable Costs
-    push!(cep.info,"COST['var',impact,tech] = Σ_{t,k,node}GEN['el',t,k,node]⋅ ts_weights[k] ⋅ Δt[t,k] ⋅ var_costs[tech,impact] ∀ impact, tech_generation")
+    push!(cep.info,"COST['var',impact,tech] = Σ_{t,k,node}GEN['el',t,k,node]⋅ ts_weights[k] ⋅ ts_deltas ⋅ var_costs[tech,impact] ∀ impact, tech_generation")
     @constraint(cep.model, [impact=set["impact"], tech=set["tech_generation"]], cep.model[:COST]["var",impact,tech]==sum(cep.model[:GEN]["el",tech,t,k,node]*ts_weights[k]*ts_deltas*find_cost_in_df(var_costs,nodes,tech,node,impact) for node=set["nodes"], t=set["time_T"], k=set["time_K"]))
     # Calculate Fixed Costs
     push!(cep.info,"COST['cap_fix',impact,tech] = Σ_{node}CAP[tech,'new',node] ⋅ cap_costs[tech,impact] ∀ impact, tech_generation")
@@ -244,7 +244,7 @@ function setup_opt_cep_storage!(cep::OptModelCEP,
     push!(cep.info,"GEN['el',tech, t, k, node] =0 ∀ node, tech_storage_e, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"], k=set["time_K"]], cep.model[:GEN]["el",tech,t,k,node]==0)
     # Connect the previous storage level and the integral of the flows with the new storage level
-    push!(cep.info,"INTRASTOR['el',tech, t, k, node] = INTRASTOR['el',tech, t-1, k, node] + Δt[t,k] ⋅ (STORGEN['el','charge',tech, t, k, node] ⋅ η[tech] - STORGEN['el','discharge',tech, t, k, node] / η[tech])∀ node, tech_storage_e, t, k")
+    push!(cep.info,"INTRASTOR['el',tech, t, k, node] = INTRASTOR['el',tech, t-1, k, node] + ts_deltas ⋅ (STORGEN['el','charge',tech, t, k, node] ⋅ η[tech] - STORGEN['el','discharge',tech, t, k, node] / η[tech])∀ node, tech_storage_e, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t in set["time_T"], k=set["time_K"]], cep.model[:INTRASTOR]["el",tech,t,k,node]==cep.model[:INTRASTOR]["el",tech,t-1,k,node] + ts_deltas * (cep.model[:INTRASTORGEN]["el","charge",split(tech,"_")[1]*"_p",t,k,node] * find_val_in_df(techs,:tech,tech,"eff_in") - cep.model[:INTRASTORGEN]["el","discharge",split(tech,"_")[1]*"_p",t,k,node] / find_val_in_df(techs,:tech,tech,"eff_out")))
     # Sum the INTRASTORGEN up to calculate the actual GEN of the technology
     push!(cep.info,"GEN['el',tech, t, k, node] = INTRASTORGEN['el','discharge',tech, t, k, node] - INTRASTORGEN['el','charge',tech, t, k, node] ∀ node, tech_storage_e, t, k")
@@ -422,13 +422,13 @@ function setup_opt_cep_co2_limit!(cep::OptModelCEP,
   ## EMISSIONS ##
   if lost_cost!=Dict{String,Number}("el_load"=>Inf, "CO2_emission"=>Inf)
     # Limit the Emissions with co2_limit if it exists
-    push!(cep.info,"ΣCOST_{account,tech}[account,'$(set["impact"][1])',tech] ≤ LE['CO2'] + co2_limit Σ_{node,t,k} ts[el_demand-node,t,k] ⋅ ts_weights[k] ⋅ ts_deltas[t,k]")
+    push!(cep.info,"ΣCOST_{account,tech}[account,'$(set["impact"][1])',tech] ≤ LE['CO2'] + co2_limit Σ_{node,t,k} ts[el_demand-node,t,k] ⋅ ts_weights[k] ⋅ ts_deltas")
     @constraint(cep.model, sum(cep.model[:COST][account,"CO2",tech] for account=set["account"], tech=set["tech"])<= cep.model[:LE]["CO2"] +  co2_limit*sum(ts["el_demand-"*node][t,k]*ts_deltas*ts_weights[k] for t=set["time_T"], k=set["time_K"], node=set["nodes"]))
   else
     # Limit the Emissions with co2_limit if it exists
     # Total demand can also be determined with the function get_total_demand() edit both in case of changes of e.g. ts_deltas
     # QUESTION Do we want to include the the function here instead of the mathematical expression?
-    push!(cep.info,"ΣCOST_{account,tech}[account,'$(set["impact"][1])',tech] ≤ co2_limit ⋅ Σ_{node,t,k} ts[el_demand-node,t,k] ⋅ ts_weights[k] ⋅ ts_deltas[t,k]")
+    push!(cep.info,"ΣCOST_{account,tech}[account,'$(set["impact"][1])',tech] ≤ co2_limit ⋅ Σ_{node,t,k} ts[el_demand-node,t,k] ⋅ ts_weights[k] ⋅ ts_deltas")
     @constraint(cep.model, sum(cep.model[:COST][account,"CO2",tech] for account=set["account"], tech=set["tech"])<= co2_limit*sum(ts["el_demand-$node"][t,k]*ts_weights[k]*ts_deltas for node=set["nodes"], t=set["time_T"], k=set["time_K"]))
   end
   return cep
@@ -521,8 +521,10 @@ function solve_opt_cep(cep::OptModelCEP,
     variables["LL"]=OptVariable(getvalue(cep.model[:LL]),"sv")
     variables["LE"]=OptVariable(getvalue(cep.model[:LE]),"sv")
     lost_load=sum(variables["LL"].data)
+    lost_emission=sum(variables["LE"].data)
   else
     lost_load=0
+    lost_emission=0
   end
   if opt_config["storage_p"] && opt_config["storage_e"]
     variables["INTRASTOR"]=OptVariable(getvalue(cep.model[:INTRASTOR]),"ov")
@@ -535,10 +537,10 @@ function solve_opt_cep(cep::OptModelCEP,
     variables["FLOW"]=OptVariable(getvalue(cep.model[:FLOW]),"ov")
   end
   currency=variables["COST"].axes[2][1]
-  if lost_load==0
-    opt_config["print_flag"] && @info("Solved Scenario $(opt_config["descriptor"]): "*String(status)*" min COST[$currency]: $objective equivalent $(objective/total_demand) to s.t. CO₂-Emissions per MWh ≤ $(opt_config["co2_limit"])")
+  if lost_load==0 && lost_emission==0
+    opt_config["print_flag"] && @info("Solved Scenario $(opt_config["descriptor"]): "*String(status)*" min COST: $(round(objective,sigdigits=4)) [$currency] ⇨ $(round(objective/total_demand,sigdigits=4)) [$currency per MWh] s.t. Emissions ≤ $(opt_config["co2_limit"]) [kg-CO₂-eq. per MWh]")
   else
-    opt_config["print_flag"] && @info("Solved Scenario $(opt_config["descriptor"]): "*String(status)*" with LL $lost_load MWh s.t. CO₂-Emissions per MWh ≤ $(opt_config["co2_limit"]) and a CO₂-Emission-Violation of $(sum(variables["LE"].data)) kg-CO2-eq., which is equivalent to $(sum(variables["LE"].data)/total_demand)")
+    opt_config["print_flag"] && @info("Solved Scenario $(opt_config["descriptor"]): "*String(status)*" min COST: $(round(sum(get_cep_variable_value(variables["COST"], [:,1,:])),sigdigits=4)) [$currency] ⇨ $(round(sum(get_cep_variable_value(variables["COST"], [:,1,:]))/total_demand,sigdigits=4)) [$currency per MWh] with LL: $lost_load [MWh] s.t. Emissions ≤ $(opt_config["co2_limit"]) + $(round(lost_emission/total_demand,sigdigits=4)) (violation) [kg-CO₂-eq. per MWh]")
   end
   return OptResult(status,objective,total_demand,variables,cep.set,cep.info,opt_config)
 end
