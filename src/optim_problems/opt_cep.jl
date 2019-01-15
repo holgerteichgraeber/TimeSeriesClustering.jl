@@ -75,12 +75,6 @@ function setup_opt_cep_basic_variables!(cep::OptModelCEP,
                                   opt_data::OptDataCEP)
   ## DATA ##
   set=cep.set
-  #ts          Dict( tech-node ): t x k
-  ts=ts_data.data
-  #ts_weights: k - weight of each period:
-  ts_weights=ts_data.weights
-  #ts_deltas:  t x k - Δt of each segment x period
-  ts_deltas=1
 
   ## VARIABLES ##
   # Cost
@@ -96,10 +90,10 @@ function setup_opt_cep_basic_variables!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_slack!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP) set::Dict)
-  Adding variable SLACK, LL, LE
+function setup_opt_cep_lost_load!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP) set::Dict)
+  Adding variable SLACK, LL
 """
-function setup_opt_cep_slack!(cep::OptModelCEP,
+function setup_opt_cep_lost_load!(cep::OptModelCEP,
                                   ts_data::ClustData,
                                   opt_data::OptDataCEP)
   ## DATA ##
@@ -109,22 +103,35 @@ function setup_opt_cep_slack!(cep::OptModelCEP,
   #ts_deltas:  t x k - Δt of each segment x period
   ts_deltas=1
 
-  ## SLACK ##
+  ## LOST LOAD ##
   # Slack variable #
   push!(cep.info,"Variable SLACK[sector, t, k, node] ≥ 0 in MW")
   @variable(cep.model, SLACK[sector=set["sector"], t=set["time_T"], k=set["time_K"], node=set["nodes"]] >=0)
   # Lost Load variable #
   push!(cep.info,"Variable LL[sector, t, k, node] ≥ 0 in MWh")
   @variable(cep.model, LL[sector=set["sector"], node=set["nodes"]] >=0)
-  # Lost Emission variable #
-  push!(cep.info,"Variable LE[impact_{environment}] ≥ 0 in kg")
-  @variable(cep.model, LE[impact=["CO2"]] >=0)
-
+  # Calculation of Lost Load
   push!(cep.info,"LL[sector, node] = Σ SLACK[sector, t, k, node] ⋅ ts_weights[k] ⋅ Δt[t,k] ∀ sector, node")
   @constraint(cep.model, [sector=set["sector"], node=set["nodes"]], cep.model[:LL][sector, node]==sum(cep.model[:SLACK][sector, t, k, node]*ts_weights[k]*ts_deltas for t=set["time_T"], k=set["time_K"]))
   return cep
 end
 
+"""
+function setup_opt_cep_lost_emission!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+  Adding variable LE
+"""
+function setup_opt_cep_lost_emission!(cep::OptModelCEP,
+                              ts_data::ClustData,
+                              opt_data::OptDataCEP)
+  ## DATA ##
+  set=cep.set
+
+  ## LOST EMISSION ##
+  # Lost Emission variable #
+  push!(cep.info,"Variable LE[impact_{environment}] ≥ 0 in kg")
+  @variable(cep.model, LE[impact=["CO2"]] >=0)
+  return cep
+end
 
 """
 function setup_opt_cep_fix_design_variables!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP) set::Dict)
@@ -371,23 +378,23 @@ function setup_opt_cep_demand!(cep::OptModelCEP, ts_data::ClustData, opt_data::O
 """
 function setup_opt_cep_demand!(cep::OptModelCEP,
                             ts_data::ClustData,
-                            opt_data::OptDataCEP;
-                            lost_cost::Dict{String,Number}=Dict{String,Number}("el_load"=>Inf, "CO2_emission"=>Inf))
+                            opt_data::OptDataCEP,
+                            lost_load_cost::Dict{String,Number})
   ## DATA ##
   set=cep.set
   #ts          Dict( tech-node ): t x k
   ts=ts_data.data
 
   ## DEMAND ##
-  if "tech_transmission" in keys(set) && lost_cost!=Dict{String,Number}("el_load"=>Inf, "CO2_emission"=>Inf)
+  if "tech_transmission" in keys(set) && lost_load_cost["el"]!=Inf
     # Force the demand and slack to match the generation either with transmission
     push!(cep.info,"Σ_{tech}GEN['el',tech,t,k,node] = ts[el_demand-node,t,k]-SLACK['el',t,k,node] ∀ node,t,k")
     @constraint(cep.model, [node=set["nodes"], t=set["time_T"], k=set["time_K"]], sum(cep.model[:GEN]["el",tech,t,k,node] for tech=set["tech"]) == ts["el_demand-"*node][t,k]-cep.model[:SLACK]["el",t,k,node])
-  elseif !("tech_transmission" in keys(set)) && lost_cost!=Dict{String,Number}("el_load"=>Inf, "CO2_emission"=>Inf)
+  elseif !("tech_transmission" in keys(set)) && lost_load_cost["el"]!=Inf
     # or on copperplate
     push!(cep.info,"Σ_{tech,node}GEN['el',tech,t,k,node]= Σ_{node}ts[el_demand-node,t,k]-SLACK['el',t,k,node] ∀ t,k")
     @constraint(cep.model, [t=set["time_T"], k=set["time_K"]], sum(cep.model[:GEN]["el",tech,t,k,node] for node=set["nodes"], tech=set["tech"]) == sum(ts["el_demand-"*node][t,k]-cep.model[:SLACK]["el",t,k,node] for node=set["nodes"]))
-  elseif "tech_transmission" in keys(set) && lost_cost==Dict{String,Number}("el_load"=>Inf, "CO2_emission"=>Inf)
+  elseif "tech_transmission" in keys(set) && lost_load_cost["el"]==Inf
     # Force the demand without slack to match the generation either with transmission
     for node in set["nodes"]
       push!(cep.info,"Σ_{tech}GEN['el',tech,t,k,node] = ts[el_demand-node,t,k] ∀ node,t,k")
@@ -407,9 +414,9 @@ function setup_opt_cep_co2_limit!(cep::OptModelCEP, ts_data::ClustData, opt_data
 """
 function setup_opt_cep_co2_limit!(cep::OptModelCEP,
                             ts_data::ClustData,
-                            opt_data::OptDataCEP;
-                            co2_limit::Number=Inf,
-                            lost_cost::Dict{String,Number}=Dict{String,Number}("el_load"=>Inf, "CO2_emission"=>Inf))
+                            opt_data::OptDataCEP,
+                            lost_emission_cost::Dict{String,Number};
+                            co2_limit::Number=Inf)
   ## DATA ##
   set=cep.set
   #ts          Dict( tech-node ): t x k
@@ -420,7 +427,7 @@ function setup_opt_cep_co2_limit!(cep::OptModelCEP,
   ts_deltas=1
 
   ## EMISSIONS ##
-  if lost_cost!=Dict{String,Number}("el_load"=>Inf, "CO2_emission"=>Inf)
+  if lost_emission_cost["CO2"]!=Inf
     # Limit the Emissions with co2_limit if it exists
     push!(cep.info,"ΣCOST_{account,tech}[account,'$(set["impact"][1])',tech] ≤ LE['CO2'] + co2_limit Σ_{node,t,k} ts[el_demand-node,t,k] ⋅ ts_weights[k] ⋅ ts_deltas")
     @constraint(cep.model, sum(cep.model[:COST][account,"CO2",tech] for account=set["account"], tech=set["tech"])<= cep.model[:LE]["CO2"] +  co2_limit*sum(ts["el_demand-"*node][t,k]*ts_deltas*ts_weights[k] for t=set["time_T"], k=set["time_K"], node=set["nodes"]))
@@ -483,19 +490,26 @@ function setup_opt_cep_objective!(cep::OptModelCEP, ts_data::ClustData, opt_data
 """
 function setup_opt_cep_objective!(cep::OptModelCEP,
                             ts_data::ClustData,
-                            opt_data::OptDataCEP;
-                            lost_cost::Dict{String,Number}=Dict{String,Number}("el_load"=>Inf, "CO2_emission"=>Inf))
+                            opt_data::OptDataCEP,
+                            lost_load_cost::Dict{String,Number},
+                            lost_emission_cost::Dict{String,Number})
   ## DATA ##
   set=cep.set
 
   ## OBJECTIVE ##
   # Minimize the total €-Costs s.t. the Constraints introduced above
-  if lost_cost==Dict{String,Number}("el_load"=>Inf, "CO2_emission"=>Inf)
+  if lost_load_cost["el"]==Inf && lost_emission_cost["CO2"]==Inf
     push!(cep.info,"min Σ_{account,tech}COST[account,'$(set["impact"][1])',tech] st. above")
     @objective(cep.model, Min,  sum(cep.model[:COST][account,set["impact"][1],tech] for account=set["account"], tech=set["tech"]))
+  elseif lost_load_cost["el"]!=Inf && lost_emission_cost["CO2"]==Inf
+    push!(cep.info,"min Σ_{account,tech}COST[account,'$(set["impact"][1])',tech] + Σ_{node} LL['el'] ⋅ $(lost_load_cost["el"]) st. above")
+    @objective(cep.model, Min,  sum(cep.model[:COST][account,set["impact"][1],tech] for account=set["account"], tech=set["tech"]) + sum(cep.model[:LL]["el",node] for node=set["nodes"])*lost_load_cost["el"])
+  elseif lost_load_cost["el"]==Inf && lost_emission_cost["CO2"]!=Inf
+    push!(cep.info,"min Σ_{account,tech}COST[account,'$(set["impact"][1])',tech] +  LE['CO2'] ⋅ $(lost_emission_cost["CO2"]) st. above")
+    @objective(cep.model, Min,  sum(cep.model[:COST][account,set["impact"][1],tech] for account=set["account"], tech=set["tech"]) +  cep.model[:LE]["CO2"]*lost_emission_cost["CO2"])
   else
-    push!(cep.info,"min Σ_{account,tech}COST[account,'$(set["impact"][1])',tech] + Σ_{node} LL['el'] ⋅ $(lost_cost["el_load"]) + LE['CO2'] ⋅ $(lost_cost["CO2_emission"]) st. above")
-    @objective(cep.model, Min,  sum(cep.model[:COST][account,set["impact"][1],tech] for account=set["account"], tech=set["tech"]) + sum(cep.model[:LL]["el",node] for node=set["nodes"])*lost_cost["el_load"] + cep.model[:LE]["CO2"]*lost_cost["CO2_emission"])
+    push!(cep.info,"min Σ_{account,tech}COST[account,'$(set["impact"][1])',tech] + Σ_{node} LL['el'] ⋅ $(lost_load_cost["el"]) +  LE['CO2'] ⋅ $(lost_emission_cost["CO2"]) st. above")
+    @objective(cep.model, Min,  sum(cep.model[:COST][account,set["impact"][1],tech] for account=set["account"], tech=set["tech"]) + sum(cep.model[:LL]["el",node] for node=set["nodes"])*lost_load_cost["el"] + cep.model[:LE]["CO2"]*lost_emission_cost["CO2"])
   end
   return cep
 end
@@ -516,15 +530,16 @@ function solve_opt_cep(cep::OptModelCEP,
   variables["COST"]=OptVariable(getvalue(cep.model[:COST]),"cv")
   variables["CAP"]=OptVariable(getvalue(cep.model[:CAP]),"dv")
   variables["GEN"]=OptVariable(getvalue(cep.model[:GEN]),"ov")
-  if opt_config["lost_cost"]!=Dict{String,Number}("el_load"=>Inf, "CO2_emission"=>Inf)
+  lost_load=0
+  lost_emission=0
+  if opt_config["lost_load_cost"]["el"]!=Inf
     variables["SLACK"]=OptVariable(getvalue(cep.model[:SLACK]),"sv")
     variables["LL"]=OptVariable(getvalue(cep.model[:LL]),"sv")
-    variables["LE"]=OptVariable(getvalue(cep.model[:LE]),"sv")
     lost_load=sum(variables["LL"].data)
+  end
+  if opt_config["lost_emission_cost"]["CO2"]!=Inf
+    variables["LE"]=OptVariable(getvalue(cep.model[:LE]),"sv")
     lost_emission=sum(variables["LE"].data)
-  else
-    lost_load=0
-    lost_emission=0
   end
   if opt_config["storage_p"] && opt_config["storage_e"]
     variables["INTRASTOR"]=OptVariable(getvalue(cep.model[:INTRASTOR]),"ov")
