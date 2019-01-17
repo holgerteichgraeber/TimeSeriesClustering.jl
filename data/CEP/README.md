@@ -2,6 +2,7 @@
 Power - MW
 Energy - MWh
 lengths - km
+CO2-Emissions - kg-CO_2-eq.
 
 # Setup for each model #
 folder-name: [region]-[nodes]

@@ -5,5 +5,9 @@ coal,GER,2015,5.25E+04,0
 oil,GER,2015,1.31E+04,0
 gas,GER,2015,7.70E+03,0
 bat_e,GER,2015,5.81E+03,0
-bat_p,GER,2015,0,0
+bat_in,GER,2015,0,0
+bat_out,GER,2015,0,0
+h2_e,GER,2015,4.8,0
+h2_in,GER,2015,11712,0
+h2_out,GER,2015,6000,0
 trans,GER,2015,0,0

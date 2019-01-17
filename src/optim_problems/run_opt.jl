@@ -18,10 +18,10 @@ function run_opt(ts_data::ClustData,
   if opt_config["lost_emission_cost"]["CO2"]!=Inf
     setup_opt_cep_lost_emission!(cep, ts_data, opt_data)
   end
-  if opt_config["storage_p"] && opt_config["storage_e"] && opt_config["seasonalstorage"]
+  if opt_config["storage_in"] && opt_config["storage_out"] && opt_config["storage_e"] && opt_config["seasonalstorage"]
     setup_opt_cep_storage!(cep, ts_data, opt_data)
     setup_opt_cep_seasonalstorage!(cep, ts_data, opt_data, k_ids)
-  elseif opt_config["storage_p"] && opt_config["storage_e"] && !(opt_config["seasonalstorage"])
+  elseif opt_config["storage_in"] && opt_config["storage_out"] && opt_config["storage_e"] && !(opt_config["seasonalstorage"])
     setup_opt_cep_storage!(cep, ts_data, opt_data)
     setup_opt_cep_simplestorage!(cep, ts_data, opt_data)
   end
@@ -124,7 +124,7 @@ function run_opt(ts_data::ClustData,
   lost_emission_cost=Dict{String,Number}("CO2"=>lost_CO2_emission_cost)
 
   #Setup the opt_config file based on the data input and
-  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, co2_limit=co2_limit, lost_load_cost=lost_load_cost, lost_emission_cost=lost_emission_cost, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_p=storage, seasonalstorage=seasonalstorage, transmission=transmission, print_flag=print_flag)
+  opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, co2_limit=co2_limit, lost_load_cost=lost_load_cost, lost_emission_cost=lost_emission_cost, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_in=storage, storage_out=storage, seasonalstorage=seasonalstorage, transmission=transmission, print_flag=print_flag)
   #Run the optimization problem
   run_opt(ts_data, opt_data, opt_config; solver=solver, k_ids=k_ids)
 end # run_opt

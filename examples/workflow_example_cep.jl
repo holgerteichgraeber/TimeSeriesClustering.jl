@@ -3,7 +3,7 @@
 include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_development.jl")))
 
 ## LOAD DATA ##
-state="GER_1" # or "GER_18" or "CA_1" or "TX_1"
+state="GER_18" # or "GER_18" or "CA_1" or "TX_1"
 # laod ts-data
 ts_input_data, = load_timeseries_data("CEP", state; K=365, T=24) #CEP
 # load cep-data
@@ -38,7 +38,7 @@ simplestor_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,de
 seasonalstor_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="seasonal storage",storage="seasonal",k_ids=ts_clust_data.best_ids)
 
 # Transmission
-#transmission_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="transmission",transmission=true)
+transmission_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="transmission",transmission=true)
 
 # Desing with clusered data and operation with ts_full_data
 # First solve the clustered case

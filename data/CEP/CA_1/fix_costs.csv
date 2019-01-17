@@ -17,5 +17,9 @@ gas,MX,2016,11000,0
 gas,NW,2016,8910,0
 gas,SW,2016,9020,0
 bat_e,all,2016,10000,0
-bat_p,all,2016,3750,0
+bat_in,all,2016,0,0
+bat_out,all,2016,0,0
+h2_e,all,2016,4.8,0
+h2_in,all,2016,11712,0
+h2_out,all,2016,6000,0
 trans,all,2016,0,0
