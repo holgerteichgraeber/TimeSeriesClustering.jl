@@ -27,10 +27,11 @@ function run_clust(
       method::String="kmeans",
       representation::String="centroid",
       n_clust::Int=5,
+      n_seg::Int=0,
       n_init::Int=100,
       iterations::Int=300,
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
-      save::String="",
+      save::String="",#QUESTION dead?
       get_all_clust_results::Bool=false,
       kwargs...
     )
@@ -73,7 +74,10 @@ function run_clust(
     # save in merged format as array
     # NOTE if you need clustered data more precise than 8 digits change the following line accordingly
      n_digits_data_round=8 # Gurobi throws warning when rounding errors on order~1e-13 are passed in. Rounding errors occur in clustering of many zeros (e.g. solar).
-     b_merged = ClustDataMerged(data_norm_merged.region,n_clust,data_norm_merged.T,round.(centers[ind_mincost]; digits=n_digits_data_round),data_norm_merged.data_type,weights[ind_mincost])
+     b_merged = ClustDataMerged(data_norm_merged.region,n_clust,data_norm_merged.T,round.(centers[ind_mincost]; digits=n_digits_data_round),data_norm_merged.data_type,weights[ind_mincost],data_norm_merged.deltas)
+     if n_seg!=b_merged.T &&  n_seg!=0
+       b_merged=intraperiod_segmentation(b_merged;n_seg=n_seg,norm_scope=norm_scope,iterations=iterations)
+     end
     # transfer into ClustData format
     best_results = ClustData(b_merged)
     best_ids = clustids[ind_mincost]
@@ -136,7 +140,7 @@ sup_kw_args["norm_op"]=["zscore"]
 sup_kw_args["norm_scope"]=["full","hourly","sequence"]
 sup_kw_args["method+representation"]=["kmeans+centroid","kmeans+medoid","kmedoids+medoid","kmedoids_exact+medoid","hierarchical+centroid","hierarchical+medoid"]#["dbaclust+centroid","kshape+centroid"]
 
-"""
+"""return centers,weights,clustids,cost,iter
 Returns supported keyword arguments for clustering function run_clust()
 """
 function get_sup_kw_args()
@@ -341,13 +345,13 @@ function run_clust_hierarchical(
 Helper function to run run_clust_hierarchical_centroids and run_clust_hierarchical_medoid
 """
 function run_clust_hierarchical(
-    data_norm::ClustDataMerged,
+    data::Array{Float64,2},
     n_clust::Int,
     iterations::Int;
     _dist::SemiMetric = SqEuclidean()
     )
 
-    d_mat=pairwise(_dist,data_norm.data)
+    d_mat=pairwise(_dist,data)
     r=hclust(d_mat,linkage=:ward_presquared)
     clustids = cutree(r,k=n_clust)
     weights = calc_weights(clustids,n_clust)
@@ -369,7 +373,7 @@ function run_clust_hierarchical_centroid(
     iterations::Int;
     _dist::SemiMetric = SqEuclidean()
     )
-    ~,weights,clustids,~,iter= run_clust_hierarchical(data_norm,n_clust,iterations;_dist=_dist)
+    x,weights,clustids,x,iter= run_clust_hierarchical(data_norm.data,n_clust,iterations;_dist=_dist)
     centers_norm = calc_centroids(data_norm.data,clustids)
     cost = calc_SSE(data_norm.data,centers_norm,clustids)
     centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)

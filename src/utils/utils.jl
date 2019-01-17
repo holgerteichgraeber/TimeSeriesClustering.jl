@@ -604,12 +604,12 @@ function get_total_demand(cep::OptModelCEP,
   #ts_weights: k - weight of each period:
   ts_weights=ts_data.weights
   #ts_deltas:  t x k - Δt of each segment x period
-  ts_deltas=1
+  ts_deltas=ts_data.deltas
   total_demand=0
   for node in set["nodes"]
     for t in set["time_T"]
       for k in set["time_K"]
-        total_demand+=ts["el_demand-"*node][t,k]*ts_deltas*ts_weights[k]
+        total_demand+=ts["el_demand-"*node][t,k]*ts_deltas[t,k]*ts_weights[k]
       end
     end
   end

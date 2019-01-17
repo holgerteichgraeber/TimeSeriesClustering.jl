@@ -20,6 +20,7 @@ struct ClustData <: TSData
  weights::Array{Float64}
  mean::Dict{String,Array}
  sdv::Dict{String,Array}
+ deltas::Array{Float64,2}
 end
 
 "ClustDataMerged"
@@ -32,6 +33,7 @@ struct ClustDataMerged <: TSData
  weights::Array{Float64}
  mean::Dict{String,Array}
  sdv::Dict{String,Array}
+ deltas::Array{Float64,2}
 end
 
 "ClustResultAll"
@@ -218,9 +220,9 @@ function ClustData(region::String,
                          el_demand::Array=[],
                          solar::Array=[],
                          wind::Array=[],
-                         weights::Array{Float64}=ones(K),
-                         mean::Dict{String,Array}=Dict{String,Array}(),
-                         sdv::Dict{String,Array}=Dict{String,Array}()
+                         weights::Array{Float64}=ones(K),       mean::Dict{String,Array}=Dict{String,Array}(),
+                         sdv::Dict{String,Array}=Dict{String,Array}(),
+                         deltas::Array{Float64,2}=ones(T,K)
                          )
    dt = Dict{String,Array}()
    mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
@@ -254,7 +256,7 @@ function ClustData(region::String,
    end
    isempty(dt) && @error("Need to provide at least one input data stream")
    # TODO: Check dimensionality of K T and supplied input data streams KxT
-   ClustData(region,K,T,dt,weights,mean,sdv)
+   ClustData(region,K,T,dt,weights,mean,sdv,deltas)
 end
 
 """
@@ -274,7 +276,8 @@ function ClustData(region::String,
                        data::Dict{String,Array},
                        weights::Array{Float64};
                        mean::Dict{String,Array}=Dict{String,Array}(),
-                       sdv::Dict{String,Array}=Dict{String,Array}()
+                       sdv::Dict{String,Array}=Dict{String,Array}(),
+                       deltas::Array{Float64,2}=ones(T,K)
                        )
  isempty(data) && @error("Need to provide at least one input data stream")
  mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
@@ -285,7 +288,7 @@ function ClustData(region::String,
    end
  end
  # TODO check if right keywords are used
- ClustData(region,K,T,data,weights,mean,sdv)
+ ClustData(region,K,T,data,weights,mean,sdv,deltas)
 end
 
 """
@@ -300,7 +303,7 @@ function ClustData(data::ClustDataMerged)
    i+=1
    data_dict[k] = data.data[(1+data.T*(i-1)):(data.T*i),:]
  end
- ClustData(data.region,data.K,data.T,data_dict,data.weights,data.mean,data.sdv)
+ ClustData(data.region,data.K,data.T,data_dict,data.weights,data.mean,data.sdv,data.deltas)
 end
 
 """
@@ -334,9 +337,10 @@ function ClustDataMerged(region::String,
                        T::Int,
                        data::Array,
                        data_type::Array{String},
-                       weights::Array{Float64};
+                       weights::Array{Float64},
+                       deltas::Array{Float64,2};
                        mean::Dict{String,Array}=Dict{String,Array}(),
-                       sdv::Dict{String,Array}=Dict{String,Array}()
+                       sdv::Dict{String,Array}=Dict{String,Array}(),
                        )
  mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
  if !mean_sdv_provided
@@ -345,7 +349,7 @@ function ClustDataMerged(region::String,
      sdv[dt]=ones(T)
    end
  end
- ClustDataMerged(region,K,T,data,data_type,weights,mean,sdv)
+ ClustDataMerged(region,K,T,data,data_type,weights,mean,sdv,deltas)
 end
 
 """
@@ -363,5 +367,5 @@ function ClustDataMerged(data::ClustData)
    data_merged[(1+data.T*(i-1)):(data.T*i),:] = v
    push!(data_type,k)
  end
- ClustDataMerged(data.region,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv)
+ ClustDataMerged(data.region,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv,data.deltas)
 end
