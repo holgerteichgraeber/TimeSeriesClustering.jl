@@ -617,3 +617,49 @@ function get_total_demand(cep::OptModelCEP,
 
   return total_demand
 end
+
+"""
+function get_cost_series(cep_data::OptDataCEP,clust_res::ClustResultBest, opt_res::OptResult)
+  Return an array for the time series of costs in all the impact dimensions and the set of impacts
+"""
+function get_cost_series(nodes::DataFrame,
+                        var_costs::DataFrame,
+                       clust_res::ClustResultBest,
+                       set::Dict{String,Array},
+                       variables::Dict{String,OptVariable})
+  ## DATA ##
+  # ts_ids:   n_clustered periods
+  ts_ids=clust_res.best_ids
+  #ts_weights: k - weight of each period:
+  ts_weights=clust_res.best_results.weights
+  #ts_deltas:  t x k - Δt of each segment x period
+  ts_deltas=clust_res.best_results.deltas
+
+  #emision at each period-step
+  cost_ts=zeros(length(ts_ids)+1,length(set["impact"]))
+  #At the beginning yearly fixed and cap costs
+  cost_ts[1,:]=sum(get_cep_variable_value(variables["COST"],["cap_fix",:,:]),dims=2)
+
+  for n in 1:length(ts_ids)
+        var_cost=zeros(length(set["impact"]))
+        i=1
+        for impact in set["impact"]
+          for tech in set["tech"]
+            for node in set["nodes"]
+              var_cost[i] += find_cost_in_df(var_costs,nodes,tech,node,impact)*  sum(get_cep_variable_value(variables["GEN"],["el",tech,:,ts_ids[n],node])' * ts_deltas[:,ts_ids[n]])
+            end
+          end
+          i+=1
+        end
+        cost_ts[n+1,:]=cost_ts[n,:]+var_cost
+  end
+  return cost_ts, set["impact"]
+end
+
+"""
+function get_cost_series(cep_data::OptDataCEP,scenario::Scenario)
+  Return an array for the time series of costs in all the impact dimensions and the set of impacts
+"""
+function get_cost_series(cep_data::OptDataCEP,scenario::Scenario)
+  return get_cost_series(cep_data.nodes,cep_data.var_costs,scenario.clust_res, scenario.opt_res.model_set,scenario.opt_res.variables)
+end
