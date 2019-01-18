@@ -7,10 +7,12 @@ function run_clust(
       method::String="kmeans",
       representation::String="centroid",
       n_clust::Int=5,
+      n_seg::Int=0,
       n_init::Int=100,
       iterations::Int=300,
       save::String="",
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
+      attribute_factors::Dict{String,Float64}=Dict{String,Float64}(),
       get_all_clust_results::Bool=false,
       kwargs...
     )
@@ -27,10 +29,11 @@ function run_clust(
       method::String="kmeans",
       representation::String="centroid",
       n_clust::Int=5,
-      n_seg::Int=0,
+      n_seg::Int=data.T,
       n_init::Int=100,
       iterations::Int=300,
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
+      attribute_factors::Dict{String,Float64}=Dict{String,Float64}(),
       save::String="",#QUESTION dead?
       get_all_clust_results::Bool=false,
       kwargs...
@@ -42,8 +45,13 @@ function run_clust(
     # normalize
     # TODO: implement 0-1 normalization and add as a choice to runclust
     data_norm = z_normalize(data;scope=norm_scope)
-    data_norm_att = attribute_weighting(data_norm,attribute_weights)
-    data_norm_merged = ClustDataMerged(data_norm_att)
+    if attribute_weights!=Dict{String,Float64}()
+      data_norm = attribute_weighting(data_norm,attribute_weights)
+    end
+    if attribute_factors!=Dict{String,Float64}()
+      data_norm = attribute_factoring(data_norm,attribute_factors)
+    end
+    data_norm_merged = ClustDataMerged(data_norm)
 
     # initialize data arrays
     centers = Array{Array{Float64},1}(undef,n_init)
@@ -77,11 +85,13 @@ function run_clust(
      b_merged = ClustDataMerged(data_norm_merged.region,n_clust,data_norm_merged.T,round.(centers[ind_mincost]; digits=n_digits_data_round),data_norm_merged.data_type,weights[ind_mincost],data_norm_merged.deltas)
      if n_seg!=b_merged.T &&  n_seg!=0
        b_merged=intraperiod_segmentation(b_merged;n_seg=n_seg,norm_scope=norm_scope,iterations=iterations)
+     else
+       n_seg=b_merged.T
      end
     # transfer into ClustData format
     best_results = ClustData(b_merged)
     best_ids = clustids[ind_mincost]
-    clust_config = set_clust_config(;norm_op=norm_op, norm_scope=norm_scope, method=method, representation=representation, n_clust=n_clust, n_init=n_init, iterations=iterations, attribute_weights=attribute_weights)
+    clust_config = set_clust_config(;norm_op=norm_op, norm_scope=norm_scope, method=method, representation=representation, n_clust=n_clust, n_seg=n_seg, n_init=n_init, iterations=iterations, attribute_weights=attribute_weights, attribute_factors=attribute_factors)
     # save all locally converged solutions and the best into a struct
     if get_all_clust_results
       clust_result = ClustResultAll(best_results,best_ids,cost_best,data_norm_merged.data_type,clust_config,centers,weights,clustids,cost,iter)

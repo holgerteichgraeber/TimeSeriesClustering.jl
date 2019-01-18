@@ -594,6 +594,7 @@ end
 
 """
 function get_total_demand(cep::OptModelCEP, ts_data::ClustData)
+  Return the total demand by multiplying demand with deltas and weights for the OptModel CEP
 """
 function get_total_demand(cep::OptModelCEP,
                           ts_data::ClustData)
