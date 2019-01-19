@@ -32,9 +32,9 @@ function attribute_factoring(data::ClustData,
   for name in keys(data.data)
     tech=split(name,"-")[1]
     if name in keys(attribute_factors)
-      data.sdv[name]./=attribute_factors[name]
+      data.data[name].*=attribute_factors[name]
     elseif tech in keys(attribute_factors)
-      data.sdv[name]./=attribute_factors[tech]
+      data.data[name].*=attribute_factors[tech]
     end
   end
   return data

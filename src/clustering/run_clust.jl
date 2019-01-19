@@ -48,9 +48,6 @@ function run_clust(
     if attribute_weights!=Dict{String,Float64}()
       data_norm = attribute_weighting(data_norm,attribute_weights)
     end
-    if attribute_factors!=Dict{String,Float64}()
-      data_norm = attribute_factoring(data_norm,attribute_factors)
-    end
     data_norm_merged = ClustDataMerged(data_norm)
 
     # initialize data arrays
@@ -90,6 +87,9 @@ function run_clust(
      end
     # transfer into ClustData format
     best_results = ClustData(b_merged)
+    if attribute_factors!=Dict{String,Float64}()
+      best_results = attribute_factoring(best_results,attribute_factors)
+    end
     best_ids = clustids[ind_mincost]
     clust_config = set_clust_config(;norm_op=norm_op, norm_scope=norm_scope, method=method, representation=representation, n_clust=n_clust, n_seg=n_seg, n_init=n_init, iterations=iterations, attribute_weights=attribute_weights, attribute_factors=attribute_factors)
     # save all locally converged solutions and the best into a struct
