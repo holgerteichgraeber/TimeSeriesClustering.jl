@@ -25,7 +25,7 @@ geo,all,2016,0,0
 bat_e,all,2016,10000,0
 bat_in,all,2016,0,0
 bat_out,all,2016,0,0
-h2_e,all,2016,4.8,0
+h2_e,all,2016,24.2,0
 h2_in,all,2016,11712,0
 h2_out,all,2016,6000,0
 php_e,all,2016,0,0

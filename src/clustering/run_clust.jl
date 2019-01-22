@@ -12,7 +12,6 @@ function run_clust(
       iterations::Int=300,
       save::String="",
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
-      attribute_factors::Dict{String,Float64}=Dict{String,Float64}(),
       get_all_clust_results::Bool=false,
       kwargs...
     )
@@ -33,7 +32,6 @@ function run_clust(
       n_init::Int=100,
       iterations::Int=300,
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
-      attribute_factors::Dict{String,Float64}=Dict{String,Float64}(),
       save::String="",#QUESTION dead?
       get_all_clust_results::Bool=false,
       kwargs...
@@ -87,11 +85,8 @@ function run_clust(
      end
     # transfer into ClustData format
     best_results = ClustData(b_merged)
-    if attribute_factors!=Dict{String,Float64}()
-      best_results = attribute_factoring(best_results,attribute_factors)
-    end
     best_ids = clustids[ind_mincost]
-    clust_config = set_clust_config(;norm_op=norm_op, norm_scope=norm_scope, method=method, representation=representation, n_clust=n_clust, n_seg=n_seg, n_init=n_init, iterations=iterations, attribute_weights=attribute_weights, attribute_factors=attribute_factors)
+    clust_config = set_clust_config(;norm_op=norm_op, norm_scope=norm_scope, method=method, representation=representation, n_clust=n_clust, n_seg=n_seg, n_init=n_init, iterations=iterations, attribute_weights=attribute_weights)
     # save all locally converged solutions and the best into a struct
     if get_all_clust_results
       clust_result = ClustResultAll(best_results,best_ids,cost_best,data_norm_merged.data_type,clust_config,centers,weights,clustids,cost,iter)

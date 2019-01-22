@@ -29,9 +29,25 @@ function run_clust_segmentation(period::Array{Float64,2};
                 iterations::Int=300,
                 norm_scope::String="full")
   norm_period, typely_mean, typely_sdv=z_normalize(period;scope=norm_scope)
-  x,weights,clustids,x,iter= run_clust_hierarchical(norm_period,n_seg,iterations)
+  #x,weights,clustids,x,iter= run_clust_hierarchical(norm_period,n_seg,iterations)
+  data=norm_period
+  n_clust=n_seg
+  _dist::SemiMetric = SqEuclidean()
+  d_mat=pairwise(_dist,data)
+  for i in size(d_mat,1)
+    for j in size(d_mat,1)
+      if i!=j && i!=j+1 && i!=j-1
+        d_mat[i,j]=Inf
+      end
+    end
+  end
+  r=hclust(d_mat,linkage=:ward_presquared)
+  clustids = cutree(r,k=n_clust)
+  weights = calc_weights(clustids,n_clust)
+
+
   centers_norm = calc_centroids(norm_period,clustids)
   cost = calc_SSE(norm_period,centers_norm,clustids)
   centers = undo_z_normalize(centers_norm,typely_mean,typely_sdv;idx=clustids)
-  return centers,weights,clustids,cost,iter
+  return centers,weights,clustids,cost,1
 end

@@ -32,3 +32,4 @@ California multiple node
 
 # Other #
 - trans: efficiency is 0.9995 per km
+- storage: efficiencies are in efficiency per month

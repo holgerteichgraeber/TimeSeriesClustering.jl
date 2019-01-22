@@ -459,11 +459,21 @@ function get_cep_variable_set(scenario::Scenario,
 end
 
 """
-function get_cep_design_variables(opt_result::OptResult)
+function get_cep_design_variables(opt_result::OptResult; capacity_factors::Dict{String,Number}=Dict{String,Number}())
   Returns all design variables in this opt_result mathing the type "dv"
+  Additionally you can add capacity factors, which scale the design variables by multiplying it with the value in the Dict
 """
-function get_cep_design_variables(opt_result::OptResult)
-  return get_cep_variables(opt_result, "dv")
+function get_cep_design_variables(opt_result::OptResult; capacity_factors::Dict{String,Number}=Dict{String,Number}())
+  design_variables=get_cep_variables(opt_result, "dv")
+  techs=design_variables["CAP"].axes[findfirst(design_variables["CAP"].axes_names.=="tech")]
+  for (k,v) in capacity_factors
+      if k in techs && findfirst(design_variables["CAP"].axes_names.=="tech")==1
+          design_variables["CAP"].data[findfirst(techs.==k),:,:].*=v
+      else
+          @warn("key $k not found in first row of CAP")
+      end
+  end
+  return design_variables
 end
 
 """

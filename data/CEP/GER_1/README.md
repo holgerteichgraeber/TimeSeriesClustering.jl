@@ -29,3 +29,4 @@ Germany one node,  with existing infrastructure of year 2015, no nuclear
 - h2_e: "fuel cell CH future 2kW", Ecoinvent v3.3
 
 # Other #
+- storage: efficiencies are in efficiency per month

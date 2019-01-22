@@ -35,3 +35,4 @@ trans efficiency is 0.9995 per km
 length in km
 length not correct yet
 demand split up needs improvement
+- storage: efficiencies are in efficiency per month
