@@ -1,5 +1,5 @@
 """
-function load_timeseries_data(application::String, region::String, K-#Periods, T-#Segments,
+function load_timeseries_data(application::String, region::String, T-#Segments,
 years::Array{Int64,1}=# years to be selected for the time series)
 Loading from .csv files in a the folder ../ClustForOpt/data/{application}/{region}/TS
 Timestamp-column has to be called Timestamp
@@ -14,7 +14,6 @@ and regions:
 """
 function load_timeseries_data( application::String,
                               region::String;
-                              #K::Int64=365,
                               T::Int64=24,
                               years::Array{Int64,1}=[2015])
   dt = Dict{String,Array}()
@@ -36,8 +35,8 @@ function load_timeseries_data( application::String,
 end #load_timeseries_data
 
 """
-function add_timeseries_data(dt::Dict{String,Array}, data::DataFrame; K::Int64=365, T::Int64=24, years::Array{Int64,1}=[2015])
-    selects first the years and second the data_points (KxT)
+function add_timeseries_data(dt::Dict{String,Array}, data::DataFrame; K::Int64=0, T::Int64=24, years::Array{Int64,1}=[2015])
+    selects first the years and second the data_points so that their number is a multiple of T and same with the other timeseries
 """
 function add_timeseries_data!(dt::Dict{String,Array},
                             dataname::SubString,
