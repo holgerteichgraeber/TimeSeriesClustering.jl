@@ -1,5 +1,6 @@
 """
-function load_timeseriesdata(application::String, region::String, K-#Periods, T-#Segments)
+function load_timeseries_data(application::String, region::String, K-#Periods, T-#Segments,
+years::Array{Int64,1}=# years to be selected for the time series)
 Loading from .csv files in a the folder ../ClustForOpt/data/{application}/{region}/TS
 Timestamp-column has to be called Timestamp
 Other columns have to be called with the location/node name
@@ -13,31 +14,53 @@ and regions:
 """
 function load_timeseries_data( application::String,
                               region::String;
-                              K=365::Int,
-                              T=24::Int
-                              )
+                              #K::Int64=365,
+                              T::Int64=24,
+                              years::Array{Int64,1}=[2015])
   dt = Dict{String,Array}()
   num=0
+  K=0
+  # Generate the data path based on application and region
   data_path=normpath(joinpath(dirname(@__FILE__),"..","..","data",application,region,"TS"))
+  #Loop through all available files
   for fulldataname in readdir(data_path)
       dataname=split(fulldataname,".")[1]
+      #Load the data
       data_df=CSV.read(joinpath(data_path,fulldataname);allowmissing=:none)
-      for column in eachcol(data_df, true)
-          if findall([:Timestamp,:time,:Time,:Zeit].==(column[1]))==[]
-              dt[dataname*"-"*string(column[1])]=Float64.(column[2])
-              newnum=length(column[2])
-              if newnum!=num && num!=0
-                  @error("The TimeSeries have different lengths!")
-              else
-                  num=newnum
-              end
-          end
-      end
+      # Add it to the dictionary
+      K=add_timeseries_data!(dt,dataname, data_df; K=K, T=T, years=years)
   end
-  data_full =  FullInputData(region, num, dt)
-  data_reshape =  ClustData(data_full,K,T)
-  return data_reshape, data_full
-end #load_pricedata
+  # Store the data
+  ts_input_data =  ClustData(FullInputData(region, num, dt),K,T)
+  return ts_input_data
+end #load_timeseries_data
+
+"""
+function add_timeseries_data(dt::Dict{String,Array}, data::DataFrame; K::Int64=365, T::Int64=24, years::Array{Int64,1}=[2015])
+    selects first the years and second the data_points (KxT)
+"""
+function add_timeseries_data!(dt::Dict{String,Array},
+                            dataname::SubString,
+                            data::DataFrame;
+                            K::Int64=0,
+                            T::Int64=24,
+                            years::Array{Int64,1}=[2015])
+    # find the right years to select
+    data_selected=data[in.(data[:year],[years]),:]
+    for column in eachcol(data_selected, true)
+        # check that this column isn't time or year
+        if !(column[1] in [:Timestamp,:time,:Time,:Zeit,:year])
+            K_calc=Int(floor(length(column[2])/T))
+            if K_calc!=K && K!=0
+                @error("The time_series $(column[1]) has K=$K_calc != K=$K of the previous")
+            else
+                K=K_calc
+            end
+            dt[dataname*"-"*string(column[1])]=Float64.(column[2][1:(Int(T*K))])
+        end
+    end
+    return K
+end
 
 """
 function load_cep_data(region::String)

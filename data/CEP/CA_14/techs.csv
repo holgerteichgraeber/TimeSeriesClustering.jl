@@ -10,13 +10,13 @@ biomass,generation,el,biomass,0,0.3,none,25,25,0.07
 ror_large,generation,el,none,0,5,ror_large,30,30,0.07
 ror_small,generation,el,none,0,5,ror_small,80,80,0.07
 geo,generation,el,geo,0,1,none,100,100,0.07
-bat_e,storage_e,el,none,1,Inf,none,10,10,0.07
+bat_e,storage_e,el,none,0.93,Inf,none,10,10,0.07
 bat_in,storage_in,el,none,0.94,Inf,none,10,10,0.07
 bat_out,storage_out,el,none,0.94,Inf,none,10,10,0.07
 php_e,storage_e,el,none,1,Inf,none,50,50,0.07
 php_in,storage_in,el,none,0.92,Inf,none,50,50,0.07
 php_out,storage_out,el,none,0.92,Inf,none,50,50,0.07
-h2_e,storage_e,el,none,1,Inf,none,40,20,0.05
-h2_in,storage_in,el,none,0.7,Inf,none,15,20,0.05
-h2_out,storage_out,el,none,0.4,Inf,none,40,20,0.05
+h2_e,storage_e,el,none,0.99,Inf,none,40,20,0.05
+h2_in,storage_in,el,none,0.83,Inf,none,15,20,0.05
+h2_out,storage_out,el,none,0.53,Inf,none,40,20,0.05
 trans,transmission,el,none,0.9995,Inf,none,40,40,0.07

@@ -5,13 +5,13 @@ include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_develo
 ## LOAD DATA ##
 state="GER_1" # or "GER_18" or "CA_1" or "TX_1"
 # laod ts-data
-ts_input_data, = load_timeseries_data("CEP", state; K=365, T=24) #CEP
+ts_input_data = load_timeseries_data("CEP", state; T=24, years=[2015]) #CEP
 # load cep-data
 cep_data = load_cep_data(state)
 
 ## CLUSTERING ##
 # run aggregation with kmeans
-ts_clust_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1000,n_clust=5) # default k-means make sure that n_init is high enough otherwise the results could be crap and drive you crazy
+ts_clust_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=100,n_clust=5) # default k-means make sure that n_init is high enough otherwise the results could be crap and drive you crazy
 
 # run aggregation with kmeans and have periods segmented
 ts_seg_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1000,n_clust=5, n_seg=4) # default k-means make sure that n_init is high enough otherwise the results could be crap and drive you crazy
