@@ -110,7 +110,11 @@ function run_clust_hierarchical_partitional(data::Array,
     # loop through the sq distance matrix to check:
     for i=1:(clustids[end]-1)
       # if the distance between this index [i] and it's neighbor [i+1] is lower than the minimum found so far
-      distance=sum(d_mat[findall(clustids.==i),findall(clustids.==i+1)])/2
+       #distance=sum(d_mat[findall(clustids.==i),findall(clustids.==i+1)])
+      clustids_test=deepcopy(clustids)
+      merge_clustids!(clustids_test,findlast(clustids.==i))
+      distance=calc_SSE(data,clustids_test)
+      #println(distance)
       if distance < NNdist
         #Save this index and the distance
         NNnext=findlast(clustids.==i)
@@ -118,12 +122,19 @@ function run_clust_hierarchical_partitional(data::Array,
       end
     end
     # Aggregate the clustids that were closest to each other
-    clustids[NNnext+1]=clustids[NNnext]
-    clustids[NNnext+2:end].-=1
+    merge_clustids!(clustids,NNnext)
   end
   return clustids
 end
 
+"""
+function merge_clustids!(clustids::Array{Int64,1},index::Int64)
+Calculate the new clustids by merging the cluster of the index provided with the cluster of index+1
+"""
+function merge_clustids!(clustids::Array{Int64,1},index::Int64)
+  clustids[NNnext+1]=clustids[NNnext]
+  clustids[NNnext+2:end].-=1
+end
 
 """
 function get_mean_data(data::Array, clustids::Array{Int64,1})

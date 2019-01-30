@@ -183,6 +183,22 @@ function calc_SSE(data::Array,centers::Array,assignments::Array)
 end # calc_SSE
 
 """
+function calc_SSE(data::Array,centers::Array,assignments::Array)
+
+calculates Sum of Squared Errors between cluster representations and the data
+"""
+function calc_SSE(data::Array,assignments::Array)
+  centers=calc_centroids(data, assignments)
+  k=size(centers,2) # number of clusters
+  n_periods =size(data,2)
+  SSE_sum = zeros(k)
+  for i=1:n_periods
+    SSE_sum[assignments[i]] += sqeuclidean(data[:,i],centers[:,assignments[i]])
+  end
+  return sum(SSE_sum)
+end # calc_SSE
+
+"""
 function calc_centroids(data::Array,assignments::Array)
 
 Given the data and cluster assignments, this function finds
@@ -401,7 +417,7 @@ function get_cep_variable_value(variable::OptVariable,
     for i in  1:length(index_set)
         if index_set[i]==Colon()
             push!(index_num,Colon())
-        elseif typeof(index_set[i])==Int64
+        elseif typeof(index_set[i])==Int64 || typeof(index_set[i])==UnitRange{Int64}
             push!(index_num,index_set[i])
         else
             new_index_num=findfirst(variable.axes[i].==index_set[i])
