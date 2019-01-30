@@ -182,8 +182,8 @@ function setup_opt_cep_generation_el!(cep::OptModelCEP,
     push!(cep.info,"COST['var',impact,tech] = Σ_{t,k,node}GEN['el',t,k,node]⋅ ts_weights[k] ⋅ ts_deltas[t,k]⋅ var_costs[tech,impact] ∀ impact, tech_generation")
     @constraint(cep.model, [impact=set["impact"], tech=set["tech_generation"]], cep.model[:COST]["var",impact,tech]==sum(cep.model[:GEN]["el",tech,t,k,node]*ts_weights[k]*ts_deltas[t,k]*find_cost_in_df(var_costs,nodes,tech,node,impact) for node=set["nodes"], t=set["time_T"], k=set["time_K"]))
     # Calculate Fixed Costs
-    push!(cep.info,"COST['cap_fix',impact,tech] = Σ_{node}CAP[tech,infrastruct,node] ⋅ cap_costs[tech,impact] ∀ impact, infrastruct, tech_generation")
-    @constraint(cep.model, [impact=set["impact"], infrastruct=set["infrastruct"], tech=set["tech_generation"]], cep.model[:COST]["cap_fix",impact,tech]==sum(cep.model[:CAP][tech,infrastruct,node] *(find_cost_in_df(cap_costs,nodes,tech,node,impact)+find_cost_in_df(fix_costs,nodes,tech,node,impact)) for node=set["nodes"]))
+    push!(cep.info,"COST['cap_fix',impact,tech] = Σ_{node}CAP[tech,'new',node] ⋅ cap_costs[tech,impact] ∀ impact, tech_generation")
+    @constraint(cep.model, [impact=set["impact"], tech=set["tech_generation"]], cep.model[:COST]["cap_fix",impact,tech]==sum(cep.model[:CAP][tech,"new",node] *(find_cost_in_df(cap_costs,nodes,tech,node,impact)+find_cost_in_df(fix_costs,nodes,tech,node,impact)) for node=set["nodes"]))
 
     # Limit the generation of dispathables to the infrastructing capacity of dispachable power plants
     push!(cep.info,"0 ≤ GEN['el',tech, t, k, node] ≤ techΣ_{infrastruct} CAP[tech,infrastruct,node] ∀ node, tech_generation{dispatchable}, t, k")
@@ -239,8 +239,8 @@ function setup_opt_cep_storage!(cep::OptModelCEP,
     push!(cep.info,"COST['var',impact,tech] = 0 ∀ impact, tech_storage")
     @constraint(cep.model, [impact=set["impact"], tech=[set["tech_storage_in"];set["tech_storage_out"];set["tech_storage_e"]]], cep.model[:COST]["var",impact,tech]==0)
     # Fix Costs storage
-    push!(cep.info,"COST['fix',impact,tech] = Σ_{node}CAP[tech,infrastruct,node] ⋅ cap_costs[tech,impact] ∀ impact, infrastruct, tech_storage")
-    @constraint(cep.model, [tech=[set["tech_storage_in"];set["tech_storage_out"];set["tech_storage_e"]], infrastruct=set["infrastruct"], impact=set["impact"]], cep.model[:COST]["cap_fix",impact,tech]==sum(cep.model[:CAP][tech,infrastruct,node]*(find_cost_in_df(cap_costs,nodes,tech,node,impact)+find_cost_in_df(fix_costs,nodes,tech,node,impact)) for node=set["nodes"]))
+    push!(cep.info,"COST['fix',impact,tech] = Σ_{node}CAP[tech,'new',node] ⋅ cap_costs[tech,impact] ∀ impact, tech_storage")
+    @constraint(cep.model, [tech=[set["tech_storage_in"];set["tech_storage_out"];set["tech_storage_e"]], impact=set["impact"]], cep.model[:COST]["cap_fix",impact,tech]==sum(cep.model[:CAP][tech,"new",node]*(find_cost_in_df(cap_costs,nodes,tech,node,impact)+find_cost_in_df(fix_costs,nodes,tech,node,impact)) for node=set["nodes"]))
     # Limit the Generation of the theoretical power part of the battery to its installed power
     push!(cep.info,"0 ≤ GEN['el',tech, t, k, node] ≤ Σ_{infrastruct} CAP[tech,infrastruct,node] ∀ node, tech_storage_out, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_out"], t=set["time_T"], k=set["time_K"]], 0 <= cep.model[:GEN]["el",tech,t,k,node])
@@ -324,9 +324,11 @@ function setup_opt_cep_seasonalstorage!(cep::OptModelCEP,
     # Limit the total storage (seasonal and simple) to be greater than zero and less than total storage cap
     push!(cep.info,"0 ≤ INTERSTOR['el',tech, i, node] + INTRASTOR['el',tech, t, k[i], node] ≤ Σ_{infrastruct} INTERSTOR[tech,infrastruct,node] ∀ node, tech_storage_e, i, t")
     for i in set["time_I"]
-        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"]], cep.model[:INTERSTOR]["el",tech,i,node] == cep.model[:INTERSTOR]["el",tech,i-1,node] + cep.model[:INTRASTOR]["el",tech,set["time_T"][end],k_ids[i],node] - cep.model[:INTRASTOR]["el",tech,1,k_ids[i],node])
-        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"]], 0 <= cep.model[:INTERSTOR]["el",tech,i,node]+cep.model[:INTRASTOR]["el",tech,t,k_ids[i],node])
-        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"]], cep.model[:INTERSTOR]["el",tech,i,node]+cep.model[:INTRASTOR]["el",tech,t,k_ids[i],node] <= sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"]))
+        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"]], cep.model[:INTERSTOR]["el",tech,i,node] == cep.model[:INTERSTOR]["el",tech,i-1,node] + cep.model[:INTRASTOR]["el",tech,set["time_T"][end],k_ids[i],node] - cep.model[:INTRASTOR]["el",tech,0,k_ids[i],node])
+    end
+    for i in set["time_I"]
+        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T_e"]], 0 <= cep.model[:INTERSTOR]["el",tech,i,node]+cep.model[:INTRASTOR]["el",tech,t,k_ids[i],node])
+        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T_e"]], cep.model[:INTERSTOR]["el",tech,i,node]+cep.model[:INTRASTOR]["el",tech,t,k_ids[i],node] <= sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"]))
     end
     return cep
 end
@@ -367,8 +369,8 @@ function setup_opt_cep_transmission!(cep::OptModelCEP,
     push!(cep.info,"COST['var',impact,tech] = 0 ∀ impact, tech_transmission")
     @constraint(cep.model, [impact=set["impact"], tech=set["tech_transmission"]], cep.model[:COST]["var",impact,tech] == 0)
     # Calculate Fixed Costs
-    push!(cep.info,"COST['fix',impact,tech] = Σ_{node}(TRANS[tech,infrastruct,line] ⋅ length[line]) ⋅ cap_costs[tech,impact] ∀ impact, infrastruct, tech_transmission")
-    @constraint(cep.model, [impact=set["impact"], infrastruct=set["infrastruct"], tech=set["tech_transmission"]], cep.model[:COST]["cap_fix",impact,tech] == sum(cep.model[:TRANS][tech,infrastruct,line]*find_val_in_df(lines,:lines,line,:length) *(find_cost_in_df(cap_costs,nodes,tech,find_val_in_df(lines,:lines,line,:node_start),impact)+find_cost_in_df(fix_costs,nodes,tech,find_val_in_df(lines,:lines,line,:node_start),impact)) for line=set["lines"]))
+    push!(cep.info,"COST['fix',impact,tech] = Σ_{node}(TRANS[tech,'new',line] ⋅ length[line]) ⋅ cap_costs[tech,impact] ∀ impact, tech_transmission")
+    @constraint(cep.model, [impact=set["impact"], tech=set["tech_transmission"]], cep.model[:COST]["cap_fix",impact,tech] == sum(cep.model[:TRANS][tech,"new",line]*find_val_in_df(lines,:lines,line,:length) *(find_cost_in_df(cap_costs,nodes,tech,find_val_in_df(lines,:lines,line,:node_start),impact)+find_cost_in_df(fix_costs,nodes,tech,find_val_in_df(lines,:lines,line,:node_start),impact)) for line=set["lines"]))
     # Transmission has no capacity so fix to zero
     push!(cep.info,"CAP[tech, infrastruct, node] = 0 ∀ node, tech_transmission")
     @constraint(cep.model, [node=set["nodes"], infrastruct=set["infrastruct"], tech=set["tech_transmission"]], cep.model[:CAP][tech,infrastruct,node] == 0)
