@@ -21,7 +21,7 @@ function intraperiod_segmentation(data_merged::ClustDataMerged;
     #Assign values back to matrices to match n_seg x K
     deltas_seg[:,k]=weights
   end
-  return ClustDataMerged(data_merged.region,K,n_seg,data_seg,data_merged.data_type,data_merged.weights,deltas_seg)
+  return ClustDataMerged(data_merged.region,data_merged.years,K,n_seg,data_seg,data_merged.data_type,data_merged.weights,deltas_seg)
 end
 
 function run_clust_segmentation(period::Array{Float64,2};
@@ -132,8 +132,8 @@ function merge_clustids!(clustids::Array{Int64,1},index::Int64)
 Calculate the new clustids by merging the cluster of the index provided with the cluster of index+1
 """
 function merge_clustids!(clustids::Array{Int64,1},index::Int64)
-  clustids[NNnext+1]=clustids[NNnext]
-  clustids[NNnext+2:end].-=1
+  clustids[index+1]=clustids[index]
+  clustids[index+2:end].-=1
 end
 
 """

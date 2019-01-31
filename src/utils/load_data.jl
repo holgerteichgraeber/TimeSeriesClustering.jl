@@ -15,7 +15,7 @@ and regions:
 function load_timeseries_data( application::String,
                               region::String;
                               T::Int64=24,
-                              years::Array{Int64,1}=[2015])
+                              years::Array{Int64,1}=[2016])
   dt = Dict{String,Array}()
   num=0
   K=0
@@ -30,12 +30,12 @@ function load_timeseries_data( application::String,
       K=add_timeseries_data!(dt,dataname, data_df; K=K, T=T, years=years)
   end
   # Store the data
-  ts_input_data =  ClustData(FullInputData(region, num, dt),K,T)
+  ts_input_data =  ClustData(FullInputData(region, years, num, dt),K,T)
   return ts_input_data
 end #load_timeseries_data
 
 """
-function add_timeseries_data(dt::Dict{String,Array}, data::DataFrame; K::Int64=0, T::Int64=24, years::Array{Int64,1}=[2015])
+function add_timeseries_data(dt::Dict{String,Array}, data::DataFrame; K::Int64=0, T::Int64=24, years::Array{Int64,1}=[2016])
     selects first the years and second the data_points so that their number is a multiple of T and same with the other timeseries
 """
 function add_timeseries_data!(dt::Dict{String,Array},
@@ -43,7 +43,7 @@ function add_timeseries_data!(dt::Dict{String,Array},
                             data::DataFrame;
                             K::Int64=0,
                             T::Int64=24,
-                            years::Array{Int64,1}=[2015])
+                            years::Array{Int64,1}=[2016])
     # find the right years to select
     data_selected=data[in.(data[:year],[years]),:]
     for column in eachcol(data_selected, true)

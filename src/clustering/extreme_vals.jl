@@ -130,7 +130,7 @@ function input_data_modification(data::ClustData,extr_val_idcs::Array{Int,1})
     data_dn[dt] = data.data[dt][:,setdiff(1:size(data.data[dt],2),extr_val_idcs)] #take all columns but the ones that are extreme vals. If index occurs multiple times, setdiff only treats it as one.
   end
   weights_dn = data.weights[setdiff(1:size(data.weights,2),extr_val_idcs)]
-  data_modified = ClustData(data.region,K_dn,data.T,data_dn,weights_dn;mean=data.mean,sdv=data.sdv)
+  data_modified = ClustData(data.region,data.years,K_dn,data.T,data_dn,weights_dn;mean=data.mean,sdv=data.sdv)
   return data_modified
 end
 
@@ -169,7 +169,7 @@ function extreme_val_output(data::ClustData,
   else
     @error("rep_mod_method - "*rep_mod_method*" - does not exist")
   end
-  extr_vals = ClustData(data.region,K_ed,data.T,data_ed,weights_ed;mean=data.mean,sdv=data.sdv)
+  extr_vals = ClustData(data.region,data.years,K_ed,data.T,data_ed,weights_ed;mean=data.mean,sdv=data.sdv)
   return extr_vals
 end
 
@@ -206,7 +206,7 @@ function representation_modification(extr_vals::ClustData,
   for w in extr_vals.weights
     push!(weights_mod,w)
   end
-  return ClustData(clust_data.region,K_mod,clust_data.T,data_mod,weights_mod;mean=clust_data.mean,sdv=clust_data.sdv)
+  return ClustData(clust_data.region,clust_data.years,K_mod,clust_data.T,data_mod,weights_mod;mean=clust_data.mean,sdv=clust_data.sdv)
 end
 
 """

@@ -14,6 +14,7 @@ end
 "ClustData \n weights: this is the absolute weight. E.g. for a year of 365 days, sum(weights)=365"
 struct ClustData <: TSData
  region::String
+ years::Array{Int64}
  K::Int
  T::Int
  data::Dict{String,Array}
@@ -26,6 +27,7 @@ end
 "ClustDataMerged"
 struct ClustDataMerged <: TSData
  region::String
+ years::Array{Int64}
  K::Int
  T::Int
  data::Array
@@ -303,7 +305,7 @@ function ClustData(data::ClustDataMerged)
    i+=1
    data_dict[k] = data.data[(1+data.T*(i-1)):(data.T*i),:]
  end
- ClustData(data.region,data.K,data.T,data_dict,data.weights,data.mean,data.sdv,data.deltas)
+ ClustData(data.region,data.years,data.K,data.T,data_dict,data.weights,data.mean,data.sdv,data.deltas)
 end
 
 """
@@ -317,7 +319,7 @@ function ClustData(data::FullInputData,
   for (k,v) in data.data
      data_reshape[k] =  reshape(v,T,K)
   end
-  return ClustData(data.region,K,T,data_reshape,ones(K))
+  return ClustData(data.region,data.years,K,T,data_reshape,ones(K))
 end
 
 """
@@ -367,5 +369,5 @@ function ClustDataMerged(data::ClustData)
    data_merged[(1+data.T*(i-1)):(data.T*i),:] = v
    push!(data_type,k)
  end
- ClustDataMerged(data.region,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv,data.deltas)
+ ClustDataMerged(data.region,data.years,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv,data.deltas)
 end
