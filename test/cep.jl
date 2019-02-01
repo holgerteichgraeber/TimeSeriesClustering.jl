@@ -17,7 +17,7 @@ using Test
     @test round.(exact_res)==round.(model.variables["CAP"].data[:,1,1])
 end
 
-@testset "interstorage" begin
+@testset "seasonalstorage" begin
     include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_development.jl")))
     # load data
     ts_input_data_8760, = load_timeseries_data("CEP", "GER_1";K=1, T=8760)
@@ -29,5 +29,5 @@ end
     ts_clust_res_24 = run_clust(ts_input_data_24;method="kmeans",representation="centroid",n_init=1,n_clust=365)
 
     # run optimization
-    @test round(run_opt(ts_clust_res_8760.best_results,cep_input_data_GER;solver=GurobiSolver(OutputFlag=0),intrastorage=true).objective)==round(run_opt(ts_clust_res_24.best_results,cep_input_data_GER;solver=GurobiSolver(OutputFlag=0),interstorage=true,k_ids=ts_clust_res_24.best_ids).objective)
+    @test round(run_opt(ts_clust_res_8760.best_results,cep_input_data_GER;solver=GurobiSolver(OutputFlag=0),storage="simple").objective)==round(run_opt(ts_clust_res_24.best_results,cep_input_data_GER;solver=GurobiSolver(OutputFlag=0),storage="seasonal",k_ids=ts_clust_res_24.best_ids).objective)
 end
