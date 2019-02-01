@@ -43,7 +43,7 @@ function run_clust(
     # normalize
     # TODO: implement 0-1 normalization and add as a choice to runclust
     data_norm = z_normalize(data;scope=norm_scope)
-    if !empty(attribute_weights)
+    if !isempty(attribute_weights)
       data_norm = attribute_weighting(data_norm,attribute_weights)
     end
     data_norm_merged = ClustDataMerged(data_norm)
