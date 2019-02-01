@@ -15,8 +15,6 @@ run_clust("GER","battery";method="kmedoids",representation="medoid",n_init=3)
 
  # kmedoids + medoid run (exact)
  #QUESTION Shall we force the usage of Gurobi
-using Gurobi
-env = Gurobi.Env()
 run_clust("GER","battery";method="kmedoids_exact",representation="medoid",n_init=3,gurobi_env=env)
 
  #  hierarchical + centroid run

@@ -6,7 +6,7 @@ using Plots
 ## LOAD DATA ##
 state="GER_1" # or "GER_18" or "CA_1" or "TX_1"
 # laod ts-data
-ts_input_data, = load_timeseries_data("CEP", state; K=365, T=24) #CEP
+ts_input_data = load_timeseries_data("CEP", state; T=24) #CEP
 # load cep-data
 cep_data = load_cep_data(state)
 

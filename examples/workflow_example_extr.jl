@@ -5,7 +5,7 @@ include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_develo
 #using Gurobi
 
 # load data
-ts_input_data, = load_timeseries_data("CEP", "GER_18";K=365, T=24) #CEP
+ts_input_data = load_timeseries_data("CEP", "GER_18"; T=24, years=[2015]) #CEP
 
 cep_input_data_GER=load_cep_data("GER_18")
 

@@ -44,7 +44,7 @@ function z_normalize(data::ClustData;
  for (k,v) in data.data
    data_norm[k],mean[k],sdv[k] = z_normalize(v,scope=scope)
  end
- return ClustData(data.region,data.years,data.K,data.T,data_norm,data.weights;mean=mean,sdv=sdv)
+ return ClustData(data.region,data.years,data.K,data.T,data_norm,data.weights,data.deltas,data.k_ids;mean=mean,sdv=sdv)
 end
 
 """

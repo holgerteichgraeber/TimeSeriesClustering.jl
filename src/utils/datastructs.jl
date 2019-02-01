@@ -7,6 +7,7 @@ abstract type ClustResult end
 "FullInputData"
 struct FullInputData <: TSData
  region::String
+ years::Array{Int64}
  N::Int
  data::Dict{String,Array}
 end
@@ -22,6 +23,7 @@ struct ClustData <: TSData
  mean::Dict{String,Array}
  sdv::Dict{String,Array}
  deltas::Array{Float64,2}
+ k_ids::Array{Int64}
 end
 
 "ClustDataMerged"
@@ -36,6 +38,7 @@ struct ClustDataMerged <: TSData
  mean::Dict{String,Array}
  sdv::Dict{String,Array}
  deltas::Array{Float64,2}
+ k_ids::Array{Int64}
 end
 
 "ClustResultAll"
@@ -216,15 +219,18 @@ function ClustData(region::String,
                          )
 """
 function ClustData(region::String,
+                         years::Array{Int64,1},
                          K::Int,
                          T::Int;
                          el_price::Array=[],
                          el_demand::Array=[],
                          solar::Array=[],
                          wind::Array=[],
-                         weights::Array{Float64}=ones(K),       mean::Dict{String,Array}=Dict{String,Array}(),
+                         weights::Array{Float64}=ones(K),
+                         mean::Dict{String,Array}=Dict{String,Array}(),
                          sdv::Dict{String,Array}=Dict{String,Array}(),
-                         deltas::Array{Float64,2}=ones(T,K)
+                         deltas::Array{Float64,2}=ones(T,K),
+                         k_ids::Array{Int64,1}=collect(1:K)
                          )
    dt = Dict{String,Array}()
    mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
@@ -258,7 +264,7 @@ function ClustData(region::String,
    end
    isempty(dt) && @error("Need to provide at least one input data stream")
    # TODO: Check dimensionality of K T and supplied input data streams KxT
-   ClustData(region,K,T,dt,weights,mean,sdv,deltas)
+   ClustData(region,years,K,T,dt,weights,mean,sdv,deltas,k_ids)
 end
 
 """
@@ -273,13 +279,15 @@ function ClustData(region::String,
                        )
 """
 function ClustData(region::String,
+                       years::Array{Int64,1},
                        K::Int,
                        T::Int,
                        data::Dict{String,Array},
-                       weights::Array{Float64};
+                       weights::Array{Float64},
+                       deltas::Array{Float64,2},
+                       k_ids::Array{Int64,1};
                        mean::Dict{String,Array}=Dict{String,Array}(),
-                       sdv::Dict{String,Array}=Dict{String,Array}(),
-                       deltas::Array{Float64,2}=ones(T,K)
+                       sdv::Dict{String,Array}=Dict{String,Array}()
                        )
  isempty(data) && @error("Need to provide at least one input data stream")
  mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
@@ -290,7 +298,7 @@ function ClustData(region::String,
    end
  end
  # TODO check if right keywords are used
- ClustData(region,K,T,data,weights,mean,sdv,deltas)
+ ClustData(region,years,K,T,data,weights,mean,sdv,deltas,k_ids)
 end
 
 """
@@ -305,7 +313,7 @@ function ClustData(data::ClustDataMerged)
    i+=1
    data_dict[k] = data.data[(1+data.T*(i-1)):(data.T*i),:]
  end
- ClustData(data.region,data.years,data.K,data.T,data_dict,data.weights,data.mean,data.sdv,data.deltas)
+ ClustData(data.region,data.years,data.K,data.T,data_dict,data.weights,data.mean,data.sdv,data.deltas,data.k_ids)
 end
 
 """
@@ -319,7 +327,7 @@ function ClustData(data::FullInputData,
   for (k,v) in data.data
      data_reshape[k] =  reshape(v,T,K)
   end
-  return ClustData(data.region,data.years,K,T,data_reshape,ones(K))
+  return ClustData(data.region,data.years,K,T,data_reshape,ones(K),ones(T,K),collect(1:K))
 end
 
 """
@@ -335,14 +343,15 @@ function ClustDataMerged(region::String,
                        )
 """
 function ClustDataMerged(region::String,
+                       years::Array{Int64,1},
                        K::Int,
                        T::Int,
                        data::Array,
                        data_type::Array{String},
                        weights::Array{Float64},
-                       deltas::Array{Float64,2};
+                       k_ids::Array{Int64,1};
                        mean::Dict{String,Array}=Dict{String,Array}(),
-                       sdv::Dict{String,Array}=Dict{String,Array}(),
+                       sdv::Dict{String,Array}=Dict{String,Array}()
                        )
  mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
  if !mean_sdv_provided
@@ -351,7 +360,8 @@ function ClustDataMerged(region::String,
      sdv[dt]=ones(T)
    end
  end
- ClustDataMerged(region,K,T,data,data_type,weights,mean,sdv,deltas)
+ deltas=ones(T,K)
+ ClustDataMerged(region,years,K,T,data,data_type,weights,mean,sdv,deltas,k_ids)
 end
 
 """
@@ -369,5 +379,8 @@ function ClustDataMerged(data::ClustData)
    data_merged[(1+data.T*(i-1)):(data.T*i),:] = v
    push!(data_type,k)
  end
- ClustDataMerged(data.region,data.years,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv,data.deltas)
+ if maximum(data.deltas)!=1
+   throw(@error "You cannot recluster data with different Δt")
+ end
+ ClustDataMerged(data.region,data.years,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv,data.deltas,data.k_ids)
 end

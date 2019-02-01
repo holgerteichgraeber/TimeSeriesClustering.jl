@@ -5,8 +5,7 @@ function setup_cep_opt_sets(ts_data::ClustData,opt_data::CEPData)
 """
 function setup_opt_cep_set(ts_data::ClustData,
                             opt_data::OptDataCEP,
-                            opt_config::Dict{String,Any};
-                            k_ids::Array{Int64}=Array{Int64,1}())
+                            opt_config::Dict{String,Any})
   set=Dict{String,Array}()
   set["nodes"]=unique(opt_data.nodes[:nodes])
   #Seperate sets for fossil and renewable technology
@@ -35,8 +34,8 @@ function setup_opt_cep_set(ts_data::ClustData,
   set["time_T"]=1:ts_data.T
   set["time_T_e"]=0:ts_data.T
   if opt_config["seasonalstorage"]
-    set["time_I_e"]=0:length(k_ids)
-    set["time_I"]=1:length(k_ids)
+    set["time_I_e"]=0:length(ts_data.k_ids)
+    set["time_I"]=1:length(ts_data.k_ids)
   end
   return set
 end
@@ -301,13 +300,13 @@ function setup_opt_cep_seasonalstorage!(cep::OptModelCEP, ts_data::ClustData, op
 """
 function setup_opt_cep_seasonalstorage!(cep::OptModelCEP,
                             ts_data::ClustData,
-                            opt_data::OptDataCEP,
-                            #TODO get rid of k_ids here
-                            k_ids::Array{Int64})
+                            opt_data::OptDataCEP)
     ## DATA ##
     set=cep.set
     #techs       tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
     techs=opt_data.techs
+    #K identification numbers
+    k_ids=ts_data.k_ids
 
     ## VARIABLE ##
     # Storage

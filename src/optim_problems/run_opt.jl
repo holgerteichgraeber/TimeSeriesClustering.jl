@@ -5,12 +5,11 @@ function run_opt(ts_data::ClustData,opt_data::OptDataCEP,opt_config::Dict{String
 function run_opt(ts_data::ClustData,
                     opt_data::OptDataCEP,
                     opt_config::Dict{String,Any};
-                    solver::Any=CbcSolver(),
-                    k_ids::Array{Int64,1}=Array{Int64,1}()
+                    solver::Any=CbcSolver()
                     )
   #Check the consistency of the data provided
   check_opt_data_cep(opt_data)
-  cep=setup_opt_cep_basic(ts_data, opt_data, opt_config, solver; k_ids=k_ids)
+  cep=setup_opt_cep_basic(ts_data, opt_data, opt_config, solver)
   setup_opt_cep_basic_variables!(cep, ts_data, opt_data)
   if opt_config["lost_load_cost"]["el"]!=Inf
     setup_opt_cep_lost_load!(cep, ts_data, opt_data)
@@ -20,7 +19,7 @@ function run_opt(ts_data::ClustData,
   end
   if opt_config["storage_in"] && opt_config["storage_out"] && opt_config["storage_e"] && opt_config["seasonalstorage"]
     setup_opt_cep_storage!(cep, ts_data, opt_data)
-    setup_opt_cep_seasonalstorage!(cep, ts_data, opt_data, k_ids)
+    setup_opt_cep_seasonalstorage!(cep, ts_data, opt_data)
   elseif opt_config["storage_in"] && opt_config["storage_out"] && opt_config["storage_e"] && !(opt_config["seasonalstorage"])
     setup_opt_cep_storage!(cep, ts_data, opt_data)
     setup_opt_cep_simplestorage!(cep, ts_data, opt_data)
@@ -62,8 +61,7 @@ function run_opt(ts_data::ClustData,
                     fixed_design_variables::Dict{String,OptVariable};
                     solver::Any=CbcSolver(),
                     lost_el_load_cost::Number=Inf,
-                    lost_CO2_emission_cost::Number=Inf,
-                    k_ids::Array{Int64,1}=Array{Int64,1}())
+                    lost_CO2_emission_cost::Number=Inf)
   # Create dictionary for lost_load_cost of the single elements
   lost_load_cost=Dict{String,Number}("el"=>lost_el_load_cost)
   # Create dictionary for lost_emission_cost of the single elements
@@ -71,7 +69,7 @@ function run_opt(ts_data::ClustData,
   # Add the fixed_design_variables and new setting for slack costs to the existing config
   set_opt_config_cep!(opt_config;fixed_design_variables=fixed_design_variables, lost_load_cost=lost_load_cost, lost_emission_cost=lost_emission_cost)
 
-  return run_opt(ts_data,opt_data,opt_config;solver=solver,k_ids=k_ids)
+  return run_opt(ts_data,opt_data,opt_config;solver=solver)
 end
 
 """
@@ -98,8 +96,7 @@ function run_opt(ts_data::ClustData,
                  limit_infrastructure::Bool=false,
                  storage::String="none",
                  transmission::Bool=false,
-                 print_flag::Bool=true,
-                 k_ids::Array{Int64,1}=Array{Int64,1}())
+                 print_flag::Bool=true)
    # Activated seasonal or simple storage corresponds with storage
    if storage=="seasonal"
        storage=true
@@ -115,9 +112,6 @@ function run_opt(ts_data::ClustData,
       seasonalstorage=false
       @warn("String indicating storage not identified as 'none', 'seasonal' or 'simple' → no storage")
    end
-   if seasonalstorage && k_ids==Array{Int64,1}()
-     throw(@error("No or empty k_ids provided"))
-   end
   # Create dictionary for lost_load_cost of the single elements
   lost_load_cost=Dict{String,Number}("el"=>lost_el_load_cost)
   # Create dictionary for lost_emission_cost of the single elements
@@ -126,7 +120,7 @@ function run_opt(ts_data::ClustData,
   #Setup the opt_config file based on the data input and
   opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, co2_limit=co2_limit, lost_load_cost=lost_load_cost, lost_emission_cost=lost_emission_cost, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_in=storage, storage_out=storage, seasonalstorage=seasonalstorage, transmission=transmission, print_flag=print_flag)
   #Run the optimization problem
-  run_opt(ts_data, opt_data, opt_config; solver=solver, k_ids=k_ids)
+  run_opt(ts_data, opt_data, opt_config; solver=solver)
 end # run_opt
 
 #TODO Rewrite battery problem

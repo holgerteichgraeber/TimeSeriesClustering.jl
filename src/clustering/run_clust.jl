@@ -43,11 +43,9 @@ function run_clust(
     # normalize
     # TODO: implement 0-1 normalization and add as a choice to runclust
     data_norm = z_normalize(data;scope=norm_scope)
-    println(data_norm.data["wind-germany"][1:24,1])
-    if attribute_weights!=Dict{String,Float64}()
+    if !empty(attribute_weights)
       data_norm = attribute_weighting(data_norm,attribute_weights)
     end
-    println(data_norm.data["wind-germany"][1:24,1])
     data_norm_merged = ClustDataMerged(data_norm)
 
     # initialize data arrays
@@ -79,7 +77,7 @@ function run_clust(
     # save in merged format as array
     # NOTE if you need clustered data more precise than 8 digits change the following line accordingly
      n_digits_data_round=8 # Gurobi throws warning when rounding errors on order~1e-13 are passed in. Rounding errors occur in clustering of many zeros (e.g. solar).
-     b_merged = ClustDataMerged(data_norm_merged.region,data_norm_merged.years,n_clust,data_norm_merged.T,round.(centers[ind_mincost]; digits=n_digits_data_round),data_norm_merged.data_type,weights[ind_mincost],data_norm_merged.deltas)
+     b_merged = ClustDataMerged(data_norm_merged.region,data_norm_merged.years,n_clust,data_norm_merged.T,round.(centers[ind_mincost]; digits=n_digits_data_round),data_norm_merged.data_type,weights[ind_mincost],clustids[ind_mincost])
      if n_seg!=b_merged.T &&  n_seg!=0
        b_merged=intraperiod_segmentation(b_merged;n_seg=n_seg,norm_scope=norm_scope,iterations=iterations)
      else

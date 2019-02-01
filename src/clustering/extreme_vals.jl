@@ -130,6 +130,7 @@ function input_data_modification(data::ClustData,extr_val_idcs::Array{Int,1})
     data_dn[dt] = data.data[dt][:,setdiff(1:size(data.data[dt],2),extr_val_idcs)] #take all columns but the ones that are extreme vals. If index occurs multiple times, setdiff only treats it as one.
   end
   weights_dn = data.weights[setdiff(1:size(data.weights,2),extr_val_idcs)]
+  #QUESTION What with deltas and k_ids?
   data_modified = ClustData(data.region,data.years,K_dn,data.T,data_dn,weights_dn;mean=data.mean,sdv=data.sdv)
   return data_modified
 end
@@ -169,7 +170,13 @@ function extreme_val_output(data::ClustData,
   else
     @error("rep_mod_method - "*rep_mod_method*" - does not exist")
   end
-  extr_vals = ClustData(data.region,data.years,K_ed,data.T,data_ed,weights_ed;mean=data.mean,sdv=data.sdv)
+  deltas_ed=data.deltas[:,unique_extr_val_idcs]
+  #QUESTION What with k_ids?
+  # if original time series period isn't represented by any extreme period it has value 0
+  k_ids_ed=zeros(Int64,data.K)
+  # each original time series period which is represented recieves the number of it's extreme period in this extreme value output
+  k_ids_ed[unique_extr_val_idcs]=collect(1:K_ed)
+  extr_vals = ClustData(data.region,data.years,K_ed,data.T,data_ed,weights_ed,deltas_ed,k_ids_ed;mean=data.mean,sdv=data.sdv)
   return extr_vals
 end
 
@@ -202,11 +209,14 @@ function representation_modification(extr_vals::ClustData,
   for dt in keys(clust_data.data)
     data_mod[dt] = [clust_data.data[dt] extr_vals.data[dt]]
   end
-  weights_mod = deepcopy(clust_data.weights)
-  for w in extr_vals.weights
-    push!(weights_mod,w)
-  end
-  return ClustData(clust_data.region,clust_data.years,K_mod,clust_data.T,data_mod,weights_mod;mean=clust_data.mean,sdv=clust_data.sdv)
+  weights_mod = [clust_data.weights; extr_vals.weights]
+  deltas_mod = [clust_data.deltas extr_vals.deltas]
+  # Question what with k_ids?
+  # originial time series periods are regularly represented by periods in clust_data
+  k_ids_mod=deepcopy(clust_data.k_ids)
+  # if this particular original time series period is though represented in the extreme values, the new period number of the extreme value (clust_data.K+old number) is assigned to this original time series period QUESTION also true for feasibility? As Cost will be assumed zero, maybe there should be an if/else of representation_modification?
+  k_ids_mod[extr_vals.k_ids.!=0]=extr_vals.k_ids[extr_vals.k_ids.!=0].+clust_data.K
+  return ClustData(clust_data.region,clust_data.years,K_mod,clust_data.T,data_mod,weights_mod,deltas_mod,k_ids_mod;mean=clust_data.mean,sdv=clust_data.sdv)
 end
 
 """

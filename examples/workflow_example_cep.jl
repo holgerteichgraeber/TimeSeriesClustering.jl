@@ -4,8 +4,9 @@ include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_develo
 
 ## LOAD DATA ##
 state="GER_1" # or "GER_18" or "CA_1" or "TX_1"
+years=[2016] #2016 works for GER_1 and CA_1, GER_1 can also be used with 2006 to 2016 and, GER_18 is 2015 TX_1 is 2008
 # laod ts-data
-ts_input_data = load_timeseries_data("CEP", state; T=24, years=[2015]) #CEP
+ts_input_data = load_timeseries_data("CEP", state; T=24, years=years) #CEP
 # load cep-data
 cep_data = load_cep_data(state)
 
@@ -38,7 +39,7 @@ simplestor_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,de
 
 # Interday storage (within each period & between the periods)
 #TODO move k_ids
-seasonalstor_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="seasonal storage",storage="seasonal",k_ids=ts_clust_data.best_ids)
+seasonalstor_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="seasonal storage",storage="seasonal")
 
 # Transmission
 transmission_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="transmission",transmission=true)
