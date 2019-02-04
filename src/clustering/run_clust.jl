@@ -145,7 +145,7 @@ sup_kw_args["norm_op"]=["zscore"]
 sup_kw_args["norm_scope"]=["full","hourly","sequence"]
 sup_kw_args["method+representation"]=["kmeans+centroid","kmeans+medoid","kmedoids+medoid","kmedoids_exact+medoid","hierarchical+centroid","hierarchical+medoid"]#["dbaclust+centroid","kshape+centroid"]
 
-"""return centers,weights,clustids,cost,iter
+"""
 Returns supported keyword arguments for clustering function run_clust()
 """
 function get_sup_kw_args()
