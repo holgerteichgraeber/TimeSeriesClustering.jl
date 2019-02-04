@@ -3,6 +3,8 @@
  # saves results as jld2 file, which can be imported and analyzed by subsequent functions
 
 using ClustForOpt
+using Gurobi
+env = Gurobi.Env()
 
  # default kmeans + centroid run
 run_clust("GER","battery";n_init=3)
