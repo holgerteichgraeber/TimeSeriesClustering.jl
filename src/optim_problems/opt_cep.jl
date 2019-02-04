@@ -91,7 +91,7 @@ end
 
 """
 function setup_opt_cep_lost_load!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP) set::Dict)
-  Adding variable SLACK, LL
+  Adding variable SLACK, LL (LostLoad - if demand cannot be met with installed capacity -> Lost Load can be "purchased" to meet demand)
 """
 function setup_opt_cep_lost_load!(cep::OptModelCEP,
                                   ts_data::ClustData,
@@ -118,7 +118,7 @@ end
 
 """
 function setup_opt_cep_lost_emission!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  Adding variable LE
+  Adding variable LE (LostEmission - if demand cannot be met without breaking Emission-constraint -> Lost Emission can be "purchased" to meet demand with "dirty" production)
 """
 function setup_opt_cep_lost_emission!(cep::OptModelCEP,
                               ts_data::ClustData,
