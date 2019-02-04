@@ -11,7 +11,7 @@ cep_data = load_cep_data(state)
 
 ## CLUSTERING ##
 # run aggregation with kmeans
-ts_clust_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1000,n_clust=5) # default k-means make sure that n_init is high enough otherwise the results could be crap and drive you crazy
+ts_clust_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=5,n_clust=5) # default k-means make sure that n_init is high enough otherwise the results could be crap and drive you crazy
 
 # run no aggregation just get ts_full_data
 ts_full_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1,n_clust=365) # default k-means
@@ -41,6 +41,6 @@ interday_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,desc
 
 # Desing with clusered data and operation with ts_full_data
 # First solve the clustered case
-design_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="design&operation", co2_limit=50)
+design_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="design&operation")
 # Use the design variable results for the operational run
 operation_result = run_opt(ts_full_data.best_results,cep_data,design_result.opt_config,get_cep_design_variables(design_result);solver=solver,lost_el_load_cost=1e6,lost_CO2_emission_cost=700)
