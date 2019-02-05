@@ -1,21 +1,21 @@
-# ClustForOpt 
+# ClustForOpt
 
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE.md)
 
-julia implementation of using different clustering methods for finding representative perdiods for the optimization of energy systems. 
+julia implementation of using different clustering methods for finding representative perdiods for the optimization of energy systems.
 
 ## Installation
 This package runs under julia v0.6.
-This package is not officielly registered. Install using: 
+This package is not officielly registered. Install using:
 
 ```julia
-Pkg.clone("https://github.com/holgerteichgraeber/ClustForOpt.jl.git") 
+Pkg.clone("https://github.com/holgerteichgraeber/ClustForOpt.jl.git")
 ```
 
-Then, seperately install [TimeWarp.jl](https://github.com/holgerteichgraeber/TimeWarp.jl) using 
+Then, seperately install [TimeWarp.jl](https://github.com/holgerteichgraeber/TimeWarp.jl) using
 
 ```julia
-Pkg.clone("https://github.com/holgerteichgraeber/TimeWarp.jl.git") 
+Pkg.clone("https://github.com/holgerteichgraeber/TimeWarp.jl.git")
 ```
 
 ## Supported clustering methods
@@ -44,20 +44,20 @@ run_clust("GER","battery";n_init=3)
 
  #  kmeans + medoid
 run_clust("GER","battery";representation="medoid",n_init=3)
- 
+
  #  kmedoids + medoid (partitional)
-run_clust("GER","battery";method="kmedoids",representation="medoid",n_init=3) 
+run_clust("GER","battery";method="kmedoids",representation="medoid",n_init=3)
 
  # kmedoids + medoid (exact)
 using Gurobi
 env = Gurobi.Env()
-run_clust("GER","battery";method="kmedoids_exact",representation="medoid",n_init=3,gurobi_env=env) 
+run_clust("GER","battery";method="kmedoids_exact",representation="medoid",n_init=3,gurobi_env=env)
 
- #  hierarchical + centroid 
-run_clust("GER","battery";method="hierarchical",representation="centroid",n_init=1) 
+ #  hierarchical + centroid
+run_clust("GER","battery";method="hierarchical",representation="centroid",n_init=1)
 
- #  hierarchical + medoid 
-run_clust("GER","battery";method="hierarchical",representation="medoid",n_init=1) 
+ #  hierarchical + medoid
+run_clust("GER","battery";method="hierarchical",representation="medoid",n_init=1)
 
  #  dbaclust + centroid (single core, for parallel runs, use parallel version)
 run_clust("GER","battery";method="dbaclust",representation="centroid",n_init=3,iterations=50,rad_sc_min=0,rad_sc_max=1,inner_iterations=30)
@@ -66,8 +66,8 @@ run_clust("GER","battery";method="dbaclust",representation="centroid",n_init=3,i
 
 ## General workflow
 
-Run clustering method with the respective optimization problem first: [run\_clust()](src/clust_algorithms/run_clust.jl). 
-This will generate a jld2 file with resulting clusters, cluster assignments, and optimization problem outcomes. 
+Run clustering method with the respective optimization problem first: [run\_clust()](src/clust_algorithms/run_clust.jl).
+This will generate a jld2 file with resulting clusters, cluster assignments, and optimization problem outcomes.
 Then, use result analysis files to analyze and interpret clustering and optimization results from folder `src/results_analysis`.
 
 ### Parallel implementation of DBA clustering
@@ -76,6 +76,3 @@ run the file [cluster\_gen\_dbaclust\_parallel.jl](src/clust_algorithms/runfiles
 
 ### k-shape
 run the file [cluster\_gen\_kshape.py](src/clust_algorithms/runfiles/cluster_gen_kshape.py) on multiple cores. Then use [kshape\_res\_to\_jld2.jl](src/results_analysis/kshape_res_to_jld2.jl) to generate jld2 file. Then proceed with result analysis similar to the general workflow.
-
-
-

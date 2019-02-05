@@ -17,7 +17,7 @@ using Test
     @test round.(exact_res)==round.(model.variables["CAP"].data[:,1,1])
 end
 
-@testset "interstorage" begin
+@testset "seasonalstorage" begin
     include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_development.jl")))
     # load data
     ts_input_data_8760, = load_timeseries_data("CEP", "GER_1";K=1, T=8760)

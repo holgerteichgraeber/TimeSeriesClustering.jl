@@ -18,12 +18,12 @@ function run_opt(ts_data::ClustData,
   if opt_config["lost_emission_cost"]["CO2"]!=Inf
     setup_opt_cep_lost_emission!(cep, ts_data, opt_data)
   end
-  if opt_config["storage_p"] && opt_config["storage_e"] && opt_config["interstorage"]
+  if opt_config["storage_p"] && opt_config["storage_e"] && opt_config["seasonalstorage"]
     setup_opt_cep_storage!(cep, ts_data, opt_data)
-    setup_opt_cep_interstorage!(cep, ts_data, opt_data, k_ids)
-  elseif opt_config["storage_p"] && opt_config["storage_e"] && !(opt_config["interstorage"])
+    setup_opt_cep_seasonalstorage!(cep, ts_data, opt_data, k_ids)
+  elseif opt_config["storage_p"] && opt_config["storage_e"] && !(opt_config["seasonalstorage"])
     setup_opt_cep_storage!(cep, ts_data, opt_data)
-    setup_opt_cep_intrastorage!(cep, ts_data, opt_data)
+    setup_opt_cep_simplestorage!(cep, ts_data, opt_data)
   end
   if opt_config["transmission"]
       setup_opt_cep_transmission!(cep, ts_data, opt_data)
@@ -77,15 +77,16 @@ end
 """
 function run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables::Dict{String,OptVariable};solver::Any=CbcSolver(),descriptor::String="",   ,co2_limit::Number=Inf, lost_el_load_cost::Number=Inf,lost_CO2_emission_cost::Number=Inf,existing_infrastructure::Bool=false, intrastorage::Bool=false)
 
+
   Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of opt_data - in this case OptDataCEP - so identification as CEP problem)
-  options to tweak the model are to select a co2_limit, existing_infrastructure and intrastorage
+  options to tweak the model are to select a co2_limit, existing_infrastructure and simplestorage
   descritor: String with the name of this paricular model like "kmeans-10-co2-500"
   co2_limit: A number limiting the kg.-CO2-eq./MWh (normally in a range from 5-1250 kg-CO2-eq/MWh), give Inf or no kw if unlimited
   lost_el_load_cost: Number indicating the lost load price/MWh (should be greater than 1e6),   give Inf for none
   lost_CO2_emission_cost: Number indicating the emission price/kg-CO2 (should be greater than 1e6), give Inf for none
     give Inf for both lost_cost for no slack
   existing_infrastructure: true or false to include or exclude existing infrastructure to the model
-  storage: String "non" for no storage or "intra" to include intraday or "inter" to include interday storage
+  storage: String "none" for no storage or "simple" to include simple (only intra-day storage) or "seasonal" to include seasonal storage (inter-day)
 """
 function run_opt(ts_data::ClustData,
                  opt_data::OptDataCEP;
@@ -96,26 +97,26 @@ function run_opt(ts_data::ClustData,
                  lost_CO2_emission_cost::Number=Inf,
                  existing_infrastructure::Bool=false,
                  limit_infrastructure::Bool=false,
-                 storage::String="non",
+                 storage::String="none",
                  transmission::Bool=false,
-                 k_ids::Array{Int64,1}=Array{Int64,1}(),
-                 print_flag::Bool=true)
-   # Activated inter or intraday storage corresponds with storage
-   if storage=="inter"
+                 print_flag::Bool=true,
+                 k_ids::Array{Int64,1}=Array{Int64,1}())
+   # Activated seasonal or simple storage corresponds with storage
+   if storage=="seasonal"
        storage=true
-       interstorage=true
-   elseif storage=="intra"
+       seasonalstorage=true
+   elseif storage=="simple"
        storage=true
-       interstorage=false
-   elseif storage =="non"
+       seasonalstorage=false
+   elseif storage =="none"
        storage=false
-       interstorage=false
+       seasonalstorage=false
   else
       storage=false
-      interstorage=false
-      @warn("String indicating storage not identified as 'non', 'inter' or 'intra' → no storage")
+      seasonalstorage=false
+      @warn("String indicating storage not identified as 'none', 'seasonal' or 'simple' → no storage")
    end
-   if interstorage && k_ids==Array{Int64,1}()
+   if seasonalstorage && k_ids==Array{Int64,1}()
      throw(@error("No or empty k_ids provided"))
    end
   # Create dictionary for lost_load_cost of the single elements
@@ -125,6 +126,7 @@ function run_opt(ts_data::ClustData,
 
   #Setup the opt_config file based on the data input and
   opt_config=set_opt_config_cep(opt_data; descriptor=descriptor, co2_limit=co2_limit, lost_load_cost=lost_load_cost, lost_emission_cost=lost_emission_cost, existing_infrastructure=existing_infrastructure, limit_infrastructure=limit_infrastructure, storage_e=storage, storage_p=storage, interstorage=interstorage, transmission=transmission, print_flag=print_flag)
+
   #Run the optimization problem
   run_opt(ts_data, opt_data, opt_config; solver=solver, k_ids=k_ids)
 end # run_opt

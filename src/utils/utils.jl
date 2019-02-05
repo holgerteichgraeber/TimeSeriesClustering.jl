@@ -463,25 +463,33 @@ function get_cep_design_variables(opt_result::OptResult)
   Returns all design variables in this opt_result mathing the type "dv"
 """
 function get_cep_design_variables(opt_result::OptResult)
-    design_variables=Dict{String,OptVariable}()
-    for (key,val) in opt_result.variables
-        if val.type=="dv"
-            design_variables[key]=val
-        end
-    end
-    return design_variables
+  return get_cep_variables(opt_result, "dv")
 end
 
 """
 function get_cep_slack_variables(opt_result::OptResult)
-  Returns the SLACK variable of this opt_result matching "sv"
+  Returns all slack variables in this opt_result mathing the type "sv"
 """
-function get_cep_slack_variable(opt_result::OptResult)
-    if "SLACK" in keys(opt_result.variables)
-      return opt_result.variables["SLACK"]
-    else
-      throw(@error("SLACK-Variable not provided in $(opt_result.descriptor)"))
-    end
+function get_cep_slack_variables(opt_result::OptResult)
+  return get_cep_variables(opt_result, "sv")
+end
+
+"""
+function get_cep_variables(opt_result::OptResult, variable_type::String)
+  Returns all variables which types match the String of variable_type
+"""
+function get_cep_variables(opt_result::OptResult, variable_type::String)
+  variables=Dict{String,OptVariable}()
+  for (key,val) in opt_result.variables
+      if val.type==variable_type
+          variables[key]=val
+      end
+  end
+  if variables==Dict{String,OptVariable}()
+      throw(@error("$variable_type-Variable not provided in $(opt_result.descriptor)"))
+  else
+      return variables
+  end
 end
 
 """

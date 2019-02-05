@@ -37,7 +37,7 @@ function setup_opt_cep_set(ts_data::ClustData,
   set["time_K"]=1:ts_data.K
   set["time_T"]=1:ts_data.T
   set["time_T_e"]=0:ts_data.T
-  if opt_config["interstorage"]
+  if opt_config["seasonalstorage"]
     set["time_I_e"]=0:length(k_ids)
     set["time_I"]=1:length(k_ids)
   end
@@ -209,8 +209,8 @@ end
 
 """
 function setup_opt_cep_storage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  add variables INTRASTORGEN and INTRASTOR, variable and fixed Costs, limit generation to installed power-capacity, connect intra-storage levels (within period) with generation
-  basis for either intrastorage or interstorage
+  add variables INTRASTORGEN and INTRASTOR, variable and fixed Costs, limit generation to installed power-capacity, connect simple-storage levels (within period) with generation
+  basis for either simplestorage or seasonalstorage
 """
 function setup_opt_cep_storage!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -260,10 +260,11 @@ function setup_opt_cep_storage!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_intrastorage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+function setup_opt_cep_simplestorage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+  Adding only intra-day storage:
   Looping constraint for each period (same start and end level for all periods) and limit storage to installed energy-capacity
 """
-function setup_opt_cep_intrastorage!(cep::OptModelCEP,
+function setup_opt_cep_simplestorage!(cep::OptModelCEP,
                             ts_data::ClustData,
                             opt_data::OptDataCEP)
     ## DATA ##
@@ -284,10 +285,11 @@ function setup_opt_cep_intrastorage!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_interstorage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  add variable INTERSTOR, calculate inter-storage-level and limit total storage to installed energy-capacity
+function setup_opt_cep_seasonalstorage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+  Adding inter-day storage:
+  add variable INTERSTOR, calculate seasonal-storage-level and limit total storage to installed energy-capacity
 """
-function setup_opt_cep_interstorage!(cep::OptModelCEP,
+function setup_opt_cep_seasonalstorage!(cep::OptModelCEP,
                             ts_data::ClustData,
                             opt_data::OptDataCEP,
                             #TODO get rid of k_ids here
@@ -307,14 +309,15 @@ function setup_opt_cep_interstorage!(cep::OptModelCEP,
     # Set storage level at the beginning of the year equal to the end of the year
     push!(cep.info,"INTERSTOR['el',tech, '0', node] = INTERSTOR['el',tech, 'end', node] ∀ node, tech_storage, t, k")
     @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"]], cep.model[:INTERSTOR]["el",tech,0,node]== cep.model[:INTERSTOR]["el",tech,set["time_I_e"][end],node])
-    # Connect the previous interday-storage level and the daily difference of the corresponding intraday-storage with the new interday-storage level
+    # Connect the previous seasonal-storage level and the daily difference of the corresponding simple-storage with the new seasonal-storage level
     push!(cep.info,"INTERSTOR['el',tech, i+1, node] = INTERSTOR['el',tech, i, node] + INTRASTOR['el',tech, 'k[i]', 't[end]', node] - INTRASTOR['el',tech, 'k[i]', 't[1]', node] - GEN['el', tech, 't[end]', 'k[i]', node] ⋅ η[tech] ∀ node, tech_storage_e, i")
-    # Limit the total storage (inter and intraday) to be greater than zero and less than total storage cap
+    # Limit the total storage (seasonal and simple) to be greater than zero and less than total storage cap
+    push!(cep.info,"0 ≤ INTERSTOR['el',tech, i, node] + INTRASTOR['el',tech, t, k[i], node] ≤ Σ_{infrastruct} INTERSTOR[tech,infrastruct,node] ∀ node, tech_storage_e, i, t")
     push!(cep.info,"0 ≤ INTERSTOR['el',tech, i, node] + INTRASTOR['el',tech, t, k[i], node] ≤ Σ_{infrastruct} INTERSTOR[tech,infrastruct,node] ∀ node, tech_storage_e, i, t")
     for i in set["time_I"]
-        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"]], cep.model[:INTERSTOR]["el",tech,i,node] == cep.model[:INTERSTOR]["el",tech,i-1,node] + cep.model[:INTRASTOR]["el",tech,set["time_T"][end],k_ids[i],node] - cep.model[:INTRASTOR]["el",tech,1,k_ids[i],node])
-        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"]], 0 <= cep.model[:INTERSTOR]["el",tech,i,node]+cep.model[:INTRASTOR]["el",tech,t,k_ids[i],node])
-        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T"]], cep.model[:INTERSTOR]["el",tech,i,node]+cep.model[:INTRASTOR]["el",tech,t,k_ids[i],node] <= sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"]))
+        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"]], cep.model[:INTERSTOR]["el",tech,i,node] == cep.model[:INTERSTOR]["el",tech,i-1,node] + cep.model[:INTRASTOR]["el",tech,set["time_T"][end],k_ids[i],node] - cep.model[:INTRASTOR]["el",tech,0,k_ids[i],node])
+        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T_e"]], 0 <= cep.model[:INTERSTOR]["el",tech,i,node]+cep.model[:INTRASTOR]["el",tech,t,k_ids[i],node])
+        @constraint(cep.model, [node=set["nodes"], tech=set["tech_storage_e"], t=set["time_T_e"]], cep.model[:INTERSTOR]["el",tech,i,node]+cep.model[:INTRASTOR]["el",tech,t,k_ids[i],node] <= sum(cep.model[:CAP][tech,infrastruct,node] for infrastruct=set["infrastruct"]))
     end
     return cep
 end
@@ -527,6 +530,7 @@ function solve_opt_cep(cep::OptModelCEP,
   total_demand=get_total_demand(cep,ts_data)
   variables=Dict{String,OptVariable}()
   # cv - Cost variable, dv - design variable, which is used to fix variables in a dispatch model, ov - operational variable
+
   variables["COST"]=OptVariable(getvalue(cep.model[:COST]),"cv")
   variables["CAP"]=OptVariable(getvalue(cep.model[:CAP]),"dv")
   variables["GEN"]=OptVariable(getvalue(cep.model[:GEN]),"ov")
@@ -542,14 +546,14 @@ function solve_opt_cep(cep::OptModelCEP,
     lost_emission=sum(variables["LE"].data)
   end
   if opt_config["storage_p"] && opt_config["storage_e"]
-    variables["INTRASTOR"]=OptVariable(getvalue(cep.model[:INTRASTOR]),"ov")
-    if opt_config["interstorage"]
-      variables["INTERSTOR"]=OptVariable(getvalue(cep.model[:INTERSTOR]),"ov")
+    variables["INTRASTOR"]=OptVariable(cep,:INTRASTOR,"ov")
+    if opt_config["seasonalstorage"]
+      variables["INTERSTOR"]=OptVariable(cep,:INTERSTOR,"ov")
     end
   end
   if opt_config["transmission"]
-    variables["TRANS"]=OptVariable(getvalue(cep.model[:TRANS]),"dv")
-    variables["FLOW"]=OptVariable(getvalue(cep.model[:FLOW]),"ov")
+    variables["TRANS"]=OptVariable(cep,:TRANS,"dv")
+    variables["FLOW"]=OptVariable(cep,:FLOW,"ov")
   end
   currency=variables["COST"].axes[2][1]
   if lost_load==0 && lost_emission==0

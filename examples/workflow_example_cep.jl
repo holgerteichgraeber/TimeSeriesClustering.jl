@@ -26,15 +26,16 @@ co2_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descripto
 # Include a Slack-Variable
 slack_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="slack",lost_el_load_cost=1e6, lost_CO2_emission_cost=700)
 
+
 # Include existing infrastructure at no COST
 ex_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="ex",existing_infrastructure=true)
 
 # Intraday storage (just within each period, same storage level at beginning and end)
-intraday_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="intraday",storage="intra")
+simplestor_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="simple storage",storage="simple")
 
 # Interday storage (within each period & between the periods)
 #TODO move k_ids
-interday_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="interday",storage="inter",k_ids=ts_clust_data.best_ids)
+seasonalstor_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="seasonal storage",storage="seasonal",k_ids=ts_clust_data.best_ids)
 
 # Transmission
 #transmission_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="transmission",transmission=true)

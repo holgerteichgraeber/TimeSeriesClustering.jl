@@ -58,28 +58,6 @@ struct ClustResultBest <: ClustResult
  clust_config::Dict{String,Any}
 end
 
-"""
-struct OptVariable
-  data::Array - includes the optimization variable output in  form of an array
-  axes::Tuple - includes the values of the different axes of the optimization variables
-  type::String - defines the type of the variable being cv- Cost variable, dv - decision variable or ov - operation variable
-"""
-struct OptVariable
- data::Array
- axes::Tuple
- type::String
-end
-
-"""
-function OptVariable(jumparray::JuMP.Array, type::String)
-  Constructor for OptVariable taking JuMP Array and type (ov-operational variable or dv-decision variable)
-"""
-function OptVariable(jumparray::JuMP.JuMPArray,
-                     type::String
-                      )
-  OptVariable(jumparray.innerArray,jumparray.indexsets,type)
-end
-
 "SimpleExtremeValueDescr"
 struct SimpleExtremeValueDescr
    data_type::String
@@ -98,7 +76,6 @@ struct SimpleExtremeValueDescr
        new(data_type,extremum,peak_def)
    end
 end
-
 
 "OptResult"
 struct OptResult
@@ -143,6 +120,49 @@ struct OptModelCEP
   set::Dict{String,Array}
 end
 
+"""
+struct OptVariable
+  data::Array - includes the optimization variable output in  form of an array
+  axes_names::Array{String,1} - includes the names of the different axes and is equivalent to the sets in the optimization formulation
+  axes::Tuple - includes the values of the different axes of the optimization variables
+  type::String - defines the type of the variable being cv - cost variable - dv -design variable - ov - operating variable - sv - slack variable
+"""
+struct OptVariable
+ data::Array
+ axes_names::Array{String,1}
+ axes::Tuple
+ type::String
+end
+
+"""
+function OptVariable(jumparray::JuMP.Array, type::String)
+  Constructor for OptVariable taking JuMP Array and type (ov-operational variable or dv-decision variable)
+"""
+function OptVariable(cep::OptModelCEP,
+                     variable::Symbol,
+                     type::String)
+  jumparray=getvalue(cep.model[variable])
+  axes_names=Array{String,1}()
+  for axe in jumparray.indexsets
+    for (name, val) in cep.set
+      if axe==val
+        push!(axes_names, name)
+        break
+      end
+    end
+  end
+  OptVariable(jumparray.innerArray,axes_names,jumparray.indexsets,type)
+end
+
+"OptResult"
+struct OptResult
+ status::Symbol
+ objective::Float64
+ variables::Dict{String,OptVariable}
+ model_set::Dict{String,Array}
+ model_info::Array{String}
+ opt_config::Dict{String,Any}
+end
 
 """
 struct Scenario
