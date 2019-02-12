@@ -2,20 +2,16 @@
 
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE.md)
 
-julia implementation of using different clustering methods for finding representative perdiods for the optimization of energy systems.
+ClustForOpt is a [julia](www.juliaopt.com) implementation of clustering methods for finding representative periods for the optimization of energy systems. The package furthermore provides a multi-node capacity expansion model. 
+
+The package follows the clustering framework presented in [Teichgraeber and Brandt, 2019](http://www.optimization-online.org/DB_HTML/2018/09/6814.html).
 
 ## Installation
-This package runs under julia v0.6.
+This package runs under julia v1.0 and higher.
 This package is not officielly registered. Install using:
 
 ```julia
-Pkg.clone("https://github.com/holgerteichgraeber/ClustForOpt.jl.git")
-```
-
-Then, seperately install [TimeWarp.jl](https://github.com/holgerteichgraeber/TimeWarp.jl) using
-
-```julia
-Pkg.clone("https://github.com/holgerteichgraeber/TimeWarp.jl.git")
+] add https://github.com/holgerteichgraeber/ClustForOpt.jl.git
 ```
 
 ## Supported clustering methods
