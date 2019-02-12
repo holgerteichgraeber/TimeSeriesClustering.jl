@@ -1,6 +1,6 @@
 
 """
-function run_clust(
+    run_clust(
       data::ClustData;
       norm_op::String="zscore",
       norm_scope::String="full",
@@ -146,7 +146,7 @@ end
 
 
 """
-check_kw_args(region,opt_problems,norm_op,norm_scope,method,representation)
+    check_kw_args(region,opt_problems,norm_op,norm_scope,method,representation)
 checks if the arguments supplied for run_clust are supported
 """
 function check_kw_args(

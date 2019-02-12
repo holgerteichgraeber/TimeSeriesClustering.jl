@@ -1,5 +1,5 @@
 """
-function load_timeseriesdata(application::String, region::String, K-#Periods, T-#Segments)
+        load_timeseriesdata(application::String, region::String, K-#Periods, T-#Segments)
 Loading from .csv files in a the folder ../ClustForOpt/data/{application}/{region}/TS
 Timestamp-column has to be called Timestamp
 Other columns have to be called with the location/node name
@@ -40,19 +40,19 @@ function load_timeseries_data( application::String,
 end #load_pricedata
 
 """
-function load_cep_data(region::String)
+        load_cep_data(region::String)
 Loading from .csv files in a the folder ../ClustForOpt/data/CEP/{region}/
 Follow instructions for the CSV-Files:
-    nodes       nodes x region, infrastruct, capacity_of_different_tech... in MW_el
-    var_costs   tech x [USD for fossils: in USD/MWh_el, CO2 in kg-CO₂-eq./MWh_el] # Variable costs per year
-    fix_costs   tech x [USD in USD/MW_el, CO2 in kg-CO₂-eq./MW_el] # Fixed costs per year
-    cap_costs   tech x [USD in USD/MW_el, CO2 in kg-CO₂-eq./MW_el] # Entire (NOT annulized) Costs per Investment in technology
-    techs       tech x [categ,sector,lifetime in years,effic in %,fuel]
-    lines       lines x [node_start,node_end,reactance,resistance,power,voltage,circuits,length]
+- `nodes`       nodes x region, infrastruct, capacity_of_different_tech... in `MW_el`
+- `var_costs`   tech x [USD for fossils: in `USD/MWh_el`, CO2 in `kg-CO₂-eq./MWh_el`] # Variable costs per year
+- `fix_costs`   tech x [USD in `USD/MW_el`, CO2 in `kg-CO₂-eq./MW_el`] # Fixed costs per year
+- `cap_costs`   tech x [USD in `USD/MW_el`, CO2 in `kg-CO₂-eq./MW_el`] # Entire (NOT annulized) Costs per Investment in technology
+- `techs`      tech x [categ,sector,lifetime in years,effic in %,fuel]
+- `lines`       lines x [node_start,node_end,reactance,resistance,power,voltage,circuits,length]
 for regions:
-- GER Germany
-- CA California
-- TX Texas
+- `GER` Germany
+- `CA` California
+- `TX` Texas
 """
 function load_cep_data(region::String)
   data_path=normpath(joinpath(dirname(@__FILE__),"..","..","data","CEP",region))

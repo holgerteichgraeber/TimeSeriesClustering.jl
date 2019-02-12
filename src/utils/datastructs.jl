@@ -77,37 +77,6 @@ struct SimpleExtremeValueDescr
    end
 end
 
-"OptResult"
-struct OptResult
- status::Symbol
- objective::Float64
- total_demand::Float64
- variables::Dict{String,OptVariable}
- model_set::Dict{String,Array}
- model_info::Array{String}
- opt_config::Dict{String,Any}
-end
-
-"""
-struct OptDataCEP <: OptData
-   region::String          name of state or region data belongs to
-   nodes::DataFrame        nodes x region, infrastruct, capacity_of_different_tech...
-   var_costs::DataFrame    tech x [USD, CO2]
-   fix_costs::DataFrame    tech x [USD, CO2]
-   cap_costs::DataFrame    tech x [USD, CO2]
-   techs::DataFrame        tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
-   instead of USD you can also use your favorite currency like EUR
-"""
-struct OptDataCEP <: OptData
-   region::String
-   nodes::DataFrame
-   var_costs::DataFrame
-   fix_costs::DataFrame
-   cap_costs::DataFrame
-   techs::DataFrame
-   lines::DataFrame
-end
-
 """
 struct OptModelCEP
   model::JuMP.Model
@@ -158,10 +127,31 @@ end
 struct OptResult
  status::Symbol
  objective::Float64
+ total_demand::Float64
  variables::Dict{String,OptVariable}
  model_set::Dict{String,Array}
  model_info::Array{String}
  opt_config::Dict{String,Any}
+end
+
+"""
+struct OptDataCEP <: OptData
+   region::String          name of state or region data belongs to
+   nodes::DataFrame        nodes x region, infrastruct, capacity_of_different_tech...
+   var_costs::DataFrame    tech x [USD, CO2]
+   fix_costs::DataFrame    tech x [USD, CO2]
+   cap_costs::DataFrame    tech x [USD, CO2]
+   techs::DataFrame        tech x [categ,sector,lifetime,effic,fuel,annuityfactor]
+   instead of USD you can also use your favorite currency like EUR
+"""
+struct OptDataCEP <: OptData
+   region::String
+   nodes::DataFrame
+   var_costs::DataFrame
+   fix_costs::DataFrame
+   cap_costs::DataFrame
+   techs::DataFrame
+   lines::DataFrame
 end
 
 """
