@@ -88,6 +88,8 @@ function run_clust_extr(
            push!(eval_res,o_opt_individual[k].status)
         elseif extreme_event_selection_method=="slack"
            slack_cost==Inf && (@warn "extreme_event_selection_method is -slack-,but slack cost are Inf")
+          # ### TODO: THIS IS JUST A TEST
+          # set_clust_config!(d_o_opt.opt_config;co2_limit=Inf)
            push!(o_opt_individual,run_opt(ts_data_indiv_ar[k],opt_data,d_o_opt.opt_config,dvs;solver=solver,slack_cost=slack_cost))
            push!(eval_res,get_cep_slack_variables(o_opt_individual[k]))
          end 
