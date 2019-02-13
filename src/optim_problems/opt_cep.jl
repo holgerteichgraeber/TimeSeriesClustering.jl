@@ -530,18 +530,18 @@ function solve_opt_cep(cep::OptModelCEP,
   variables=Dict{String,OptVariable}()
   # cv - Cost variable, dv - design variable, which is used to fix variables in a dispatch model, ov - operational variable
 
-  variables["COST"]=OptVariable(getvalue(cep.model[:COST]),"cv")
-  variables["CAP"]=OptVariable(getvalue(cep.model[:CAP]),"dv")
-  variables["GEN"]=OptVariable(getvalue(cep.model[:GEN]),"ov")
+  variables["COST"]=OptVariable(cep,:COST,"cv")
+  variables["CAP"]=OptVariable(cep,:CAP,"dv")
+  variables["GEN"]=OptVariable(cep,:GEN,"ov")
   lost_load=0
   lost_emission=0
   if opt_config["lost_load_cost"]["el"]!=Inf
-    variables["SLACK"]=OptVariable(getvalue(cep.model[:SLACK]),"sv")
-    variables["LL"]=OptVariable(getvalue(cep.model[:LL]),"sv")
+    variables["SLACK"]=OptVariable(cep,:SLACK,"sv")
+    variables["LL"]=OptVariable(cep,:LL,"sv")
     lost_load=sum(variables["LL"].data)
   end
   if opt_config["lost_emission_cost"]["CO2"]!=Inf
-    variables["LE"]=OptVariable(getvalue(cep.model[:LE]),"sv")
+    variables["LE"]=OptVariable(cep,:LE,"sv")
     lost_emission=sum(variables["LE"].data)
   end
   if opt_config["storage_p"] && opt_config["storage_e"]

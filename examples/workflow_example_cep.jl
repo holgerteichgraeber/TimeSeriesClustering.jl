@@ -1,7 +1,6 @@
 # This file exemplifies the workflow from data input to optimization result generation
-
-include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_development.jl")))
-
+using ClustForOpt
+using Gurobi
 ## LOAD DATA ##
 state="GER_1" # or "GER_18" or "CA_1" or "TX_1"
 # laod ts-data
