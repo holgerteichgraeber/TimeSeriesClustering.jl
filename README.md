@@ -11,6 +11,7 @@ The package is actively developed, and new features are continuously added. For 
 
 If you find ClustForOpt useful in your work, we kindly request that you cite the following paper ([link](https://doi.org/10.1016/j.apenergy.2019.02.012)):
 
+```
   @article{Teichgraeber2019,
   author = {Holger Teichgraeber and Adam Brandt},
   title = {Clustering methods to find representative periods for the optimization of energy systems: An initial framework and comparison},
@@ -19,8 +20,8 @@ If you find ClustForOpt useful in your work, we kindly request that you cite the
   pages = {1283–1293},
   year = {2019},
   doi = {https://doi.org/10.1016/j.apenergy.2019.02.012},
-}
-
+  }
+```
 
 ## Installation
 This package runs under julia v1.0 and higher.
