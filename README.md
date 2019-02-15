@@ -4,21 +4,81 @@
 
 ClustForOpt is a [julia](www.juliaopt.com) implementation of clustering methods for finding representative periods for the optimization of energy systems. The package furthermore provides a multi-node capacity expansion model. 
 
-The package follows the clustering framework presented in [Teichgraeber and Brandt, 2019](http://www.optimization-online.org/DB_HTML/2018/09/6814.html).
+The package has three main purposes: 1) Provide a simple process of clustering time-series input data, with clustered data output in a generalized type system 2) provide an interface between clustered data and optimization problem 3) provide a generalizable capacity expansion problem formulation and data to test clustering on this problem.
+
+The package follows the clustering framework presented in [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012). 
+The package is actively developed, and new features are continuously added. For a reproducible version of the methods and data of the original paper by [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012), please refer to branch `v0.1-appl_energy-framework-comp`.
+
+If you find ClustForOpt useful in your work, we kindly request that you cite the following paper ([link](https://doi.org/10.1016/j.apenergy.2019.02.012)):
+
+  @article{Teichgraeber2019,
+  author = {Holger Teichgraeber and Adam Brandt},
+  title = {Clustering methods to find representative periods for the optimization of energy systems: An initial framework and comparison},
+  journal = {Applied Energy},
+  volume = {239},
+  pages = {1283–1293},
+  year = {2019},
+  doi = {https://doi.org/10.1016/j.apenergy.2019.02.012},
+}
+
 
 ## Installation
 This package runs under julia v1.0 and higher.
-This package is not officielly registered. Install using:
+Install using:
 
 ```julia
-] add https://github.com/holgerteichgraeber/ClustForOpt.jl.git
+] 
+add https://github.com/holgerteichgraeber/ClustForOpt.jl.git
+```
+where `]` opens the julia package manager.
+
+
+## Workflow
+
+Generally, the workflow requires three steps:
+- load data
+- clustering
+- optimization
+
+```julia
+using ClustForOpt
+
+# load data (electricity price day ahead market)
+ts_input_data, = load_timeseries_data("DAM", "GER";K=365, T=24) #DAM
+
+# run standard kmeans clustering algorithm to cluster into 5 representative periods, with 1000 initial starting points 
+clust_res = run_clust(ts_input_data;method="kmeans",representation="centroid",n_clust=5,n_init=1000)
+
+# battery operations optimization on the clustered data
+opt_res = run_opt(clust_res)
 ```
 
-## Supported clustering methods
+### Load data
+`load_timeseries_data()` loads the data for a given `application` and `region`. 
+Possible applications are
+- `DAM`: Day ahead market price data
+- `CEP`: Capacity Expansion Problem data
 
-The following combinations of clustering method and representation are supported by [run\_clust()](src/clust_algorithms/run_clust.jl):
+Possible regions are:
+- `GER`: Germany
+- `CA`: California
+- `TX`: Texas
 
-Name | method argument | representation argument
+The optional input parameters to `load_timeseries_data()` are the number of periods `K` and the number of time steps per period `T`. By default, they are chosen such that they result in daily time slices. 
+
+Custom data can be stored in the folder INSERT HERE and should be in the following format:
+INSERT HERE
+
+### Clustering
+`run_clust()` takes the full `data` and gives a struct with the clustered data as the output.   
+
+The input parameter `n_clust` determines the number of clusters,i.e., representative periods. 
+
+#### Supported clustering methods
+
+The following combinations of clustering method and representations are supported by [run\_clust()](src/clustering/run_clust.jl):
+
+Name | method | representation
 ---- | --------------- | -----------------------
 k-means clustering | `<kmeans>` | `<centroid>`
 k-means clustering with medoid representation | `<kmeans>` | `<medoid>`
@@ -26,49 +86,15 @@ k-medoids clustering (partitional) | `<kmedoids>` | `<centroid>`
 k-medoids clustering (exact) [requires Gurobi] | `<kmedoids_exact>` | `<centroid>`
 hierarchical clustering with centroid representation | `<hierarchical>` | `<centroid>`
 hierarchical clustering with medoid representation | `<hierarchical>` | `<medoid>`
-DTW barycenter averaging (DBA) clustering | `<dbaclust>` | `<centroid>`
-k-shape clustering | `<kshape>` | `<centroid>`
 
-## Example use of `run_clust()`
-n\_init is chosen small (3) as an example for the function to run fast, the partitional clustering methods should usually be initialized with higher numbers to get close to the globally best solution.
-
-```julia
-using ClustForOpt
-
- # default kmeans + centroid
-run_clust("GER","battery";n_init=3)
-
- #  kmeans + medoid
-run_clust("GER","battery";representation="medoid",n_init=3)
-
- #  kmedoids + medoid (partitional)
-run_clust("GER","battery";method="kmedoids",representation="medoid",n_init=3)
-
- # kmedoids + medoid (exact)
-using Gurobi
-env = Gurobi.Env()
-run_clust("GER","battery";method="kmedoids_exact",representation="medoid",n_init=3,gurobi_env=env)
-
- #  hierarchical + centroid
-run_clust("GER","battery";method="hierarchical",representation="centroid",n_init=1)
-
- #  hierarchical + medoid
-run_clust("GER","battery";method="hierarchical",representation="medoid",n_init=1)
-
- #  dbaclust + centroid (single core, for parallel runs, use parallel version)
-run_clust("GER","battery";method="dbaclust",representation="centroid",n_init=3,iterations=50,rad_sc_min=0,rad_sc_max=1,inner_iterations=30)
-
-```
-
-## General workflow
-
-Run clustering method with the respective optimization problem first: [run\_clust()](src/clust_algorithms/run_clust.jl).
-This will generate a jld2 file with resulting clusters, cluster assignments, and optimization problem outcomes.
-Then, use result analysis files to analyze and interpret clustering and optimization results from folder `src/results_analysis`.
-
-### Parallel implementation of DBA clustering
-run the file [cluster\_gen\_dbaclust\_parallel.jl](src/clust_algorithms/runfiles/cluster_gen_dbaclust_parallel.jl) on multiple cores (julia currently only allows parallelization through pmap on one node). Then use [dbaclust\_res\_to\_jld2.jl](src/results_analysis/dbaclust_res_to_jld2.jl) to generate jld2 file. Then proceed with result analysis similar to the general workflow.
+For use of DTW barycenter averaging (DBA) and k-shape clustering on single-attribute data (e.g. electricity prices), please use branch `v0.1-appl_energy-framework-comp`.
 
 
-### k-shape
-run the file [cluster\_gen\_kshape.py](src/clust_algorithms/runfiles/cluster_gen_kshape.py) on multiple cores. Then use [kshape\_res\_to\_jld2.jl](src/results_analysis/kshape_res_to_jld2.jl) to generate jld2 file. Then proceed with result analysis similar to the general workflow.
+
+### Optimization
+The function `run_opt()` runs the optimization problem and gives as an output a struct that contains optimal objective function value, decision variables, and additional info. The `run_opt()` function infers the optimization problem type from the input data. See the examples folder for further details. 
+
+More detailed documentation on the Capacity Expansion Problem can be found in the documentation. 
+
+
+
