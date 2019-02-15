@@ -35,7 +35,6 @@ module ClustForOpt
           ClustResultAll,
           ClustResultBest,
           SimpleExtremeValueDescr,
-          OptModelCEP,
           OptDataCEP,
           OptVariable,
           OptResult,
