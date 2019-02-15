@@ -1,9 +1,8 @@
 """
-function simple_extr_val_sel(data::ClustData,
+    simple_extr_val_sel(data::ClustData,
                              extreme_value_descr_ar::Array{SimpleExtremeValueDescr,1};
                              rep_mod_method::String="feasibility"
                              )
-
 Selects simple extreme values and returns modified data, extreme values, and the corresponding indices.
 """
 function simple_extr_val_sel(data::ClustData,
@@ -24,7 +23,7 @@ function simple_extr_val_sel(data::ClustData,
 end
 
 """
-function simple_extr_val_sel(data::ClustData,
+    simple_extr_val_sel(data::ClustData,
                              extreme_value_descr_ar::Array{SimpleExtremeValueDescr,1};
                              rep_mod_method::String="feasibility"
                              )
@@ -40,7 +39,7 @@ function simple_extr_val_sel(data::ClustData,
 end
 
 """
-    function simple_extr_val_ident(data::ClustData,extreme_value_descr::Array{SimpleExtremeValueDescr,1})
+    simple_extr_val_ident(data::ClustData,extreme_value_descr::Array{SimpleExtremeValueDescr,1})
 
 identifies multiple simple extreme values from the data and returns array of column indices of extreme value within data
 
@@ -59,7 +58,7 @@ function simple_extr_val_ident(data::ClustData,
 end
 
 """
-    function simple_extr_val_ident(data::ClustData,extreme_value_descr::SimpleExtremeValueDescr)
+    simple_extr_val_ident(data::ClustData,extreme_value_descr::SimpleExtremeValueDescr)
 
 identifies a single simple extreme value from the data and returns column index of extreme value
 
@@ -73,7 +72,7 @@ function simple_extr_val_ident(data::ClustData,
 end
 
 """
-    function simple_extr_val_ident(data::ClustData,data_type::String;extremum="max",peak_def="absolute")
+    simple_extr_val_ident(data::ClustData,data_type::String;extremum="max",peak_def="absolute")
 
 identifies a single simple extreme value from the data and returns column index of extreme value
 
@@ -91,7 +90,7 @@ function simple_extr_val_ident(data::ClustData,
 end
 
 """
-    function simple_extr_val_ident(data::Array{Float64};extremum="max",peak_def="absolute")
+    simple_extr_val_ident(data::Array{Float64};extremum="max",peak_def="absolute")
 """
 function simple_extr_val_ident(data::Array{Float64};
                                extremum::String="max",
@@ -116,7 +115,7 @@ function simple_extr_val_ident(data::Array{Float64};
 end
 
 """
-    function input_data_modification(data::ClustData,extr_val_idcs::Array{Int,1})
+    input_data_modification(data::ClustData,extr_val_idcs::Array{Int,1})
 
 returns ClustData structs with extreme vals and with remaining input data [data-extreme_vals].
 Gives extreme vals the weight that they had in data.
@@ -135,7 +134,7 @@ function input_data_modification(data::ClustData,extr_val_idcs::Array{Int,1})
 end
 
 """
-    function input_data_modification(data::ClustData,extr_val_idcs::Int)
+    input_data_modification(data::ClustData,extr_val_idcs::Int)
 
 wrapper function for a single extreme val.
 returns ClustData structs with extreme vals and with remaining input data [data-extreme_vals].
@@ -146,7 +145,7 @@ function input_data_modification(data::ClustData,extr_val_idcs::Int)
 end
 
 """
-   function extreme_val_output(data::ClustData,
+   extreme_val_output(data::ClustData,
                             extr_val_idcs::Array{Int,1};
                             rep_mod_method="feasibility")
 
@@ -174,7 +173,7 @@ function extreme_val_output(data::ClustData,
 end
 
 """
-   function extreme_val_output(data::ClustData,
+   extreme_val_output(data::ClustData,
                             extr_val_idcs::Array{Int,1};
                             rep_mod_method="feasibility")
 
@@ -188,7 +187,7 @@ function extreme_val_output(data::ClustData,
 end
 
 """
-function representation_modification(extr_vals::ClustData,
+    representation_modification(extr_vals::ClustData,
                                      clust_data::ClustData,
                                      )
 
@@ -210,7 +209,7 @@ function representation_modification(extr_vals::ClustData,
 end
 
 """
-    function representation_modification(full_data::ClustData,
+    representation_modification(full_data::ClustData,
                                      clust_data::ClustData,
                                      extr_val_idcs::Array{Int,1};
                                      rep_mod_method::String="feasibility")
@@ -226,7 +225,7 @@ function representation_modification(full_data::ClustData,
 end
 
 """
-    function representation_modification(full_data::ClustData,
+    representation_modification(full_data::ClustData,
                                      clust_data::ClustData,
                                      extr_val_idcs::Int;
                                      rep_mod_method::String="feasibility")

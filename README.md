@@ -66,8 +66,6 @@ Possible regions are:
 
 The optional input parameters to `load_timeseries_data()` are the number of periods `K` and the number of time steps per period `T`. By default, they are chosen such that they result in daily time slices. 
 
-Custom data can be stored in the folder INSERT HERE and should be in the following format:
-INSERT HERE
 
 ### Clustering
 `run_clust()` takes the full `data` and gives a struct with the clustered data as the output.   

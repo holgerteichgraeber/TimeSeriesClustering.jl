@@ -89,7 +89,7 @@ function run_clust(
 end
 
 """
-function run_clust(
+    run_clust(
       data::ClustData,
       n_clust_ar::Array{Int,1};
       norm_op::String="zscore",
@@ -147,6 +147,7 @@ end
 
 """
     check_kw_args(region,opt_problems,norm_op,norm_scope,method,representation)
+
 checks if the arguments supplied for run_clust are supported
 """
 function check_kw_args(
@@ -187,10 +188,10 @@ function check_kw_args(
 end
 
 """
-function run_clust_kmeans_centroid(
-    data_norm::ClustDataMerged,
-    n_clust::Int,
-    iterations::Int
+    run_clust_kmeans_centroid(
+      data_norm::ClustDataMerged,
+      n_clust::Int,
+      iterations::Int
     )
 """
 function run_clust_kmeans_centroid(
@@ -229,10 +230,10 @@ function run_clust_kmeans_centroid(
 end
 
 """
-function run_clust_kmeans_medoid(
-    data_norm::ClustDataMerged,
-    n_clust::Int,
-    iterations::Int
+    run_clust_kmeans_medoid(
+      data_norm::ClustDataMerged,
+      n_clust::Int,
+      iterations::Int
     )
 """
 function run_clust_kmeans_medoid(
@@ -272,10 +273,10 @@ function run_clust_kmeans_medoid(
 end
 
 """
-function run_clust_kmedoids_medoid(
-    data_norm::ClustDataMerged,
-    n_clust::Int,
-    iterations::Int
+    run_clust_kmedoids_medoid(
+      data_norm::ClustDataMerged,
+      n_clust::Int,
+      iterations::Int
     )
 """
 function run_clust_kmedoids_medoid(
@@ -300,11 +301,11 @@ function run_clust_kmedoids_medoid(
 end
 
 """
-function run_clust_kmedoids_exact_medoid(
-    data_norm::ClustDataMerged,
-    n_clust::Int,
-    iterations::Int;
-    gurobi_env=0
+    run_clust_kmedoids_exact_medoid(
+      data_norm::ClustDataMerged,
+      n_clust::Int,
+      iterations::Int;
+      gurobi_env=0
     )
 """
 function run_clust_kmedoids_exact_medoid(
@@ -331,11 +332,11 @@ function run_clust_kmedoids_exact_medoid(
 end
 
 """
-function run_clust_hierarchical(
-    data_norm::ClustDataMerged,
-    n_clust::Int,
-    iterations::Int;
-    _dist::SemiMetric = SqEuclidean()
+    run_clust_hierarchical(
+      data_norm::ClustDataMerged,
+      n_clust::Int,
+      iterations::Int;
+      _dist::SemiMetric = SqEuclidean()
     )
 
 Helper function to run run_clust_hierarchical_centroids and run_clust_hierarchical_medoid
@@ -356,11 +357,11 @@ function run_clust_hierarchical(
 end
 
 """
-function run_clust_hierarchical_centroid(
-    data_norm::ClustDataMerged,
-    n_clust::Int,
-    iterations::Int;
-    _dist::SemiMetric = SqEuclidean()
+    run_clust_hierarchical_centroid(
+      data_norm::ClustDataMerged,
+      n_clust::Int,
+      iterations::Int;
+      _dist::SemiMetric = SqEuclidean()
     )
 """
 function run_clust_hierarchical_centroid(
@@ -378,11 +379,11 @@ function run_clust_hierarchical_centroid(
 end
 
 """
-function run_clust_hierarchical_medoid(
-    data_norm::ClustDataMerged,
-    n_clust::Int,
-    iterations::Int;
-    _dist::SemiMetric = SqEuclidean()
+    run_clust_hierarchical_medoid(
+      data_norm::ClustDataMerged,
+      n_clust::Int,
+      iterations::Int;
+      _dist::SemiMetric = SqEuclidean()
     )
 """
 function run_clust_hierarchical_medoid(
