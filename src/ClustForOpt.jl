@@ -62,6 +62,5 @@ module ClustForOpt
   include(joinpath("clustering","exact_kmedoids.jl"))
   include(joinpath("clustering","extreme_vals.jl"))
   include(joinpath("clustering","attribute_weighting.jl"))
-  include(joinpath("clustering","intraperiod_segmentation.jl"))
 
 end # module ClustForOpt
