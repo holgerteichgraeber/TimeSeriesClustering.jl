@@ -10,7 +10,7 @@ using Test
     ts_clust_res = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1,n_clust=365) # default k-means
 
     # run optimization
-    model = run_opt(ts_clust_res.best_results,cep_input_data_GER;solver=GurobiSolver(OutputFlag=0))
+    model = run_opt(ts_clust_res.best_results,cep_input_data_GER;solver=CbcSolver())
 
     # compare to exact result
     exact_res=[70540.26439790576;0.0;8498.278397905757;0.0;80132.88454450261]
@@ -29,5 +29,5 @@ end
     ts_clust_res_24 = run_clust(ts_input_data_24;method="kmeans",representation="centroid",n_init=1,n_clust=365)
 
     # run optimization
-    @test round(run_opt(ts_clust_res_8760.best_results,cep_input_data_GER;solver=GurobiSolver(OutputFlag=0),storage="simple").objective)==round(run_opt(ts_clust_res_24.best_results,cep_input_data_GER;solver=GurobiSolver(OutputFlag=0),storage="seasonal",k_ids=ts_clust_res_24.best_ids).objective)
+    @test round(run_opt(ts_clust_res_8760.best_results,cep_input_data_GER;solver=CbcSolver(),storage="simple").objective)==round(run_opt(ts_clust_res_24.best_results,cep_input_data_GER;solver=GurobiSolver(OutputFlag=0),storage="seasonal",k_ids=ts_clust_res_24.best_ids).objective)
 end
