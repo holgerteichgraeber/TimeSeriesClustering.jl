@@ -1,27 +1,17 @@
-# Holger Teichgraeber, 2017
+# Holger Teichgraeber, Elias Kuepper, 2019
 
  ######################
  # ClustForOpt
  # Analyzing clustering techniques as input for energy systems optimization
  #
  #####################
- #TODO other way of including module
 module ClustForOpt
-
   using Reexport
-  using Distances
-  using Clustering
-  using JLD2
-  using FileIO
-  #TODO Update TimeWarp
-  #using TimeWarp
-  using Statistics
-  using LinearAlgebra
-  using CSV
+  @reexport using StatsKit
+  @reexport using JLD2
+  @reexport using FileIO
   using JuMP
   using Clp
-  using Gurobi
-  @reexport using DataFrames
 
    #TODO how to make PyPlot, PyCall, and TimeWarp optional? -> only import when needed
 
@@ -72,5 +62,6 @@ module ClustForOpt
   include(joinpath("clustering","exact_kmedoids.jl"))
   include(joinpath("clustering","extreme_vals.jl"))
   include(joinpath("clustering","attribute_weighting.jl"))
+  include(joinpath("clustering","intraperiod_segmentation.jl"))
 
 end # module ClustForOpt

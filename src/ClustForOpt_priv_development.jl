@@ -8,20 +8,11 @@
  #TODO other way of including module
 #module ClustForOpt_priv
 
-using Distances
-using Clustering
-using JLD2
-using FileIO
-#TODO Update TimeWarp
-#using TimeWarp
-using Statistics
-using LinearAlgebra
-using CSV
-using JuMP
-using Clp
-#TODO make Gurobi optional
-using Gurobi
-using DataFrames
+  using StatsKit
+  using JLD2
+  using FileIO
+  using JuMP
+  using Clp
 
 
 
