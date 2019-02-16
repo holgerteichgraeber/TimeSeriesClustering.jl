@@ -14,6 +14,6 @@ This package is not officielly registered. Install it using:
 
 ## Contents
 ```@contents
-Pages = ["index.md", "clust.md", "opt_cep.md", "opt_cep_data.md"]
+Pages = ["index.md", "workflow.md", "load_data", "clust.md", "opt_cep.md", "opt_cep_data.md"]
 Depth = 2
 ```

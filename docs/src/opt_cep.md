@@ -195,53 +195,12 @@ The package provides data [Capacity Expansion Data](@ref) for:
 </table>
 ```
 
-## Workflow
-The input data is distinguished between time series independent and time series dependent data. They are kept separate as just the time series dependent data is used to determine representative periods (clustering).
-![drawing](https://raw.githubusercontent.com/YoungFaithful/ClustForOpt_priv.jl/master/data/CEP/workflow.png?token=AKEm3UkwMa8SEmxWqWoqj8bR5Mm1J-0Nks5cbI0bwA%3D%3D)
-
 ## Opt Types
 ```@docs
 OptDataCEP
 OptResult
 OptVariable
 Scenario
-```
-
-## Load Functions
-```@docs
-load_cep_data
-load_timeseries_data
-```
-### Examples
-#### Example for loading CEP-data
-```@example
-using ClustForOpt
-state="GER_1"
-# laod ts-input-data
-cep_data = load_cep_data(state)
-cep_data.fix_costs
-```
-#### Example for loading timeseries data
-```@example
-using ClustForOpt
-state="GER_1"
-# laod ts-input-data
-ts_input_data, = load_timeseries_data("CEP", state; K=365, T=24)
-
-using Plots
-plot(ts_input_data.data["solar-germany"], legend=false, linestyle=:dot, xlabel="Time [h]", ylabel="Solar availability factor [%]")
-```
-## Finding Representative Periods
-This element is described in detail in the [Clustering](@ref) Section.
-
-### Example for a kmeans clustering
-```@example
-using ClustForOpt # hide
-state="GER_1" # hide
-ts_input_data, = load_timeseries_data("CEP", state; K=365, T=24) # hide
-ts_clust_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=5,n_clust=5).best_results
-using Plots
-plot(ts_clust_data.data["solar-germany"], labels=[string("Cluster #", i) for i in 1:ts_clust_data.K], xlabel="Time [h]", ylabel="Solar availability factor [%]")
 ```
 
 ## Running the Capacity Expansion Problem

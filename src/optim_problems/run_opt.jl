@@ -47,7 +47,7 @@ function run_opt(ts_data::ClustData,
 end
 
 """
-     run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables::Dict{String,OptVariable};solver::Any=CbcSolver(),lost_el_load_cost::Number=Inf,            lost_CO2_emission_cost::Number,)
+     run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables::Dict{String,OptVariable};solver::Any=CbcSolver(),lost_el_load_cost::Number=Inf,lost_CO2_emission_cost::Number)
 Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of `opt_data` - in this case OptDataCEP - so identification as CEP problem)
 This problem runs the operational optimization problem only, with fixed design variables.
 provide the fixed design variables and the `opt_config` of the previous step (design run or another opterational run)
@@ -75,8 +75,7 @@ function run_opt(ts_data::ClustData,
 end
 
 """
-     run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables::Dict{String,OptVariable};solver::Any=CbcSolver(),descriptor::String="",   ,co2_limit::Number=Inf, lost_el_load_cost::Number=Inf,lost_CO2_emission_cost::Number=Inf,existing_infrastructure::Bool=false, intrastorage::Bool=false)
-
+     run_opt(ts_data::ClustData,opt_data::OptDataCEP,fixed_design_variables::Dict{String,OptVariable};solver::Any=CbcSolver(),descriptor::String="",co2_limit::Number=Inf,lost_el_load_cost::Number=Inf,lost_CO2_emission_cost::Number=Inf,existing_infrastructure::Bool=false,intrastorage::Bool=false)
 Wrapper function for type of optimization problem for the CEP-Problem (NOTE: identifier is the type of `opt_data` - in this case OptDataCEP - so identification as CEP problem)
 options to tweak the model are:
 - `descritor`: String with the name of this paricular model like "kmeans-10-co2-500"
