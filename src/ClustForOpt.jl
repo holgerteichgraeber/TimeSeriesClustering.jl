@@ -11,7 +11,6 @@ module ClustForOpt
   @reexport using JLD2
   @reexport using FileIO
   using JuMP
-  using Clp
 
    #TODO how to make PyPlot, PyCall, and TimeWarp optional? -> only import when needed
 
@@ -62,6 +61,5 @@ module ClustForOpt
   include(joinpath("clustering","exact_kmedoids.jl"))
   include(joinpath("clustering","extreme_vals.jl"))
   include(joinpath("clustering","attribute_weighting.jl"))
-  include(joinpath("clustering","intraperiod_segmentation.jl"))
 
 end # module ClustForOpt

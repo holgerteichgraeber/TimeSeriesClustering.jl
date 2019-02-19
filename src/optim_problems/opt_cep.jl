@@ -56,7 +56,7 @@ function setup_opt_cep_basic(ts_data::ClustData,
                             kwargs...)
    ## MODEL CEP ##
    # Initialize model
-   model=Model(solver=solver)
+   model=JuMP.Model(solver=solver)
    # Initialize info
    info=[opt_config["descriptor"]]
    # Setup set
