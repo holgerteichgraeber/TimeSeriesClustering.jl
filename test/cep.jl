@@ -31,9 +31,5 @@ end
     ts_clust_res_24 = run_clust(ts_input_data_24;method="kmeans",representation="centroid",n_init=1,n_clust=365)
 
     # run optimization
-<<<<<<< HEAD
     @test round(run_opt(ts_clust_res_8760.best_results,cep_input_data_GER;solver=ClpSolver(),storage="simple").objective)==round(run_opt(ts_clust_res_24.best_results,cep_input_data_GER;solver=ClpSolver(),storage="seasonal",k_ids=ts_clust_res_24.best_ids).objective)
-=======
-    @test round(run_opt(ts_clust_res_8760.best_results,cep_input_data_GER;solver=CbcSolver(),storage="simple").objective)==round(run_opt(ts_clust_res_24.best_results,cep_input_data_GER;solver=GurobiSolver(OutputFlag=0),storage="seasonal",k_ids=ts_clust_res_24.best_ids).objective)
->>>>>>> 87da7107ff4b6e75516e51c43dad76b088488f3c
 end
