@@ -1,4 +1,4 @@
-include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_development.jl")))
+using ClustForOpt
 
 ts_input_data, = load_timeseries_data("CEP", "GER_1";K=365, T=24) #CEP
 

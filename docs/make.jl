@@ -1,5 +1,5 @@
 using Documenter
-
+using Plots
 using ClustForOpt
 
 makedocs(sitename="ClustForOpt.jl",

@@ -1,6 +1,6 @@
 # This file exemplifies the workflow from data input to optimization result generation
-
-include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_development.jl")))
+using ClustForOpt
+using Clp
 using Plots
 
 ## LOAD DATA ##
@@ -15,7 +15,7 @@ cep_data = load_cep_data(state)
 ts_clust_data = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=5,n_clust=5) # default k-means make sure that n_init is high enough otherwise the results could be crap and drive you crazy
 ## OPTIMIZATION EXAMPLES##
 # select solver
-solver=GurobiSolver(OutputFlag=0)
+solver=ClpSolver()
 
 # Create a Scenario of the clustered data and the corresponding OptResult
 cep = Scenario("co2",ts_clust_data, run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="co2",co2_limit=1000)) #generally values between 1250 and 10 are interesting
