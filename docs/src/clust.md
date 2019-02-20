@@ -30,16 +30,8 @@ state="GER_1"
 # laod ts-input-data
 ts_input_data, = load_timeseries_data("CEP", state; K=365, T=24)
 ts_clust_data = run_clust(ts_input_data).best_results
-```
-
-```@eval
 using Plots
-using Markdown
-using ClustForOpt
-state="GER_1"
-ts_input_data, = load_timeseries_data("CEP", state; K=365, T=24)
-ts_clust_data = run_clust(ts_input_data).best_results
 plot(ts_clust_data.data["solar-germany"], legend=false, linestyle=:solid, width=3, xlabel="Time [h]", ylabel="Solar availability factor [%]")
-savefig("plot2.svg")
-Markdown.parse("![Plot](plot2.svg)")
+savefig("clust.svg")
 ```
+![Plot](clust.svg)

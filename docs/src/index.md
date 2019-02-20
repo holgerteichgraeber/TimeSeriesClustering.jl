@@ -1,11 +1,10 @@
-# ClustForOpt
-
+![ClustForOpt logo](assets/clust_for_opt_text.svg)
+===
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://holgerteichgraeber.github.io/ClustForOpt.jl/stable)
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://holgerteichgraeber.github.io/ClustForOpt.jl/dev)
-[![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE.md)
 [![Build Status](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl.svg?token=HRFemjSxM1NBCsbHGNDG&branch=master)](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl)
 
-ClustForOpt is a [julia](www.juliaopt.com) implementation of clustering methods for finding representative periods for the optimization of energy systems. The package furthermore provides a multi-node capacity expansion model.
+[ClustForOpt](https://github.com/holgerteichgraeber/ClustForOpt.jl) is a [julia](https://www.juliaopt.com) implementation of clustering methods for finding representative periods for the optimization of energy systems. The package furthermore provides a multi-node capacity expansion model.
 
 The package has three main purposes: 1) Provide a simple process of clustering time-series input data, with clustered data output in a generalized type system 2) provide an interface between clustered data and optimization problem 3) provide a generalizable capacity expansion problem formulation and data to test clustering on this problem.
 
