@@ -33,4 +33,6 @@ ts_clust_data = run_clust(ts_input_data).best_results
 
 using Plots
 plot(ts_clust_data.data["solar-germany"], legend=false, linestyle=:solid, width=3, xlabel="Time [h]", ylabel="Solar availability factor [%]")
+savefig("plot.svg")
+Markdown.parse("![Plot](plot.svg)")
 ```
