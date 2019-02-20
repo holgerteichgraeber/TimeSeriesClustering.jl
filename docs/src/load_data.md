@@ -16,14 +16,22 @@ The optional input parameters to `load_timeseries_data()` are the number of peri
 load_timeseries_data
 ```
 ### Example loading timeseries data
-```@example
+```julia
 using ClustForOpt
 state="GER_1"
 # laod ts-input-data
 ts_input_data, = load_timeseries_data("CEP", state; K=365, T=24)
+```
 
+```@eval
 using Plots
+using Markdown
+using ClustForOpt
+state="GER_1"
+ts_input_data, = load_timeseries_data("CEP", state; K=365, T=24)
 plot(ts_input_data.data["solar-germany"], legend=false, linestyle=:dot, xlabel="Time [h]", ylabel="Solar availability factor [%]")
+savefig("plot.svg")
+Markdown.parse("![Plot](plot.svg)")
 ```
 
 
