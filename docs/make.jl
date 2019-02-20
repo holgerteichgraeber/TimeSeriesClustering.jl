@@ -11,4 +11,4 @@ makedocs(sitename="ClustForOpt.jl",
         "Optimization" => ["opt.md", "opt_cep.md", "opt_cep_data.md"]
         ])
 
-deploydocs(repo = "github.com/holgerteichgraeber/ClustForOpt.jl.git", devbranch = "documentation",)
+deploydocs(repo = "github.com/holgerteichgraeber/ClustForOpt.jl.git")

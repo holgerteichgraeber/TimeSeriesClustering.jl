@@ -1,6 +1,9 @@
 # ClustForOpt
 
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://holgerteichgraeber.github.io/ClustForOpt.jl/stable)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://holgerteichgraeber.github.io/ClustForOpt.jl/dev)
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE.md)
+[![Build Status](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl.svg?token=HRFemjSxM1NBCsbHGNDG&branch=master)](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl)
 
 ClustForOpt is a [julia](www.juliaopt.com) implementation of clustering methods for finding representative periods for the optimization of energy systems. The package furthermore provides a multi-node capacity expansion model.
 
@@ -35,6 +38,9 @@ add https://github.com/holgerteichgraeber/ClustForOpt.jl.git
 ```
 where `]` opens the julia package manager.
 
+## Documentation
+[Stable](https://holgerteichgraeber.github.io/ClustForOpt.jl/stable)
+[Develpment](https://holgerteichgraeber.github.io/ClustForOpt.jl/dev)
 
 ## Workflow
 
@@ -93,6 +99,6 @@ For use of DTW barycenter averaging (DBA) and k-shape clustering on single-attri
 
 
 ### Optimization
-The function `run_opt()` runs the optimization problem and gives as an output a struct that contains optimal objective function value, decision variables, and additional info. The `run_opt()` function infers the optimization problem type from the input data. See the examples folder for further details. 
+The function `run_opt()` runs the optimization problem and gives as an output a struct that contains optimal objective function value, decision variables, and additional info. The `run_opt()` function infers the optimization problem type from the input data. See the examples folder for further details.
 
 More detailed documentation on the Capacity Expansion Problem can be found in the documentation.
