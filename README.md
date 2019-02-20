@@ -9,6 +9,8 @@ The package has three main purposes: 1) Provide a simple process of clustering t
 The package follows the clustering framework presented in [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012).
 The package is actively developed, and new features are continuously added. For a reproducible version of the methods and data of the original paper by [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012), please refer to branch `v0.1-appl_energy-framework-comp`.
 
+This package is developed by Holger Teichgraeber [@holgerteichgraeber](https://github.com/holgerteichgraeber) and Elias Kuepper [@YoungFaithful](https://github.com/youngfaithful).
+
 If you find ClustForOpt useful in your work, we kindly request that you cite the following paper ([link](https://doi.org/10.1016/j.apenergy.2019.02.012)):
 
 ```
@@ -81,8 +83,8 @@ Name | method | representation
 ---- | --------------- | -----------------------
 k-means clustering | `<kmeans>` | `<centroid>`
 k-means clustering with medoid representation | `<kmeans>` | `<medoid>`
-k-medoids clustering (partitional) | `<kmedoids>` | `<centroid>`
-k-medoids clustering (exact) [requires Gurobi] | `<kmedoids_exact>` | `<centroid>`
+k-medoids clustering (partitional) | `<kmedoids>` | `<medoid>`
+k-medoids clustering (exact) [requires Gurobi] | `<kmedoids_exact>` | `<medoid>`
 hierarchical clustering with centroid representation | `<hierarchical>` | `<centroid>`
 hierarchical clustering with medoid representation | `<hierarchical>` | `<medoid>`
 
