@@ -1,2 +1,3 @@
 [deps]
+Clp = "e2554f3b-3117-50c0-817c-e040a3ddf72d"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
