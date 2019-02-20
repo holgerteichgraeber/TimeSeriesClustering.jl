@@ -12,8 +12,8 @@ Name | method | representation
 ---- | --------------- | -----------------------
 k-means clustering | `<kmeans>` | `<centroid>`
 k-means clustering with medoid representation | `<kmeans>` | `<medoid>`
-k-medoids clustering (partitional) | `<kmedoids>` | `<centroid>`
-k-medoids clustering (exact) [requires Gurobi] | `<kmedoids_exact>` | `<centroid>`
+k-medoids clustering (partitional) | `<kmedoids>` | `<medoid>`
+k-medoids clustering (exact) [requires Gurobi] | `<kmedoids_exact>` | `<medoid>`
 hierarchical clustering with centroid representation | `<hierarchical>` | `<centroid>`
 hierarchical clustering with medoid representation | `<hierarchical>` | `<medoid>`
 

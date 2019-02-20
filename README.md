@@ -10,7 +10,7 @@ ClustForOpt is a [julia](www.juliaopt.com) implementation of clustering methods 
 The package has three main purposes: 1) Provide a simple process of clustering time-series input data, with clustered data output in a generalized type system 2) provide an interface between clustered data and optimization problem 3) provide a generalizable capacity expansion problem formulation and data to test clustering on this problem.
 
 The package follows the clustering framework presented in [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012).
-The package is actively developed, and new features are continuously added. For a reproducible version of the methods and data of the original paper by [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012), please refer to branch `v0.1-appl_energy-framework-comp`.
+The package is actively developed, and new features are continuously added. For a reproducible version of the methods and data of the original paper by [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012), please refer to release [v0.1](https://github.com/holgerteichgraeber/ClustForOpt.jl/tree/v0.1).
 
 This package is developed by Holger Teichgraeber [@holgerteichgraeber](https://github.com/holgerteichgraeber) and Elias Kuepper [@YoungFaithful](https://github.com/youngfaithful).
 
@@ -40,7 +40,8 @@ where `]` opens the julia package manager.
 
 ## Documentation
 [Stable](https://holgerteichgraeber.github.io/ClustForOpt.jl/stable)
-[Develpment](https://holgerteichgraeber.github.io/ClustForOpt.jl/dev)
+
+[Development](https://holgerteichgraeber.github.io/ClustForOpt.jl/dev)
 
 ## Workflow
 
