@@ -1,7 +1,7 @@
 # optimization problems
 """
-function setup_cep_opt_sets(ts_data::ClustData,opt_data::CEPData)
- fetching sets from the time series (ts_data) and capacity expansion model data (opt_data) and returning Dictionary with Sets as Symbols
+    setup_cep_opt_sets(ts_data::ClustData,opt_data::CEPData)
+fetching sets from the time series (ts_data) and capacity expansion model data (opt_data) and returning Dictionary with Sets as Symbols
 """
 function setup_opt_cep_set(ts_data::ClustData,
                             opt_data::OptDataCEP,
@@ -46,8 +46,8 @@ end
 
 
 """
-function setup_cep_opt_basic(ts_data::ClustData,opt_data::CEPData)
-  setting up the basic core elements for a CEP-model
+    setup_cep_opt_basic(ts_data::ClustData,opt_data::CEPData)
+setting up the basic core elements for a CEP-model
 """
 function setup_opt_cep_basic(ts_data::ClustData,
                             opt_data::OptDataCEP,
@@ -56,7 +56,7 @@ function setup_opt_cep_basic(ts_data::ClustData,
                             kwargs...)
    ## MODEL CEP ##
    # Initialize model
-   model=Model(solver=solver)
+   model=JuMP.Model(solver=solver)
    # Initialize info
    info=[opt_config["descriptor"]]
    # Setup set
@@ -67,8 +67,8 @@ function setup_opt_cep_basic(ts_data::ClustData,
 
 
 """
-function setup_opt_cep_basic_variables!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP) set::Dict)
-  Adding basic variables COST, CAP and GEN based on set
+    setup_opt_cep_basic_variables!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP) set::Dict)
+Adding basic variables COST, CAP and GEN based on set
 """
 function setup_opt_cep_basic_variables!(cep::OptModelCEP,
                                   ts_data::ClustData,
@@ -90,7 +90,7 @@ function setup_opt_cep_basic_variables!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_lost_load!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP) set::Dict)
+     setup_opt_cep_lost_load!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP) set::Dict)
   Adding variable SLACK, LL (LostLoad - if demand cannot be met with installed capacity -> Lost Load can be "purchased" to meet demand)
 """
 function setup_opt_cep_lost_load!(cep::OptModelCEP,
@@ -117,7 +117,7 @@ function setup_opt_cep_lost_load!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_lost_emission!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+     setup_opt_cep_lost_emission!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
   Adding variable LE (LostEmission - if demand cannot be met without breaking Emission-constraint -> Lost Emission can be "purchased" to meet demand with "dirty" production)
 """
 function setup_opt_cep_lost_emission!(cep::OptModelCEP,
@@ -134,8 +134,8 @@ function setup_opt_cep_lost_emission!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_fix_design_variables!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP) set::Dict)
-  Fixing variables CAP based on first stage vars
+     setup_opt_cep_fix_design_variables!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP) set::Dict)
+Fixing variables CAP based on first stage vars
 """
 function setup_opt_cep_fix_design_variables!(cep::OptModelCEP,
                                   ts_data::ClustData,
@@ -152,10 +152,9 @@ function setup_opt_cep_fix_design_variables!(cep::OptModelCEP,
   return cep
 end
 
-
 """
-function setup_opt_cep_generation_el!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  add variable and fixed Costs and limit generation to installed capacity (and limiting time_series, if dependency in techs defined) for fossil and renewable power plants
+     setup_opt_cep_generation_el!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+add variable and fixed Costs and limit generation to installed capacity (and limiting time_series, if dependency in techs defined) for fossil and renewable power plants
 """
 function setup_opt_cep_generation_el!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -208,9 +207,9 @@ function setup_opt_cep_generation_el!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_storage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  add variables INTRASTORGEN and INTRASTOR, variable and fixed Costs, limit generation to installed power-capacity, connect simple-storage levels (within period) with generation
-  basis for either simplestorage or seasonalstorage
+     setup_opt_cep_storage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+add variables INTRASTORGEN and INTRASTOR, variable and fixed Costs, limit generation to installed power-capacity, connect simple-storage levels (within period) with generation
+basis for either simplestorage or seasonalstorage
 """
 function setup_opt_cep_storage!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -260,9 +259,9 @@ function setup_opt_cep_storage!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_simplestorage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  Adding only intra-day storage:
-  Looping constraint for each period (same start and end level for all periods) and limit storage to installed energy-capacity
+     setup_opt_cep_simplestorage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+Adding only intra-day storage:
+Looping constraint for each period (same start and end level for all periods) and limit storage to installed energy-capacity
 """
 function setup_opt_cep_simplestorage!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -285,9 +284,9 @@ function setup_opt_cep_simplestorage!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_seasonalstorage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  Adding inter-day storage:
-  add variable INTERSTOR, calculate seasonal-storage-level and limit total storage to installed energy-capacity
+     setup_opt_cep_seasonalstorage!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+Adding inter-day storage:
+add variable INTERSTOR, calculate seasonal-storage-level and limit total storage to installed energy-capacity
 """
 function setup_opt_cep_seasonalstorage!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -323,8 +322,8 @@ function setup_opt_cep_seasonalstorage!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_transmission!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  Setup variable FLOW and TRANS, calculate fixed and variable COSTs, set CAP-trans to zero, limit FLOW with TRANS, calculate GEN-trans for each node
+     setup_opt_cep_transmission!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+Setup variable FLOW and TRANS, calculate fixed and variable COSTs, set CAP-trans to zero, limit FLOW with TRANS, calculate GEN-trans for each node
 """
 function setup_opt_cep_transmission!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -376,8 +375,8 @@ end
 
 
 """
-function setup_opt_cep_demand!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  Add demand which shall be matched by the generation (GEN)
+    setup_opt_cep_demand!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+Add demand which shall be matched by the generation (GEN)
 """
 function setup_opt_cep_demand!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -412,8 +411,8 @@ function setup_opt_cep_demand!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_co2_limit!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP; co2_limit::Number=Inf)
-  Add co2 emission constraint
+     setup_opt_cep_co2_limit!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP; co2_limit::Number=Inf)
+Add co2 emission constraint
 """
 function setup_opt_cep_co2_limit!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -445,8 +444,8 @@ function setup_opt_cep_co2_limit!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_existing_infrastructure!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  fixing existing infrastructure to CAP[tech, 'ex', node]
+     setup_opt_cep_existing_infrastructure!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+fixing existing infrastructure to CAP[tech, 'ex', node]
 """
 function setup_opt_cep_existing_infrastructure!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -468,9 +467,9 @@ function setup_opt_cep_existing_infrastructure!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_limit_infrastructure!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-  limit infrastructure setup of CAP[tech, sum(infrastuct), node]
-  NOTE just for CAP not for TRANS implemented
+     setup_opt_cep_limit_infrastructure!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+limit infrastructure setup of CAP[tech, sum(infrastuct), node]
+NOTE just for CAP not for TRANS implemented
 """
 function setup_opt_cep_limit_infrastructure!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -488,8 +487,8 @@ function setup_opt_cep_limit_infrastructure!(cep::OptModelCEP,
 end
 
 """
-function setup_opt_cep_objective!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-    Calculate total system costs and set as objective
+     setup_opt_cep_objective!(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+Calculate total system costs and set as objective
 """
 function setup_opt_cep_objective!(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -518,8 +517,8 @@ function setup_opt_cep_objective!(cep::OptModelCEP,
 end
 
 """
-function solve_opt_cep(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
-solving the cep model and writing it's results and co2_limit into an OptResult-Struct
+     solve_opt_cep(cep::OptModelCEP, ts_data::ClustData, opt_data::OptDataCEP)
+solving the cep model and writing it's results and `co2_limit` into an OptResult-Struct
 """
 function solve_opt_cep(cep::OptModelCEP,
                             ts_data::ClustData,
@@ -531,18 +530,18 @@ function solve_opt_cep(cep::OptModelCEP,
   variables=Dict{String,OptVariable}()
   # cv - Cost variable, dv - design variable, which is used to fix variables in a dispatch model, ov - operational variable
 
-  variables["COST"]=OptVariable(getvalue(cep.model[:COST]),"cv")
-  variables["CAP"]=OptVariable(getvalue(cep.model[:CAP]),"dv")
-  variables["GEN"]=OptVariable(getvalue(cep.model[:GEN]),"ov")
+  variables["COST"]=OptVariable(cep,:COST,"cv")
+  variables["CAP"]=OptVariable(cep,:CAP,"dv")
+  variables["GEN"]=OptVariable(cep,:GEN,"ov")
   lost_load=0
   lost_emission=0
   if opt_config["lost_load_cost"]["el"]!=Inf
-    variables["SLACK"]=OptVariable(getvalue(cep.model[:SLACK]),"sv")
-    variables["LL"]=OptVariable(getvalue(cep.model[:LL]),"sv")
+    variables["SLACK"]=OptVariable(cep,:SLACK,"sv")
+    variables["LL"]=OptVariable(cep,:LL,"sv")
     lost_load=sum(variables["LL"].data)
   end
   if opt_config["lost_emission_cost"]["CO2"]!=Inf
-    variables["LE"]=OptVariable(getvalue(cep.model[:LE]),"sv")
+    variables["LE"]=OptVariable(cep,:LE,"sv")
     lost_emission=sum(variables["LE"].data)
   end
   if opt_config["storage_p"] && opt_config["storage_e"]

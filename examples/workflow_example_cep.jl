@@ -1,7 +1,6 @@
 # This file exemplifies the workflow from data input to optimization result generation
-
-include(normpath(joinpath(dirname(@__FILE__),"..","src","ClustForOpt_priv_development.jl")))
-
+using ClustForOpt
+using Clp
 ## LOAD DATA ##
 state="GER_1" # or "GER_18" or "CA_1" or "TX_1"
 # laod ts-data
@@ -18,7 +17,7 @@ ts_full_data = run_clust(ts_input_data;method="kmeans",representation="centroid"
 
 ## OPTIMIZATION EXAMPLES##
 # select solver
-solver=GurobiSolver(OutputFlag=0)
+solver=ClpSolver()
 
 # tweak the CO2 level
 co2_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="co2",co2_limit=1000) #generally values between 1250 and 10 are interesting

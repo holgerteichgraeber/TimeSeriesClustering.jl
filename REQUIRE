@@ -1,13 +1,6 @@
 julia 0.7-
-Gurobi
-CSV
-LinearAlgebra
-Statistics
 Reexport
-Distances
-DataFrames
-Clustering
+StatsKit
 JLD2
 FileIO
-JuMP
-Clp
+JuMP 0.18 0.19

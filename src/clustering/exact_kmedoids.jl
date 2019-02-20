@@ -9,12 +9,12 @@ end
 
 
 """  
-function kmedoids_exact(
-   data::Array{Float64},
-   nclust::Int,
-   _dist::SemiMetric = SqEuclidean(),
-   env::Any;
-   )
+    kmedoids_exact(
+     data::Array{Float64},
+     nclust::Int,
+     _dist::SemiMetric = SqEuclidean(),
+     env::Any;
+     )
    results = kmedoids_exact()
    data { HOURS,DAYS }
 Performs the exact kmedoids algorithm as in Kotzur et al, 2017
