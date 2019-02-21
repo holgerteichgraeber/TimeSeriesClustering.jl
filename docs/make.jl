@@ -16,4 +16,4 @@ makedocs(sitename="ClustForOpt.jl",
         "assets/opt_cep.svg",
         "assets/workflow.svg"])
 
-deploydocs(repo = "github.com/holgerteichgraeber/ClustForOpt.jl.git")
+deploydocs(repo = "github.com/holgerteichgraeber/ClustForOpt.jl.git", devbranch = "dev")
