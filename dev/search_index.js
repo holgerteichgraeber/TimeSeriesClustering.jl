@@ -2,15 +2,15 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "#",
-    "page": "(Image: ClustForOpt logo)",
-    "title": "(Image: ClustForOpt logo)",
+    "page": "Introduction",
+    "title": "Introduction",
     "category": "page",
     "text": ""
 },
 
 {
     "location": "#![ClustForOpt-logo](assets/clust_for_opt_text.svg)-1",
-    "page": "(Image: ClustForOpt logo)",
+    "page": "Introduction",
     "title": "(Image: ClustForOpt logo)",
     "category": "section",
     "text": "(Image: ) (Image: ) (Image: Build Status)ClustForOpt is a julia implementation of clustering methods for finding representative periods for the optimization of energy systems. The package furthermore provides a multi-node capacity expansion model.The package has three main purposes: 1) Provide a simple process of clustering time-series input data, with clustered data output in a generalized type system 2) provide an interface between clustered data and optimization problem 3) provide a generalizable capacity expansion problem formulation and data to test clustering on this problem.The package follows the clustering framework presented in Teichgraeber and Brandt, 2019. The package is actively developed, and new features are continuously added. For a reproducible version of the methods and data of the original paper by Teichgraeber and Brandt, 2019, please refer to branch v0.1-appl_energy-framework-comp.This package is developed by Holger Teichgraeber @holgerteichgraeber and Elias Kuepper @YoungFaithful.If you find ClustForOpt useful in your work, we kindly request that you cite the following paper (link):  @article{Teichgraeber2019,\n  author = {Holger Teichgraeber and Adam Brandt},\n  title = {Clustering methods to find representative periods for the optimization of energy systems: An initial framework and comparison},\n  journal = {Applied Energy},\n  volume = {239},\n  pages = {1283–1293},\n  year = {2019},\n  doi = {https://doi.org/10.1016/j.apenergy.2019.02.012},\n  }"
@@ -18,7 +18,7 @@ var documenterSearchIndex = {"docs": [
 
 {
     "location": "#Installation-1",
-    "page": "(Image: ClustForOpt logo)",
+    "page": "Introduction",
     "title": "Installation",
     "category": "section",
     "text": "This package runs under julia v1.0 and higher. Install using:]\nadd https://github.com/holgerteichgraeber/ClustForOpt.jl.gitwhere ] opens the julia package manager."
@@ -149,7 +149,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Clustering",
     "title": "Supported clustering methods",
     "category": "section",
-    "text": "The following combinations of clustering method and representations are supported by run_clust:Name method representation\nk-means clustering <kmeans> <centroid>\nk-means clustering with medoid representation <kmeans> <medoid>\nk-medoids clustering (partitional) <kmedoids> <centroid>\nk-medoids clustering (exact) [requires Gurobi] <kmedoids_exact> <centroid>\nhierarchical clustering with centroid representation <hierarchical> <centroid>\nhierarchical clustering with medoid representation <hierarchical> <medoid>For use of DTW barycenter averaging (DBA) and k-shape clustering on single-attribute data (e.g. electricity prices), please use branch v0.1-appl_energy-framework-comp.run_clust"
+    "text": "The following combinations of clustering method and representations are supported by run_clust:Name method representation\nk-means clustering <kmeans> <centroid>\nk-means clustering with medoid representation <kmeans> <medoid>\nk-medoids clustering (partitional) <kmedoids> <medoid>\nk-medoids clustering (exact) [requires Gurobi] <kmedoids_exact> <medoid>\nhierarchical clustering with centroid representation <hierarchical> <centroid>\nhierarchical clustering with medoid representation <hierarchical> <medoid>For use of DTW barycenter averaging (DBA) and k-shape clustering on single-attribute data (e.g. electricity prices), please use branch v0.1-appl_energy-framework-comp.run_clust"
 },
 
 {
