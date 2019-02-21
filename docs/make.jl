@@ -5,7 +5,7 @@ using ClustForOpt
 makedocs(sitename="ClustForOpt.jl",
     authors = "Holger Teichgraeber, and Elias Kuepper",
     pages = [
-        "index.md",
+        "Introduction" => "index.md",
         "Workflow" => "workflow.md",
         "Load Data" => "load_data.md",
         "Clustering" => "clust.md",
