@@ -1,6 +1,72 @@
 """
+    load_timeseriesdata!(dt::Dict{String,Array}, data_path::String; num::Int64=0)
+- Adding the information in the `*.csv` file at `data_path` to the data dictionary
+The `*.csv` files shall have the following structure and must have the same length:
+|Timestamp |[column names...]|
+|[iterator]|[values]         |
+The first column should be called `Timestamp` if it contains a time iterator
+The other columns can specify the single timeseries like specific geolocation.
+"""
+function load_timeseries_data!(data::Dict{String,Array},
+                              data_path::String;
+                              num::Int64=0
+                              )
+    base_name=basename(data_path)
+    data_name=split(base_name,".")[1]
+    data_df=CSV.read(data_path;allowmissing=:none)
+    for column in eachcol(data_df, true)
+      if findall([:Timestamp,:time,:Time,:Zeit].==(column[1]))==[]
+          data[data_name*"-"*string(column[1])]=Float64.(column[2])
+          newnum=length(column[2])
+          if newnum!=num && num!=0
+              throw(@error("The TimeSeries have different lengths!"))
+          else
+              num=newnum
+          end
+      end
+    end
+    return num
+end #load_pricedata
+
+"""
+    load_timeseriesdata(data_path::String; region::String="", K-#Periods, T-#Segments)
+- Loading all `*.csv` files in the folder or the file `data_path`
+The `*.csv` files shall have the following structure and must have the same length:
+|Timestamp |[column names...]|
+|[iterator]|[values]         |
+The first column should be called `Timestamp` if it contains a time iterator
+The other columns can specify the single timeseries like specific geolocation.
+Each column in `[file name].csv` file will be added to the ClustData.data called `"[file name]-[column name]"`
+- region is an additional String to specify the loaded time series data
+- K describes the number of periods in the input data
+- T describes the length of each period
+"""
+function load_timeseries_data(data_path::String;
+                              region::String="",
+                              K=365::Int,
+                              T=24::Int
+                              )
+  data = Dict{String,Array}()
+  num=0
+  if isdir(data_path)
+      for full_data_name in readdir(data_path)
+          if split(full_data_name,".")[end]=="csv"
+              num=load_timeseries_data!(data, joinpath(data_path, full_data_name); num=num)
+          end
+      end
+  elseif isfile(data_path)
+      load_timeseries_data!(data, data_path; num=num)
+  else
+      throw(@error("The path $data_path is neither recognized as a directory nor as a file"))
+  end
+  data_full =  FullInputData(region, num, data)
+  data_reshape =  ClustData(data_full,K,T)
+  return data_reshape, data_full
+end #load_pricedata
+
+"""
     load_timeseriesdata(application::String, region::String, K-#Periods, T-#Segments)
-Loading from .csv files in a the folder ../ClustForOpt/data/{application}/{region}/TS
+Loading from .csv files provided with the package in the folder ../ClustForOpt/data/{application}/{region}/TS
 Timestamp-column has to be called Timestamp
 Other columns have to be called with the location/node name
 for application:
@@ -13,32 +79,13 @@ and regions:
 - `"CA_14"`: California 14 nodes
 - `"TX_1"`: Texas 1 node
 """
-function load_timeseries_data( application::String,
+function load_timeseries_data(application::String,
                               region::String;
                               K=365::Int,
                               T=24::Int
                               )
-  dt = Dict{String,Array}()
-  num=0
   data_path=normpath(joinpath(dirname(@__FILE__),"..","..","data",application,region,"TS"))
-  for fulldataname in readdir(data_path)
-      dataname=split(fulldataname,".")[1]
-      data_df=CSV.read(joinpath(data_path,fulldataname);allowmissing=:none)
-      for column in eachcol(data_df, true)
-          if findall([:Timestamp,:time,:Time,:Zeit].==(column[1]))==[]
-              dt[dataname*"-"*string(column[1])]=Float64.(column[2])
-              newnum=length(column[2])
-              if newnum!=num && num!=0
-                  @error("The TimeSeries have different lengths!")
-              else
-                  num=newnum
-              end
-          end
-      end
-  end
-  data_full =  FullInputData(region, num, dt)
-  data_reshape =  ClustData(data_full,K,T)
-  return data_reshape, data_full
+  return load_timeseries_data(data_path; region=region, K=K, T=T)
 end #load_pricedata
 
 """
