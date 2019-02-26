@@ -11,7 +11,16 @@ struct FullInputData <: TSData
  data::Dict{String,Array}
 end
 
-"ClustData \n weights: this is the absolute weight. E.g. for a year of 365 days, sum(weights)=365"
+"""
+    ClustData{region::String,K::Int,T::Int,data::Dict{String,Array},weights::Array{Float64},mean::Dict{String,Array},sdv::Dict{String,Array}} <: TSData
+-region: specifies region data belongs to
+-K: number of periods
+-T: time steps per period
+-data: Data in form of a dictionary for each attribute `"[file name]-[column name]"`
+-weights: this is the absolute weight. E.g. for a year of 365 days, sum(weights)=365
+-mean: The shift of the mean as a dictionary for each attribute
+-sdv: Standard deviation as a dictionary for each attribute
+"""
 struct ClustData <: TSData
  region::String
  K::Int
@@ -123,7 +132,9 @@ function OptVariable(cep::OptModelCEP,
   OptVariable(jumparray.innerArray,axes_names,jumparray.indexsets,type)
 end
 
-"OptResult"
+"""
+    OptResult
+"""
 struct OptResult
  status::Symbol
  objective::Float64

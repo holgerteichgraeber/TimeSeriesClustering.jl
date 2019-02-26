@@ -1,8 +1,4 @@
-using Test
-
 @testset "merrick texas" begin
-    using ClustForOpt
-    using Clp
     # load data
     ts_input_data, = load_timeseries_data("CEP", "TX_1";K=365, T=24)
     cep_input_data_GER=load_cep_data("TX_1")
@@ -19,8 +15,6 @@ using Test
 end
 
 @testset "seasonalstorage" begin
-    using ClustForOpt
-    using Clp
     # load data
     ts_input_data_8760, = load_timeseries_data("CEP", "GER_1";K=1, T=8760)
     ts_input_data_24, = load_timeseries_data("CEP", "GER_1";K=365, T=24)
