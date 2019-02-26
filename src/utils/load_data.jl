@@ -50,7 +50,7 @@ function load_timeseries_data(data_path::String;
   num=0
   if isdir(data_path)
       for full_data_name in readdir(data_path)
-          if split(full_data_name,".")[2]=="csv"
+          if split(full_data_name,".")[end]=="csv"
               num=load_timeseries_data!(data, joinpath(data_path, full_data_name); num=num)
           end
       end
