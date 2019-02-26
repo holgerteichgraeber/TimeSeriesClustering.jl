@@ -34,19 +34,29 @@ plot_input_solar=plot(ts_input_data.data["solar-germany"], legend=false, linesty
 
 # How to load your own data:
 # put your data into your homedirectory into a folder called tutorial
-# The data should have the following structure: see data folder of our own data
-load_your_own_data=false
+# The data should have the following structure: see ClustForOpt/data folder
+#=
+- Loading all `*.csv` files in the folder or the file `data_path`
+The `*.csv` files shall have the following structure and must have the same length:
+|Timestamp |[column names...]|
+|[iterator]|[values]         |
+The first column should be called `Timestamp` if it contains a time iterator
+The other columns can specify the single timeseries like specific geolocation.
+Each column in `[file name].csv` file will be added to the ClustData.data called `"[file name]-[column name]"`
+- region is an additional String to specify the loaded time series data
+- K describes the number of periods in the input data
+- T describes the length of each period                             =#
+load_your_own_data=true
 if load_your_own_data
 # Single file at the path e.g. homedir/tutorial/solar.csv
 # It will automatically call the data 'solar' within the datastruct
   my_path=joinpath(homedir(),"tutorial","solar.csv")
-  your_data_1=load_timeseries_data(my_path; region="GER_18", K=365, T=24)
+  your_data_1=load_timeseries_data(my_path; region="elias", K=365, T=24)
 # Multiple files in the folder e.g. homedir/tutorial/
-# Within the data struct, it will automatically call the data the names of the csv filenames 
+# Within the data struct, it will automatically call the data the names of the csv filenames
   my_path=joinpath(homedir(),"tutorial")
   your_data_2=load_timeseries_data(my_path; region="GER_18", K=365, T=24)
 end
-
 
 
 #############
@@ -54,7 +64,6 @@ end
 #############
 # Quick example and investigation of the best result:
 ts_clust_result = run_clust(ts_input_data; method="kmeans", representation="centroid", n_init=5, n_clust=5) # note that you should use n_init=1000 at least for kmeans.
-print(ts_clust_result)
 ts_clust_data = ts_clust_result.best_results
 # And some plotting:
 plot_comb_solar=plot!(plot_input_solar, ts_clust_data.data["solar-germany"], linestyle=:solid, width=3)
@@ -74,7 +83,7 @@ k-means clustering with medoid representation       | `<kmeans>`        | `<medo
 k-medoids clustering (partitional)                  | `<kmedoids>`      | `<medoid>`
 k-medoids clustering (exact) [requires Gurobi]      | `<kmedoids_exact>`| `<medoid>`
 hierarchical clustering with centroid representation| `<hierarchical>`  | `<centroid>`
-hierarchical clustering with medoid representation  | `<hierarchical>`  | `<medoid>`      
+hierarchical clustering with medoid representation  | `<hierarchical>`  | `<medoid>`
 
 ## Other input parameters
 
@@ -89,7 +98,7 @@ The input parameter `n_clust` determines the number of clusters,i.e., representa
 =#
 
 # A clustering run with different options chosen as an example
-ts_clust_result_2 = run_clust(ts_input_data; method="kmedoids", representation="medoid", n_init=100, n_clust=4,iterations=500)
+ts_clust_result_2 = run_clust(ts_input_data; method="kmedoids", representation="medoid", n_init=100, n_clust=4, iterations=500)
 
 
 
@@ -103,3 +112,18 @@ solver=ClpSolver()
 cep_data = load_cep_data(ts_clust_data.region)
 # Running a simple CEP with a co2-limit of 1000 kg/MWh
 co2_result = run_opt(ts_clust_data,cep_data;solver=solver,descriptor="co2",co2_limit=1000)
+# co2_result.
+gen_var=co2_result.variables["GEN"]
+# show axes names and axis
+gen_var.axes_names
+# get specific parts  of axis names
+gen_var.axes
+# get all operating decision variables (GEN)
+get_cep_variable_value(gen_var,[:,:,:,:,:])
+
+# get specific operating decision variables (GEN) indicated with numbers
+get_cep_variable_value(gen_var,[1,:,:,:,1])
+# get specific operating decision variables (the one for the electricity sector, the coal technology at the node germany) indicated with names
+coal_gen_var=get_cep_variable_value(gen_var,["el","coal",:,:,"germany"])
+# plot the specific operation decision variables
+plot(coal_gen_var, xlabel="Time [h]", ylabel="Coal Generation [MW]", labels="K ".*string.(get_cep_variable_set(gen_var, 4)))
