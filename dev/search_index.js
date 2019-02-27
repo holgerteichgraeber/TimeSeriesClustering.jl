@@ -77,7 +77,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Load Data",
     "title": "ClustForOpt.load_timeseries_data",
     "category": "function",
-    "text": "load_timeseriesdata(application::String, region::String, K-#Periods, T-#Segments)\n\nLoading from .csv files in a the folder ../ClustForOpt/data/{application}/{region}/TS Timestamp-column has to be called Timestamp Other columns have to be called with the location/node name for application:\n\nDAM: Day Ahead Market\nCEP: Capacity Expansion Problem\n\nand regions:\n\n\"GER_1\": Germany 1 node\n\"GER_18\": Germany 18 nodes\n\"CA_1\": California 1 node\n\"CA_14\": California 14 nodes\n\"TX_1\": Texas 1 node\n\n\n\n\n\n"
+    "text": "load_timeseriesdata(data_path::String; region::String=\"\", K-#Periods, T-#Segments)\n\nLoading all *.csv files in the folder or the file data_path\n\nThe *.csv files shall have the following structure and must have the same length: |Timestamp |[column names...]| |[iterator]|[values]         | The first column should be called Timestamp if it contains a time iterator The other columns can specify the single timeseries like specific geolocation. Each column in [file name].csv file will be added to the ClustData.data called \"[file name]-[column name]\"\n\nregion is an additional String to specify the loaded time series data\nK describes the number of periods in the input data\nT describes the length of each period\n\n\n\n\n\nload_timeseriesdata(application::String, region::String, K-#Periods, T-#Segments)\n\nLoading from .csv files provided with the package in the folder ../ClustForOpt/data/{application}/{region}/TS Timestamp-column has to be called Timestamp Other columns have to be called with the location/node name for application:\n\nDAM: Day Ahead Market\nCEP: Capacity Expansion Problem\n\nand regions:\n\n\"GER_1\": Germany 1 node\n\"GER_18\": Germany 18 nodes\n\"CA_1\": California 1 node\n\"CA_14\": California 14 nodes\n\"TX_1\": Texas 1 node\n\n\n\n\n\n"
 },
 
 {
@@ -150,6 +150,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Supported clustering methods",
     "category": "section",
     "text": "The following combinations of clustering method and representations are supported by run_clust:Name method representation\nk-means clustering <kmeans> <centroid>\nk-means clustering with medoid representation <kmeans> <medoid>\nk-medoids clustering (partitional) <kmedoids> <medoid>\nk-medoids clustering (exact) [requires Gurobi] <kmedoids_exact> <medoid>\nhierarchical clustering with centroid representation <hierarchical> <centroid>\nhierarchical clustering with medoid representation <hierarchical> <medoid>For use of DTW barycenter averaging (DBA) and k-shape clustering on single-attribute data (e.g. electricity prices), please use branch v0.1-appl_energy-framework-comp.run_clust"
+},
+
+{
+    "location": "clust/#Opt-Types-1",
+    "page": "Clustering",
+    "title": "Opt Types",
+    "category": "section",
+    "text": "InputData\nFullInputData\nClustData\nClustDataMerged\nClustResultAll\nClustResultBest"
 },
 
 {
