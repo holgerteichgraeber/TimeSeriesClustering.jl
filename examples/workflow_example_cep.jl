@@ -17,30 +17,30 @@ ts_full_data = run_clust(ts_input_data;method="kmeans",representation="centroid"
 
 ## OPTIMIZATION EXAMPLES##
 # select solver
-solver=ClpSolver()
+optimizer=Clp.Optimizer
 
 # tweak the CO2 level
-co2_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="co2",co2_limit=1000) #generally values between 1250 and 10 are interesting
+co2_result = run_opt(ts_clust_data.best_results,cep_data,optimizer; descriptor="co2",co2_limit=1000) #generally values between 1250 and 10 are interesting
 
 # Include a Slack-Variable
-slack_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="slack",lost_el_load_cost=1e6, lost_CO2_emission_cost=700)
+slack_result = run_opt(ts_clust_data.best_results,cep_data,optimizer; descriptor="slack",lost_el_load_cost=1e6, lost_CO2_emission_cost=700)
 
 
 # Include existing infrastructure at no COST
-ex_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="ex",existing_infrastructure=true)
+ex_result = run_opt(ts_clust_data.best_results,cep_data,optimizer;descriptor="ex",existing_infrastructure=true)
 
 # Intraday storage (just within each period, same storage level at beginning and end)
-simplestor_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="simple storage",storage="simple")
+simplestor_result = run_opt(ts_clust_data.best_results,cep_data,optimizer;descriptor="simple storage",storage="simple")
 
 # Interday storage (within each period & between the periods)
 #TODO move k_ids
-seasonalstor_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="seasonal storage",storage="seasonal",k_ids=ts_clust_data.best_ids)
+seasonalstor_result = run_opt(ts_clust_data.best_results,cep_data,optimizer;descriptor="seasonal storage",storage="seasonal",k_ids=ts_clust_data.best_ids)
 
 # Transmission
-#transmission_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="transmission",transmission=true)
+#transmission_result = run_opt(ts_clust_data.best_results,cep_data,optimizer;descriptor="transmission",transmission=true)
 
 # Desing with clusered data and operation with ts_full_data
 # First solve the clustered case
-design_result = run_opt(ts_clust_data.best_results,cep_data;solver=solver,descriptor="design&operation")
+design_result = run_opt(ts_clust_data.best_results,cep_data,optimizer;descriptor="design&operation")
 # Use the design variable results for the operational run
-operation_result = run_opt(ts_full_data.best_results,cep_data,design_result.opt_config,get_cep_design_variables(design_result);solver=solver,lost_el_load_cost=1e6,lost_CO2_emission_cost=700)
+operation_result = run_opt(ts_full_data.best_results,cep_data,design_result.opt_config,get_cep_design_variables(design_result),optimizer;lost_el_load_cost=1e6,lost_CO2_emission_cost=700)
