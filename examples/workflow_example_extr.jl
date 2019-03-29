@@ -24,5 +24,8 @@ ts_clust_res = run_clust(ts_input_data_mod;method="kmeans",representation="centr
 # representation modification
 ts_clust_extr = representation_modification(extr_vals,ts_clust_res.best_results)
 
- # optimization
-opt_res = run_opt(ts_clust_extr,cep_input_data_GER;solver=ClpSolver(),co2_limit=1000.0)
+# select solver
+optimizer=Clp.Optimizer
+
+# optimization
+opt_res = run_opt(ts_clust_extr,cep_input_data_GER,optimizer;co2_limit=1000.0)
