@@ -16,6 +16,8 @@ module ClustForOpt
 
    export run_opt,
           run_clust,
+          simple_extr_val_sel,
+          representation_modification,
           get_sup_kw_args,
           InputData,
           FullInputData,

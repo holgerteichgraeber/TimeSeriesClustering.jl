@@ -52,11 +52,12 @@ setting up the basic core elements for a CEP-model
 function setup_opt_cep_basic(ts_data::ClustData,
                             opt_data::OptDataCEP,
                             opt_config::Dict{String,Any},
-                            solver::Any;
+                            optimizer::DataType,
+                            optimizer_config::Dict{Symbol,Any};
                             kwargs...)
    ## MODEL CEP ##
    # Initialize model
-   model=JuMP.Model(solver=solver)
+   model =  JuMP.Model(with_optimizer(optimizer;optimizer_config...))
    # Initialize info
    info=[opt_config["descriptor"]]
    # Setup set
@@ -82,7 +83,11 @@ function setup_opt_cep_basic_variables!(cep::OptModelCEP,
   @variable(cep.model, COST[account=set["account"],impact=set["impact"],tech=set["tech"]])
   # Capacity
   push!(cep.info,"Variable CAP[tech, infrastruct, nodes] ≥ 0 in MW]")
+  if "tech_transmission" in keys(set) #if transmission is in tech, exclude the transmission technology from the setup of variable CAP
+    @variable(cep.model, CAP[tech=setdiff(set["tech"],set["tech_transmission"]),infrastruct=set["infrastruct"] ,node=set["nodes"]]>=0)
+  else
   @variable(cep.model, CAP[tech=set["tech"],infrastruct=set["infrastruct"] ,node=set["nodes"]]>=0)
+  end
   # Generation #
   push!(cep.info,"Variable GEN[sector, tech, t, k, node] in MW")
   @variable(cep.model, GEN[sector=set["sector"], tech=set["tech"], t=set["time_T"], k=set["time_K"], node=set["nodes"]])
@@ -108,7 +113,7 @@ function setup_opt_cep_lost_load!(cep::OptModelCEP,
   push!(cep.info,"Variable SLACK[sector, t, k, node] ≥ 0 in MW")
   @variable(cep.model, SLACK[sector=set["sector"], t=set["time_T"], k=set["time_K"], node=set["nodes"]] >=0)
   # Lost Load variable #
-  push!(cep.info,"Variable LL[sector, t, k, node] ≥ 0 in MWh")
+  push!(cep.info,"Variable LL[sector, node] ≥ 0 in MWh")
   @variable(cep.model, LL[sector=set["sector"], node=set["nodes"]] >=0)
   # Calculation of Lost Load
   push!(cep.info,"LL[sector, node] = Σ SLACK[sector, t, k, node] ⋅ ts_weights[k] ⋅ Δt[t,k] ∀ sector, node")
@@ -147,7 +152,7 @@ function setup_opt_cep_fix_design_variables!(cep::OptModelCEP,
 
   ## VARIABLES ##
   # Capacity
-  push!(cep.info,"CAP[tech, 'ex', node] = existing infrastructure ∀ node, tech")
+  push!(cep.info,"CAP[tech, 'new', node] = existing infrastructure ∀ node, tech")
   @constraint(cep.model, [node=set["nodes"], tech=set["tech"]], cep.model[:CAP][tech,"new",node]==get_cep_variable_value(cap,[tech, "new", node]))
   return cep
 end
@@ -359,9 +364,6 @@ function setup_opt_cep_transmission!(cep::OptModelCEP,
     # Calculate Fixed Costs
     push!(cep.info,"COST['fix',impact,tech] = Σ_{node}(TRANS[tech,'new',line] ⋅ length[line]) ⋅ cap_costs[tech,impact] ∀ impact, tech_transmission")
     @constraint(cep.model, [impact=set["impact"], tech=set["tech_transmission"]], cep.model[:COST]["cap_fix",impact,tech] == sum(cep.model[:TRANS][tech,"new",line]*find_val_in_df(lines,:lines,line,:length) *(find_cost_in_df(cap_costs,nodes,tech,find_val_in_df(lines,:lines,line,:node_start),impact)+find_cost_in_df(fix_costs,nodes,tech,find_val_in_df(lines,:lines,line,:node_start),impact)) for line=set["lines"]))
-    # Transmission has no capacity so fix to zero
-    push!(cep.info,"CAP[tech, infrastruct, node] = 0 ∀ node, tech_transmission")
-    @constraint(cep.model, [node=set["nodes"], infrastruct=set["infrastruct"], tech=set["tech_transmission"]], cep.model[:CAP][tech,infrastruct,node] == 0)
     # Limit the flow per line to the existing infrastructure
     push!(cep.info,"| FLOW['el', dir, tech, t, k, line] | ≤ Σ_{infrastruct}TRANS[tech,infrastruct,line] ∀ line, tech_transmission, t, k")
     @constraint(cep.model, [line=set["lines"], dir=set["dir_transmission"], tech=set["tech_transmission"], t=set["time_T"], k=set["time_K"]], cep.model[:FLOW]["el",dir, tech, t, k, line] <= sum(cep.model[:TRANS][tech,infrastruct,line] for infrastruct=set["infrastruct"]))
@@ -524,8 +526,9 @@ function solve_opt_cep(cep::OptModelCEP,
                             ts_data::ClustData,
                             opt_data::OptDataCEP,
                             opt_config::Dict{String,Any})
-  status=solve(cep.model)
-  objective=getobjectivevalue(cep.model)
+  optimize!(cep.model)
+  status=Symbol(termination_status(cep.model))
+  objective=objective_value(cep.model)
   total_demand=get_total_demand(cep,ts_data)
   variables=Dict{String,OptVariable}()
   # cv - Cost variable, dv - design variable, which is used to fix variables in a dispatch model, ov - operational variable
