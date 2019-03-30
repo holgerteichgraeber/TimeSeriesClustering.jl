@@ -79,7 +79,7 @@ identifies a single simple extreme value from the data and returns column index 
 
 data_type: any attribute from the attributes contained within *data*
 extremum: "min" or "max"
-peak_def: "absolute" or "integral"d
+peak_def: "absolute" or "integral"
 """
 function simple_extr_val_ident(data::ClustData,
                                data_type::String;

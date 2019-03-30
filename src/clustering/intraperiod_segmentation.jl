@@ -1,4 +1,7 @@
-
+"""
+      intraperiod_segmentation(data_merged::ClustDataMerged;n_seg::Int=24,iterations::Int=300,norm_scope::String="full")
+!!! Not yet proven implementation of segmentation introduced by Bahl et al. 2018
+"""
 function intraperiod_segmentation(data_merged::ClustDataMerged;
                 n_seg::Int=24,
                 iterations::Int=300,
@@ -24,6 +27,10 @@ function intraperiod_segmentation(data_merged::ClustDataMerged;
   return ClustDataMerged(data_merged.region,data_merged.years,K,n_seg,data_seg,data_merged.data_type,data_merged.weights,data_merged.k_ids;deltas=deltas_seg,)
 end
 
+"""
+      run_clust_segmentation(period::Array{Float64,2};n_seg::Int=24,iterations::Int=300,norm_scope::String="full")
+!!! Not yet proven implementation of segmentation introduced by Bahl et al. 2018
+"""
 function run_clust_segmentation(period::Array{Float64,2};
                 n_seg::Int=24,
                 iterations::Int=300,
@@ -54,45 +61,9 @@ function get_clustids(ends::Array{Int64,1})
 end
 
 """
-function run_clust_hierarchical_partitional(data::Array, n_seg::Int64)
-  Usees provided data and number of segments to aggregate them together
-
-Beginning implementation Bahl
-function run_clust_hierarchical_partitional(data::Array,
-                                            n_seg::Int64)
-  ends_all=LHCoptim((size(data,2)-1),(n_seg-1),1000)[1]
-  distance_runs=[]
-  clustids_runs=[]
-  for e in 1:size(ends_all,1)
-    ends=ends_all[e,:]
-    for n in 1:100
-      global clustids=get_clustids(ends)
-      #Calculate mean of data: The number of columns is kept the same, mean is calculated for aggregated columns and the same in all with same clustid
-      global means_data=get_mean_data(data,clustids)
-      ends_prev=ends
-      for i in 1:length(ends)
-        #
-        if sum(abs.(data[:,ends[i]]-means_data[:,ends[i]]))>sum(abs.(data[:,ends[i]]-means_data[:,min(ends[i]+1,size(data,2))]))
-          global ends[i]+=1
-          #break
-        end
-      end
-      if ends_prev==ends
-        #break
-      end
-    end
-    distance=sum(pairwise(SqEuclidean(),means_data,data))
-    push!(distance_runs,distance)
-    push!(clustids_runs,clustids)
-  end
-  #return clustids_runs[findfirst(distance_runs.==minimum(distance_runs))]
-  return clustids_runs, distance_runs
-end
-"""
-
-"""
-function run_clust_hierarchical_partitional(data::Array, n_seg::Int64)
-  Usees provided data and number of segments to aggregate them together
+      run_clust_hierarchical_partitional(data::Array, n_seg::Int64)
+!!! Not yet proven
+Usees provided data and number of segments to aggregate them together
 """
 function run_clust_hierarchical_partitional(data::Array,
                                             n_seg::Int64)
@@ -128,7 +99,7 @@ function run_clust_hierarchical_partitional(data::Array,
 end
 
 """
-function merge_clustids!(clustids::Array{Int64,1},index::Int64)
+      merge_clustids!(clustids::Array{Int64,1},index::Int64)
 Calculate the new clustids by merging the cluster of the index provided with the cluster of index+1
 """
 function merge_clustids!(clustids::Array{Int64,1},index::Int64)
@@ -137,7 +108,7 @@ function merge_clustids!(clustids::Array{Int64,1},index::Int64)
 end
 
 """
-function get_mean_data(data::Array, clustids::Array{Int64,1})
+      get_mean_data(data::Array, clustids::Array{Int64,1})
 Calculate mean of data: The number of columns is kept the same, mean is calculated for aggregated columns and the same in all with same clustid
 """
 function get_mean_data(data::Array,

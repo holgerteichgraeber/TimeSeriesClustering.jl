@@ -142,7 +142,7 @@ sup_kw_args["region"]=["GER","CA"]
 sup_kw_args["opt_problems"]=["battery","gas_turbine"]
 sup_kw_args["norm_op"]=["zscore"]
 sup_kw_args["norm_scope"]=["full","hourly","sequence"]
-sup_kw_args["method+representation"]=["kmeans+centroid","kmeans+medoid","kmedoids+medoid","kmedoids_exact+medoid","hierarchical+centroid","hierarchical+medoid","predefined+centroid","predefined+medoid"]#["dbaclust+centroid","kshape+centroid"]
+sup_kw_args["method+representation"]=["kmeans+centroid","kmeans+medoid","kmedoids+medoid","kmedoids_exact+medoid","hierarchical+centroid","hierarchical+medoid"]#["dbaclust+centroid","kshape+centroid"]
 
 """
     get_sup_kw_args
@@ -194,47 +194,6 @@ function check_kw_args(
        error(error_string)
     end
 end
-
-"""
-      run_clust_predefined_centroid(data_norm::ClustDataMerged,n_clust::Int,iterations::Int;k_ids::Array{Int64,1}=Array{Int64,1}())
-Provide the assigned k_ids before running any clustering within this run
-"""
-function run_clust_predefined_centroid(
-    data_norm::ClustDataMerged,
-    n_clust::Int,
-    iterations::Int;
-    k_ids::Array{Int64,1}=Array{Int64,1}())
-    centers,weights,clustids,cost,iter =[],[],[],0,0
-    # if only one cluster
-    if n_clust == length(unique(k_ids))
-        centers_norm=zeros(size(data_norm.data,1),n_clust)
-        for i in 1:n_clust
-          index=findall(k_ids.==i)
-          centers_norm[:,i] = mean(data_norm.data[:,index],dims=2) # should be 0 due to normalization
-        end
-        clustids = k_ids
-        centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids) # need to provide idx in case that sequence-based normalization is used
-        cost = sum(pairwise(SqEuclidean(),centers_norm,data_norm.data; dims=2)) #same as sum((seq_norm-repmat(mean(seq_norm,2),1,size(seq,2))).^2)
-        iter = 1
-    # kmeans() in Clustering.jl is implemented for k>=2
-    else
-        throw(@error "mismatch of intendet clusters $n_clust and k_ids provided with $(length(unique(k_ids)))")
-    end
-    weights = calc_weights(clustids,n_clust)
-    return centers,weights,clustids,cost,iter
-end
-
-"""
-      run_clust_predefined_medoid(data_norm::ClustDataMerged,n_clust::Int,iterations::Int;k_ids::Array{Int64,1}=Array{Int64,1}())
-Provide the assigned k_ids before running any clustering within this run
-"""
-function run_clust_predefined_medoid(data_norm::ClustDataMerged,
-    n_clust::Int,
-    iterations::Int;
-    k_ids::Array{Int64,1}=Array{Int64,1}()
-    )
-    return run_clust_predefined_centroid(data_norm, n_clust, iterations; k_ids=k_ids)
-  end
 
 """
     run_clust_kmeans_centroid(data_norm::ClustDataMerged,n_clust::Int,iterations::Int)

@@ -16,9 +16,8 @@ load_timeseries_data
 ### Example loading timeseries data
 ```@example
 using ClustForOpt
-state="GER_1"
 # laod ts-input-data
-ts_input_data = load_timeseries_data("CEP", state; K=365, T=24)
+ts_input_data = load_timeseries_data(normpath(joinpath(dirname(@__FILE__),"..","..","examples","TS_GER_1")); T=24, years=[2016])
 using Plots
 plot(ts_input_data.data["solar-germany"], legend=false, linestyle=:dot, xlabel="Time [h]", ylabel="Solar availability factor [%]")
 savefig("load_timeseries_data.svg")

@@ -51,7 +51,7 @@ load_your_own_data=true
 # Single file at the path e.g. homedir/tutorial/solar.csv
 # It will automatically call the data 'solar' within the datastruct
 my_path=joinpath(homedir(),"tutorial","solar.csv")
-your_data_1=load_timeseries_data(my_path; region="Wunderland", T=24)
+your_data_1=load_timeseries_data(my_path; region="none", T=24)
 # Multiple files in the folder e.g. homedir/tutorial/
 # Within the data struct, it will automatically call the data the names of the csv filenames
 my_path=joinpath(homedir(),"tutorial")
@@ -99,4 +99,4 @@ The input parameter `n_clust` determines the number of clusters,i.e., representa
 =#
 
 # A clustering run with different options chosen as an example
-ts_clust_result_2 = run_clust(ts_input_data; method="kmedoids", representation="medoid", n_init=100, n_clust=4, iterations=500)git 
+ts_clust_result_2 = run_clust(ts_input_data; method="kmedoids", representation="medoid", n_init=100, n_clust=4, iterations=500)

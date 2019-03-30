@@ -308,3 +308,35 @@ function set_clust_config(;kwargs...)
   # Return Directory with the information of kwargs
   return config
 end
+
+"""
+    run_pure_clust(data::ClustData; norm_op::String="zscore", norm_scope::String="full", method::String="kmeans", representation::String="centroid", n_clust_1::Int=5, n_clust_2::Int=3, n_seg::Int=data.T, n_init::Int=100, iterations::Int=300, attribute_weights::Dict{String,Float64}=Dict{String,Float64}(), clust::Array{String,1}=Array{String,1}(), get_all_clust_results::Bool=false, kwargs...)
+Replace the original timeseries of the attributes in clust with their clustered value
+"""
+function run_pure_clust(data::ClustData;
+                            norm_op::String="zscore",
+                            norm_scope::String="full",
+                            method::String="kmeans",
+                            representation::String="centroid",
+                            n_clust::Int=5,
+                            n_seg::Int=data.T,
+                            n_init::Int=100,
+                            iterations::Int=300,
+                            attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
+                            clust::Array{String,1}=Array{String,1}(),
+                            get_all_clust_results::Bool=false,
+                            kwargs...)
+  clust_result=run_clust(data;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_clust=n_clust,n_init=n_init,iterations=iterations,attribute_weights=attribute_weights)
+  clust_data=clust_result.best_results
+  mod_data=deepcopy(data.data)
+  for i in 1:clust_data.K
+    index=findall(clust_data.k_ids.==i)
+    for name in keys(mod_data)
+      att=split(name,"-")[1]
+      if name in clust || att in clust
+        mod_data[name][:,index]=repeat(clust_data.data[name][:,i], outer=(1,length(index)))
+      end
+    end
+  end
+  return ClustResultSimple(ClustData(data.region, data.years, data.K, data.T, mod_data, data.weights, data.deltas, data.k_ids), clust_result.clust_config)
+end

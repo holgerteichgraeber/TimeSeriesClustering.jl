@@ -6,7 +6,7 @@ using Clp
 #using Gurobi
 
 # load data
-ts_input_data = load_timeseries_data("CEP", "GER_18"; T=24, years=[2015]) #CEP
+ts_input_data = load_timeseries_data(normpath(joinpath(dirname(@__FILE__),"TS_GER_18")); T=24, years=[2016]) #CEP
 
 cep_input_data_GER=load_cep_data_provided"GER_18")
 

@@ -36,9 +36,8 @@ ClustResultBest
 ## Example running clustering
 ```@example
 using ClustForOpt
-state="GER_1"
 # laod ts-input-data
-ts_input_data, = load_timeseries_data("CEP", state; K=365, T=24)
+ts_input_data = load_timeseries_data(normpath(joinpath(dirname(@__FILE__),"..","..","examples","TS_GER_1")); T=24, years=[2016])
 ts_clust_data = run_clust(ts_input_data).best_results
 using Plots
 plot(ts_clust_data.data["solar-germany"], legend=false, linestyle=:solid, width=3, xlabel="Time [h]", ylabel="Solar availability factor [%]")
