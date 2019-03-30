@@ -69,6 +69,7 @@ ts_clust_data = ts_clust_result.best_results
 plot_comb_solar=plot!(plot_input_solar, ts_clust_data.data["solar-germany"], linestyle=:solid, width=3)
 plot_clust_soar=plot(ts_clust_data.data["el_demand-germany"], legend=false, linestyle=:solid, width=3, xlabel="Time [h]", ylabel="Solar availability factor [%]")
 
+
 #= Clustering options:
 `run_clust()` takes the full `data` and gives a struct with the clustered data as the output.
 
@@ -98,4 +99,4 @@ The input parameter `n_clust` determines the number of clusters,i.e., representa
 =#
 
 # A clustering run with different options chosen as an example
-ts_clust_result_2 = run_clust(ts_input_data; method="kmedoids", representation="medoid", n_init=100, n_clust=4, iterations=500)
+ts_clust_result_2 = run_clust(ts_input_data; method="kmedoids", representation="medoid", n_init=100, n_clust=4, iterations=500)git 

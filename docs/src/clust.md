@@ -23,7 +23,17 @@ For use of DTW barycenter averaging (DBA) and k-shape clustering on single-attri
 run_clust
 ```
 
-### Example running clustering
+## Opt Types
+```@docs
+InputData
+FullInputData
+ClustData
+ClustDataMerged
+ClustResultAll
+ClustResultBest
+```
+
+## Example running clustering
 ```@example
 using ClustForOpt
 state="GER_1"

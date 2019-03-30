@@ -12,7 +12,16 @@ struct FullInputData <: TSData
  data::Dict{String,Array}
 end
 
-"ClustData \n weights: this is the absolute weight. E.g. for a year of 365 days, sum(weights)=365"
+"""
+    ClustData{region::String,K::Int,T::Int,data::Dict{String,Array},weights::Array{Float64},mean::Dict{String,Array},sdv::Dict{String,Array}} <: TSData
+-region: specifies region data belongs to
+-K: number of periods
+-T: time steps per period
+-data: Data in form of a dictionary for each attribute `"[file name]-[column name]"`
+-weights: this is the absolute weight. E.g. for a year of 365 days, sum(weights)=365
+-mean: The shift of the mean as a dictionary for each attribute
+-sdv: Standard deviation as a dictionary for each attribute
+"""
 struct ClustData <: TSData
  region::String
  years::Array{Int64}
@@ -93,9 +102,6 @@ struct SimpleExtremeValueDescr
    end
 end
 
-"""
-    SimpleExtremeValueDescr(data_type::String, extremum::String, peak_def::String)
-"""
 function SimpleExtremeValueDescr(data_type::String,
                                  extremum::String,
                                  peak_def::String)
