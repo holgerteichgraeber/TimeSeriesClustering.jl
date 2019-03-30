@@ -1,9 +1,0 @@
-tech,categ,sector,fuel,eff_in,eff_out,max_gradient,time_series,lifetime,financial_lifetime,discount_rate
-pv,generation,el,none,0,0,Inf,solar,25,25,0.07
-wind,generation,el,none,0,0,Inf,wind,25,25,0.07
-coal,generation,el,coal,0,0,0.6,none,40,40,0.07
-oil,generation,el,oil,0,0,3,none,30,30,0.07
-gas,generation,el,gas,0,0,4.8,none,30,30,0.07
-bat_e,storage_e,el,none,0.94,0.94,Inf,none,10,10,0.07
-bat_p,storage_p,el,none,0,0,Inf,none,10,10,0.07
-trans,transmission,el,none,1,0.9995,Inf,none,40,40,0.07

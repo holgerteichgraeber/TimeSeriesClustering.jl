@@ -1,9 +1,0 @@
-tech,region,year,EUR,CO2
-pv,GER,2015,2.45E+04,0
-wind,GER,2015,4.25E+04,0
-coal,GER,2015,5.25E+04,0
-oil,GER,2015,1.31E+04,0
-gas,GER,2015,7.70E+03,0
-bat_e,GER,2015,5.81E+03,0
-bat_p,GER,2015,0,0
-trans,GER,2015,0,0

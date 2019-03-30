@@ -1,5 +1,5 @@
 # exact k-medoids modeled similar as in Kotzur et al, 2017
-  
+
 "Holds results of kmedoids run"
 mutable struct kmedoidsResult
     medoids::Array{Float64}
@@ -8,7 +8,7 @@ mutable struct kmedoidsResult
 end
 
 
-"""  
+"""
     kmedoids_exact(
      data::Array{Float64},
      nclust::Int,
@@ -31,11 +31,11 @@ N_i = size(data,2)
 
 
 # calculate distance matrix
-d_mat=pairwise(_dist,data)
+d_mat=pairwise(_dist,data; dims=2)
 
 
 # create jump model
-m = Model(solver=GurobiSolver(env)) # GurobiSolver(env,OutputFlag=0) 
+m = Model(optimizer=GurobiSolver(env)) # GurobiSolver(env,OutputFlag=0)
 @variable(m,z[1:N_i,1:N_i],Bin)
 @variable(m,y[1:N_i],Bin)
 @objective(m,Min,sum(d_mat[i,j]*z[i,j] for i=1:N_i, j=1:N_i))
@@ -62,7 +62,7 @@ z_opt=round.(Integer,getvalue(z))
 id = zeros(Int,N_i)
 ii=0
 for i=1:N_i
-  if y_opt[i]==1 
+  if y_opt[i]==1
     ii +=1
     id[i]=ii
   end
@@ -76,12 +76,11 @@ clustids = zeros(Int,N_i)
 for i=1:N_i
   clustids[i] = id[centerids[i]]
 end
-centers = data[:,findall(id.!=0.0)] 
+centers = data[:,findall(id.!=0.0)]
 tot_dist = getobjectivevalue(m)
  # output centers
-results = kmedoidsResult(centers, clustids, tot_dist) 
+results = kmedoidsResult(centers, clustids, tot_dist)
 
 return results
 
 end #kmedoids_exact
-

@@ -1,8 +1,6 @@
 using ClustForOpt
 
-ts_input_data, = load_timeseries_data("CEP", "GER_1";K=365, T=24) #CEP
-
-Scenarios=Dict{String,Scenario}()
+ts_input_data = load_timeseries_data("CEP", "GER_1";T=24) #CEP
 
 attribute_weights=Dict("solar"=>1.0, "wind"=>2.0, "el_demand"=>3.0)
 

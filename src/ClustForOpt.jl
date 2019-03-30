@@ -7,27 +7,25 @@
  #####################
 module ClustForOpt
   using Reexport
-  @reexport using StatsKit
-  @reexport using JLD2
+  using StatsKit
   @reexport using FileIO
-  using JuMP
+  using JuMP #QUESTION Part of ClustForOpt?
 
    #TODO how to make PyPlot, PyCall, and TimeWarp optional? -> only import when needed
 
    export run_opt,
           run_clust,
+          run_darkperiod_clust,
+          run_pure_clust,
           get_sup_kw_args,
           InputData,
           FullInputData,
           ClustData,
           ClustDataMerged,
+          ClustResult,
           ClustResultAll,
           ClustResultBest,
           SimpleExtremeValueDescr,
-          OptDataCEP,
-          OptVariable,
-          OptResult,
-          Scenario,
           get_EUR_to_USD,
           load_input_data,
           plot_clusters,
@@ -44,22 +42,16 @@ module ClustForOpt
           find_medoids,
           resize_medoids,
           load_timeseries_data,
-          load_cep_data,
-          get_cep_variable_value,
-          get_cep_variable_set,
-          get_cep_slack_variables,
-          get_cep_design_variables,
-          get_total_demand
-
+          combine_timeseries_weather_data
 
   include(joinpath("utils","datastructs.jl"))
   include(joinpath("utils","utils.jl"))
   include(joinpath("utils","load_data.jl"))
   include(joinpath("optim_problems","run_opt.jl"))
-  include(joinpath("optim_problems","opt_cep.jl"))
   include(joinpath("clustering","run_clust.jl"))
   include(joinpath("clustering","exact_kmedoids.jl"))
   include(joinpath("clustering","extreme_vals.jl"))
   include(joinpath("clustering","attribute_weighting.jl"))
-
+  include(joinpath("clustering","intraperiod_segmentation.jl"))
+  include(joinpath("clustering","other_clust.jl"))
 end # module ClustForOpt

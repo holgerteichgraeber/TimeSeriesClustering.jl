@@ -6,9 +6,9 @@ using Clp
 #using Gurobi
 
 # load data
-ts_input_data, = load_timeseries_data("CEP", "GER_18";K=365, T=24) #CEP
+ts_input_data = load_timeseries_data("CEP", "GER_18"; T=24, years=[2015]) #CEP
 
-cep_input_data_GER=load_cep_data("GER_18")
+cep_input_data_GER=load_cep_data_provided"GER_18")
 
  # define simple extreme days of interest
  ev1 = SimpleExtremeValueDescr("wind-dena42","max","absolute")
@@ -25,4 +25,4 @@ ts_clust_res = run_clust(ts_input_data_mod;method="kmeans",representation="centr
 ts_clust_extr = representation_modification(extr_vals,ts_clust_res.best_results)
 
  # optimization
-opt_res = run_opt(ts_clust_extr,cep_input_data_GER;solver=ClpSolver(),co2_limit=1000.0)
+opt_res = run_opt(ts_clust_extr,cep_input_data_GER;optimizer=Clp.Optimizer,co2_limit=1000.0)
