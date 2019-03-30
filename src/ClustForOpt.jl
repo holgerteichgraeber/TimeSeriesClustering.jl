@@ -15,7 +15,6 @@ module ClustForOpt
 
    export run_opt,
           run_clust,
-          run_darkperiod_clust,
           run_pure_clust,
           get_sup_kw_args,
           InputData,
@@ -34,9 +33,6 @@ module ClustForOpt
           undo_z_normalize,
           sakoe_chiba_band,
           kmedoids_exact,
-          plot_k_rev,
-          plot_k_rev_subplot,
-          plot_SSE_rev,
           sort_centers,
           calc_SSE,
           find_medoids,
@@ -53,5 +49,4 @@ module ClustForOpt
   include(joinpath("clustering","extreme_vals.jl"))
   include(joinpath("clustering","attribute_weighting.jl"))
   include(joinpath("clustering","intraperiod_segmentation.jl"))
-  include(joinpath("clustering","other_clust.jl"))
 end # module ClustForOpt
