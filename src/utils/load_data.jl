@@ -1,14 +1,14 @@
 """
-    load_timeseriesdata(data_path::String; T-#Segments,
-years::Array{Int64,1}=# years to be selected for the time series, att::Array{String,1}=# attributes to be loaded)
+    load_timeseriesdata(data_path::String; T-#Segments,years::Array{Int64,1}=# years to be selected for the time series, att::Array{String,1}=# attributes to be loaded)
 - Loading all `*.csv` files in the folder or the file `data_path`
-The `*.csv` files shall have the following structure and must have the same length:
+- The `*.csv` files shall have the following structure and must have the same length:
 |Timestamp |[column names...]|
+|----------|-----------------|
 |[iterator]|[values]         |
-The first column should be called `Timestamp` if it contains a time iterator
-The other columns can specify the single timeseries like specific geolocation.
-Each column in `[file name].csv` file will be added to the ClustData.data called `"[file name]-[column name]"`
-Loads all attributes if the `att`-Array is empty or only the ones specified in it
+- The first column should be called `Timestamp` if it contains a time iterator
+- The other columns can specify the single timeseries like specific geolocation.
+- Each column in `[file name].csv` file will be added to the ClustData.data called `"[file name]-[column name]"`
+- Loads all attributes if the `att`-Array is empty or only the ones specified in it
 """
 function load_timeseries_data(data_path;
                               region::String="none",
