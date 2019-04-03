@@ -304,7 +304,7 @@ constructor 3: Convert ClustDataMerged to ClustData
 function ClustData(data::ClustDataMerged)
  data_dict=Dict{String,Array}()
  i=0
- for (k,v) in data.mean
+ for k in data.data_type
    i+=1
    data_dict[k] = data.data[(1+data.T*(i-1)):(data.T*i),:]
  end
