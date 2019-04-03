@@ -69,10 +69,12 @@ function add_timeseries_data!(dt::Dict{String,Array},
                             T::Int64=24,
                             years::Array{Int64,1}=[2016])
     # find the right years to select
-    data_selected=data[in.(data[:year],[years]),:]
+    time_name=find_column_name(data, [:Timestamp, :timestamp, :Time, :time, :Zeit, :zeit, :Date, :date, :Datum, :datum]; error=false)
+    year_name=find_column_name(data, [:year, :Year, :jahr, :Jahr])
+    data_selected=data[in.(data[year_name],[years]),:]
     for column in eachcol(data_selected, true)
         # check that this column isn't time or year
-        if !(column[1] in [:Timestamp,:time,:Time,:Zeit,:year])
+        if !(column[1] in [time_name, year_name])
             K_calc=Int(floor(length(column[2])/T))
             if K_calc!=K && K!=0
                 @error("The time_series $(column[1]) has K=$K_calc != K=$K of the previous")
@@ -83,6 +85,26 @@ function add_timeseries_data!(dt::Dict{String,Array},
         end
     end
     return K
+end
+
+"""
+        find_column_name(df::DataFrame, name_itr::Arrray{Symbol,1})
+find wich of the supported name in `name_itr` is used as an
+"""
+function find_column_name(df::DataFrame, name_itr::Array{Symbol,1}; error::Bool=true)
+    col_name=:none
+    for name in name_itr
+        if name in names(df)
+            col_name=name
+            break
+        end
+    end
+    if error
+        col_name!=:none || throw(@error "No $(name_itr) in $(repr(df)).")
+    else
+        col_name!=:none || @warn "No $(name_itr) in $(repr(df))."
+    end
+    return col_name
 end
 
 """
