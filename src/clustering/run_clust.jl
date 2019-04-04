@@ -291,7 +291,7 @@ function run_clust_kmedoids_medoid(
 
     # TODO: optional in future: pass distance metric as kwargs
     dist = SqEuclidean()
-    d_mat=pairwise(dist,data_norm.data; dims=2)
+    d_mat=pairwise(dist,data_norm.data, dims=2)
     results = kmedoids(d_mat,n_clust;tol=1e-6,maxiter=iterations)
     clustids = results.assignments
     centers_norm = data_norm.data[:,results.medoids]
