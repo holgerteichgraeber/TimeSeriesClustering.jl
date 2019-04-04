@@ -40,7 +40,7 @@ function z_normalize(data::ClustData;
  for (k,v) in data.data
    data_norm[k],mean[k],sdv[k] = z_normalize(v,scope=scope)
  end
- return ClustData(data.region,data.years,data.K,data.T,data_norm,data.weights,data.deltas,data.k_ids;mean=mean,sdv=sdv)
+ return ClustData(data.region,data.years,data.K,data.T,data_norm,data.weights,data.delta_t,data.k_ids;mean=mean,sdv=sdv)
 end
 
 """
@@ -338,5 +338,5 @@ function run_pure_clust(data::ClustData;
       end
     end
   end
-  return ClustResultSimple(ClustData(data.region, data.years, data.K, data.T, mod_data, data.weights, data.deltas, data.k_ids), clust_result.clust_config)
+  return ClustResultSimple(ClustData(data.region, data.years, data.K, data.T, mod_data, data.weights, data.delta_t, data.k_ids), clust_result.clust_config)
 end

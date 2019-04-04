@@ -1,6 +1,4 @@
-# This file exemplifies the workflow from data input to optimization result generation
-#QUESTION using ClustForOpt_priv.col in module Main conflicts with an existing identifier., using ClustForOpt_priv.cols in module Main conflicts with an existing identifier.
-
+#TODO OLD rewrite This file exemplifies the workflow from data input to optimization result generation
 using ClustForOpt
 #using ClustForOpt_priv
 #using Gurobi

@@ -9,26 +9,28 @@ module ClustForOpt
   using Reexport
   using StatsKit
   @reexport using FileIO
-  using JuMP #QUESTION Part of ClustForOpt?
+  using JuMP
 
    #TODO how to make PyPlot, PyCall, and TimeWarp optional? -> only import when needed
 
-   export run_opt,
-          run_clust,
-          run_pure_clust,
-          get_sup_kw_args,
-          InputData,
+   export InputData,
           FullInputData,
           ClustData,
           ClustDataMerged,
           ClustResult,
+          ClustResultSimple,
           ClustResultAll,
           ClustResultBest,
           SimpleExtremeValueDescr,
-          get_EUR_to_USD,
-          load_input_data,
-          plot_clusters,
-          subplot_clusters,
+          load_timeseries_data,
+          combine_timeseries_weather_data,
+          extreme_val_output,
+          simple_extr_val_sel,
+          representation_modification,
+          get_sup_kw_args,
+          run_clust,
+          run_opt,
+          get_EUR_to_USD, #TODO Check which of the following should really be exported
           z_normalize,
           undo_z_normalize,
           sakoe_chiba_band,
@@ -36,9 +38,7 @@ module ClustForOpt
           sort_centers,
           calc_SSE,
           find_medoids,
-          resize_medoids,
-          load_timeseries_data,
-          combine_timeseries_weather_data
+          resize_medoids
 
   include(joinpath("utils","datastructs.jl"))
   include(joinpath("utils","utils.jl"))

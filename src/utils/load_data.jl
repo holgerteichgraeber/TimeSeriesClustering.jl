@@ -132,5 +132,5 @@ function combine_timeseries_weather_data(ts::ClustData,
         ts_sdv[k]=v
     end
 
-    return ClustData(ts.region, ts_weather.years, ts_weather.K, ts_weather.T, ts_data, ts_weather.weights, ts_mean, ts_sdv, ts_weather.deltas, ts_weather.k_ids)
+    return ClustData(ts.region, ts_weather.years, ts_weather.K, ts_weather.T, ts_data, ts_weather.weights, ts_mean, ts_sdv, ts_weather.delta_t, ts_weather.k_ids)
 end
