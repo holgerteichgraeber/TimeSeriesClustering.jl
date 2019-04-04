@@ -1,4 +1,5 @@
 #TODO OLD rewrite This file exemplifies the workflow from data input to optimization result generation
+
 using ClustForOpt
 #using ClustForOpt_priv
 #using Gurobi
@@ -8,10 +9,10 @@ ts_input_data, = load_timeseries_data("DAM", "GER";K=365, T=24) #DAM
 
  # run clustering
 using Gurobi
-env = Gurobi.Env()
 clust_res_ar = []
+optimizer=Gurobi.Optimizer
 for i=1:2
-  push!(clust_res_ar, run_clust(ts_input_data;method="kmedoids_exact",representation="medoid",iterations=5,n_init=1,gurobi_env=env)) # default k-means
+  push!(clust_res_ar, run_clust(ts_input_data;method="kmedoids_exact",representation="medoid",iterations=5,n_init=1,gurobi_opt=optimizer)) # default k-means
 end
 
  # optimization

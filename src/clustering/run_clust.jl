@@ -316,14 +316,14 @@ function run_clust_kmedoids_exact_medoid(
     data_norm::ClustDataMerged,
     n_clust::Int,
     iterations::Int;
-    gurobi_env=0
+    gurobi_opt=0
     )
 
-    (typeof(gurobi_env)==Int) && @error("Please provide a gurobi_env (Gurobi Environment). See test file for example")
+    (typeof(gurobi_opt)==Int) && @error("Please provide a gurobi_opt (Gurobi Environment). See test file for example")
 
     # TODO: optional in future: pass distance metric as kwargs
     dist = SqEuclidean()
-    results = kmedoids_exact(data_norm.data,n_clust,gurobi_env;_dist=dist)#;distance_type_ar[dist])
+    results = kmedoids_exact(data_norm.data,n_clust,gurobi_opt;_dist=dist)#;distance_type_ar[dist])
     clustids = results.assignments
     centers_norm = results.medoids
     centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)

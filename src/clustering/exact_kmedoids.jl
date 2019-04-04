@@ -30,7 +30,7 @@ function kmedoids_exact(
 
 
   # calculate distance matrix
-  d_mat=pairwise(_dist,data; dims=2)
+  d_mat=pairwise(_dist,data, dims=2)
 
 
   # create jump model
