@@ -1,8 +1,0 @@
-tech,categ,sector,fuel,eff_in,eff_out,time_series,lifetime,financial_lifetime,discount_rate
-pv,generation,el,none,0,0,solar,15,15,0.0555649
-wind,generation,el,none,0,0,wind,15,15,0.0555649
-coal,generation,el,coal,0,0,none,45,15,0.0555649
-nuc,generation,el,none,0,0,none,40,15,0.0555649
-gas,generation,el,gas,0,0,none,50,15,0.0555649
-bat_e,storage_e,el,none,0.97,0.97,none,25,20,0.05
-bat_p,storage_p,el,none,0,0,none,25,20,0.05

@@ -5,12 +5,6 @@ Generally, the workflow requires three steps:
 - clustering
 - optimization
 
-## CEP Specific Workflow
-The input data is distinguished between time series independent and time series dependent data. They are kept separate as just the time series dependent data is used to determine representative periods (clustering).
-
-![Plot](assets/workflow.svg)
-
-
 ## Example Workflow
 ```julia
 using ClustForOpt

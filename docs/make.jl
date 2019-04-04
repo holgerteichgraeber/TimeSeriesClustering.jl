@@ -9,7 +9,7 @@ makedocs(sitename="ClustForOpt.jl",
         "Workflow" => "workflow.md",
         "Load Data" => "load_data.md",
         "Clustering" => "clust.md",
-        "Optimization" => ["opt.md", "opt_cep.md", "opt_cep_data.md"]
+        "Optimization" => "opt.md"
         ],
     assets = [
         "assets/clust_for_opt_text.svg",
