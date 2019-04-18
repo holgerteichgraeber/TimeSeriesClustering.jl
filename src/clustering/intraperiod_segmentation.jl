@@ -24,7 +24,7 @@ function intraperiod_segmentation(data_merged::ClustDataMerged;
     #Assign values back to matrices to match n_seg x K
     deltas_seg[:,k]=weights
   end
-  return ClustDataMerged(data_merged.region,data_merged.years,K,n_seg,data_seg,data_merged.data_type,data_merged.weights,data_merged.k_ids;deltas=deltas_seg,)
+  return ClustDataMerged(data_merged.region,data_merged.years,K,n_seg,data_seg,data_merged.data_type,data_merged.weights,data_merged.k_ids;delta_t=deltas_seg,)
 end
 
 """
