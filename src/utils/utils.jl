@@ -58,7 +58,7 @@ function z_normalize(data::Array;
     data_norm = zeros(size(data))
     for i=1:size(data)[2]
       seq_mean[i] = mean(data[:,i])
-      seq_sdv[i] = std(data[:,i])
+      seq_sdv[i] = StatsBase.std(data[:,i])
       isnan(seq_sdv[i]) &&  (seq_sdv[i] =1)
         data_norm[:,i] = data[:,i] .- seq_mean[i]
       # handle edge case sdv=0
@@ -83,7 +83,7 @@ function z_normalize(data::Array;
     return data_norm, hourly_mean, hourly_sdv
   elseif scope == "full"
     hourly_mean = mean(data)*ones(size(data)[1])
-    hourly_sdv = std(data)*ones(size(data)[1])
+    hourly_sdv = StatsBase.std(data)*ones(size(data)[1])
     # handle edge case sdv=0
     if hourly_sdv[1] != 0
       data_norm = (data.-hourly_mean[1])/hourly_sdv[1]
