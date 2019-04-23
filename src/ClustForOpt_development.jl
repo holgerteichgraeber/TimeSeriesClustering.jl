@@ -5,7 +5,11 @@
  # Analyzing clustering techniques as input for energy systems optimization
  #
  #####################
-using StatsKit
+using CSV
+using Clustering
+using DataFrames
+using Distances
+using StatsBase
 using JLD2
 using FileIO
 using JuMP #QUESTION should this be part of ClustForOpt?

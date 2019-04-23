@@ -7,7 +7,11 @@
  #####################
 module ClustForOpt
   using Reexport
-  using StatsKit
+  using CSV
+  using Clustering
+  using DataFrames
+  using Distances
+  using StatsBase
   @reexport using FileIO
   using JuMP
 

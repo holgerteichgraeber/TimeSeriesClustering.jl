@@ -1,6 +1,10 @@
 julia 0.7-
 Reexport
-StatsKit
+CSV
+Clustering
+DataFrames
+Distances
+StatsBase
 JLD2
 FileIO
 JuMP
