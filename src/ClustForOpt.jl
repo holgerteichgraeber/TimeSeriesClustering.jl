@@ -7,6 +7,7 @@
  #####################
 module ClustForOpt
   using Reexport
+  using LinearAlgebra
   using CSV
   using Clustering
   using DataFrames

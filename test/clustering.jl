@@ -1,4 +1,5 @@
 using Test
+using StatsBase
 using ClustForOpt
 
 @testset "z_normalize" begin
@@ -92,6 +93,4 @@ using ClustForOpt
 
   # sequence
   #already covered by case above d2
-
-
 end

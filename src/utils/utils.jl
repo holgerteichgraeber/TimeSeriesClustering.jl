@@ -73,7 +73,7 @@ function z_normalize(data::Array;
     data_norm = zeros(size(data))
     for i=1:size(data)[1]
       hourly_mean[i] = mean(data[i,:])
-      hourly_sdv[i] = std(data[i,:])
+      hourly_sdv[i] =  StatsBase.std(data[i,:])
       data_norm[i,:] = data[i,:] .- hourly_mean[i]
       # handle edge case sdv=0
       if hourly_sdv[i] !=0
