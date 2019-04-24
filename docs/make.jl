@@ -11,10 +11,7 @@ makedocs(sitename="ClustForOpt.jl",
         "Clustering" => "clust.md",
         "Optimization" => "opt.md"
         ],
-    formats = Any[
-        Documenter.HTML(
-            assets = ["assets/clust_for_opt_text.svg"]
-        )]
+    format = Documenter.HTML(assets=["assets/clust_for_opt_text.svg"])
     )
 
 deploydocs(repo = "github.com/holgerteichgraeber/ClustForOpt.jl.git")

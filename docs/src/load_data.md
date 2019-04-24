@@ -17,7 +17,7 @@ load_timeseries_data
 ```@example
 using ClustForOpt
 # laod ts-input-data
-ts_input_data = load_timeseries_data(normpath(joinpath(@__DIR__,"..","data","TS_GER_1")); T=24, years=[2016])
+ts_input_data = load_timeseries_data(normpath(joinpath(@__DIR__,"..","..","data","TS_GER_1")); T=24, years=[2016])
 using Plots
 plot(ts_input_data.data["solar-germany"], legend=false, linestyle=:dot, xlabel="Time [h]", ylabel="Solar availability factor [%]")
 savefig("load_timeseries_data.svg")
