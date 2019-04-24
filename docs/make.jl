@@ -14,4 +14,4 @@ makedocs(sitename="ClustForOpt.jl",
     format = Documenter.HTML(assets=["assets/clust_for_opt_text.svg"])
     )
 
-deploydocs(repo = "github.com/holgerteichgraeber/ClustForOpt.jl.git")
+deploydocs(repo = "github.com/holgerteichgraeber/ClustForOpt.jl.git", devbranch="dev")
