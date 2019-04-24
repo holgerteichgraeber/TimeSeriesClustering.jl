@@ -63,7 +63,7 @@ n_G = length(G_names)
 
 
   ##### MODEL #####
-m = Model(solver=ClpSolver())
+m = Model(optimizer=ClpSolver())
 
   ### VARIABLES ##
   ### DESIGN VARIABLES ###

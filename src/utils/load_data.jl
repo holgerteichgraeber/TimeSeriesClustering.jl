@@ -1,130 +1,136 @@
 """
-    load_timeseriesdata!(dt::Dict{String,Array}, data_path::String; num::Int64=0)
-- Adding the information in the `*.csv` file at `data_path` to the data dictionary
-The `*.csv` files shall have the following structure and must have the same length:
-|Timestamp |[column names...]|
-|[iterator]|[values]         |
-The first column should be called `Timestamp` if it contains a time iterator
-The other columns can specify the single timeseries like specific geolocation.
-"""
-function load_timeseries_data!(data::Dict{String,Array},
-                              data_path::String;
-                              num::Int64=0
-                              )
-    base_name=basename(data_path)
-    data_name=split(base_name,".")[1]
-    data_df=CSV.read(data_path;allowmissing=:none)
-    for column in eachcol(data_df, true)
-      if findall([:Timestamp,:time,:Time,:Zeit].==(column[1]))==[]
-          data[data_name*"-"*string(column[1])]=Float64.(column[2])
-          newnum=length(column[2])
-          if newnum!=num && num!=0
-              throw(@error("The TimeSeries have different lengths!"))
-          else
-              num=newnum
-          end
-      end
-    end
-    return num
-end #load_pricedata
-
-"""
-    load_timeseriesdata(data_path::String; region::String="", K-#Periods, T-#Segments)
+    load_timeseriesdata(data_path::String; T-#Segments,years::Array{Int64,1}=# years to be selected for the time series, att::Array{String,1}=# attributes to be loaded)
 - Loading all `*.csv` files in the folder or the file `data_path`
-The `*.csv` files shall have the following structure and must have the same length:
-|Timestamp |[column names...]|
-|[iterator]|[values]         |
-The first column should be called `Timestamp` if it contains a time iterator
-The other columns can specify the single timeseries like specific geolocation.
-Each column in `[file name].csv` file will be added to the ClustData.data called `"[file name]-[column name]"`
-- region is an additional String to specify the loaded time series data
-- K describes the number of periods in the input data
-- T describes the length of each period
+- The `*.csv` files shall have the following structure and must have the same length:
+|Timestamp |Year  |[column names...]|
+|----------|------|-----------------|
+|[iterator]|[year]|[values]         |
+- The first column should be called `Timestamp` if it contains a time iterator
+- The second column should be called `Year` and contains the corresponding year
+- The other columns can specify the single timeseries like specific geolocation.
+- Each column in `[file name].csv` file will be added to the ClustData.data called `"[file name]-[column name]"`
+- Loads all attributes if the `att`-Array is empty or only the ones specified in it
 """
-function load_timeseries_data(data_path::String;
-                              region::String="",
-                              K=365::Int,
-                              T=24::Int
-                              )
-  data = Dict{String,Array}()
+function load_timeseries_data(data_path;
+                              region::String="none",
+                              T::Int64=24,
+                              years::Array{Int64,1}=[2016],
+                              att::Array{String,1}=Array{String,1}())
+  dt = Dict{String,Array}()
   num=0
+  K=0
+  #Check if data_path is directory or file
   if isdir(data_path)
       for full_data_name in readdir(data_path)
           if split(full_data_name,".")[end]=="csv"
-              num=load_timeseries_data!(data, joinpath(data_path, full_data_name); num=num)
+              data_name=split(full_data_name,".")[1]
+              if isempty(att) || data_name in att
+                  # Add the
+                  K=add_timeseries_data!(dt, data_name, data_path; K=K, T=T, years=years)
+              end
           end
       end
   elseif isfile(data_path)
-      load_timeseries_data!(data, data_path; num=num)
+      full_data_name=splitdir(data_path)[end]
+      data_name=split(full_data_name,".")[1]
+      K=add_timeseries_data!(dt, data_name, dirname(data_path); K=K, T=T, years=years)
   else
       throw(@error("The path $data_path is neither recognized as a directory nor as a file"))
   end
-  data_full =  FullInputData(region, num, data)
-  data_reshape =  ClustData(data_full,K,T)
-  return data_reshape, data_full
-end #load_pricedata
+  # Store the data
+  ts_input_data =  ClustData(FullInputData(region, years, num, dt),K,T)
+  return ts_input_data
+end #load_timeseries_data
 
 """
-    load_timeseriesdata(application::String, region::String, K-#Periods, T-#Segments)
-Loading from .csv files provided with the package in the folder ../ClustForOpt/data/{application}/{region}/TS
-Timestamp-column has to be called Timestamp
-Other columns have to be called with the location/node name
-for application:
-- `DAM`: Day Ahead Market
-- `CEP`: Capacity Expansion Problem
-and regions:
-- `"GER_1"`: Germany 1 node
-- `"GER_18"`: Germany 18 nodes
-- `"CA_1"`: California 1 node
-- `"CA_14"`: California 14 nodes
-- `"TX_1"`: Texas 1 node
+    add_timeseries_data!(dt::Dict{String,Array}, data::DataFrame; K::Int64=0, T::Int64=24, years::Array{Int64,1}=[2016])
+selects first the years and second the data_points so that their number is a multiple of T and same with the other timeseries
 """
-function load_timeseries_data(application::String,
-                              region::String;
-                              K=365::Int,
-                              T=24::Int
-                              )
-  data_path=normpath(joinpath(dirname(@__FILE__),"..","..","data",application,region,"TS"))
-  return load_timeseries_data(data_path; region=region, K=K, T=T)
-end #load_pricedata
+function add_timeseries_data!(dt::Dict{String,Array},
+                            data_name::SubString,
+                            data_path::String;
+                            K::Int64=0,
+                            T::Int64=24,
+                            years::Array{Int64,1}=[2016])
+    #Load the data
+    data_df=CSV.read(joinpath(data_path,data_name*".csv");allowmissing=:none)
+    # Add it to the dictionary
+    return add_timeseries_data!(dt,data_name, data_df; K=K, T=T, years=years)
+end
 
 """
-    load_cep_data(region::String)
-Loading from .csv files in a the folder ../ClustForOpt/data/CEP/{region}/
-Follow instructions for the CSV-Files:
-- `nodes`:       `nodes x region, infrastruct, capacity-of-different-tech... in MW_el`
-- `var_costs`:     `tech x [USD for fossils: in USD/MWh_el, CO2 in kg-CO₂-eq./MWh_el]` # Variable costs per year
-- `fix_costs`:     `tech x [USD in USD/MW_el, CO2 in kg-CO₂-eq./MW_el]` # Fixed costs per year
-- `cap_costs`:     `tech x [USD in USD/MW_el, CO2 in kg-CO₂-eq./MW_el]` # Entire (NOT annulized) Costs per Investment in technology
-- `techs`:        `tech x [categ,sector,lifetime in years,effic in %,fuel]`
-- `lines`:       `lines x [node_start,node_end,reactance,resistance,power,voltage,circuits,length]`
-for regions:
-- `"GER_1"`: Germany 1 node
-- `"GER_18"`: Germany 18 nodes
-- `"CA_1"`: California 1 node
-- `"CA_14"`: California 14 nodes
-- `"TX_1"`: Texas 1 node
+    add_timeseries_data!(dt::Dict{String,Array}, data::DataFrame; K::Int64=0, T::Int64=24, years::Array{Int64,1}=[2016])
+selects first the years and second the data_points so that their number is a multiple of T and same with the other timeseries
 """
-function load_cep_data(region::String)
-  data_path=normpath(joinpath(dirname(@__FILE__),"..","..","data","CEP",region))
-  nodes=CSV.read(joinpath(data_path,"nodes.csv"),allowmissing=:none)
-  var_costs=CSV.read(joinpath(data_path,"var_costs.csv"),allowmissing=:none)
-  fix_costs=CSV.read(joinpath(data_path,"fix_costs.csv"),allowmissing=:none)
-  cap_costs=CSV.read(joinpath(data_path,"cap_costs.csv"),allowmissing=:none)
-  techs=CSV.read(joinpath(data_path,"techs.csv"),allowmissing=:none)
-  if isfile(joinpath(data_path,"lines.csv"))
-      lines=CSV.read(joinpath(data_path,"lines.csv"),allowmissing=:none)
-  else
-      lines=DataFrame()
-  end
-  # The time for the cap-investion to be paid back is the minimum of the max. financial lifetime and the lifetime of the product (If it's just good for 5 years, you'll have to rebuy one after 5 years)
-  # annuityfactor = (1+i)^y*i/((1+i)^y-1) , i-discount_rate and y-payoff years
-  techs[:annuityfactor]=map((lifetime,financial_lifetime,discount_rate) -> (1+discount_rate)^(min(financial_lifetime,lifetime))*discount_rate/((1+discount_rate)^(min(financial_lifetime,lifetime))-1), techs[:lifetime],techs[:financial_lifetime],techs[:discount_rate])
-  # The capital costs (given by currency value in column 4) are adjusted by the annuity factor"
-  cap_costs[4]=map((tech, EUR) -> find_val_in_df(techs,:tech,tech,:annuityfactor)*EUR, cap_costs[:tech], cap_costs[4])
-  # Emissions (column 5 and on) are just devided by the lifetime, without discount_rate
-  for name in names(cap_costs)[5:end]
-      cap_costs[name]=map((tech, emission) -> emission/find_val_in_df(techs,:tech,tech,:lifetime), cap_costs[:tech], cap_costs[name])
-  end
-  return OptDataCEP(region,nodes,var_costs,fix_costs,cap_costs,techs,lines)
-end #load_pricedata
+function add_timeseries_data!(dt::Dict{String,Array},
+                            data_name::SubString,
+                            data::DataFrame;
+                            K::Int64=0,
+                            T::Int64=24,
+                            years::Array{Int64,1}=[2016])
+    # find the right years to select
+    time_name=find_column_name(data, [:Timestamp, :timestamp, :Time, :time, :Zeit, :zeit, :Date, :date, :Datum, :datum]; error=false)
+    year_name=find_column_name(data, [:year, :Year, :jahr, :Jahr])
+    data_selected=data[in.(data[year_name],[years]),:]
+    for column in eachcol(data_selected, true)
+        # check that this column isn't time or year
+        if !(column[1] in [time_name, year_name])
+            K_calc=Int(floor(length(column[2])/T))
+            if K_calc!=K && K!=0
+                @error("The time_series $(column[1]) has K=$K_calc != K=$K of the previous")
+            else
+                K=K_calc
+            end
+            dt[data_name*"-"*string(column[1])]=Float64.(column[2][1:(Int(T*K))])
+        end
+    end
+    return K
+end
+
+"""
+        find_column_name(df::DataFrame, name_itr::Arrray{Symbol,1})
+find wich of the supported name in `name_itr` is used as an
+"""
+function find_column_name(df::DataFrame, name_itr::Array{Symbol,1}; error::Bool=true)
+    col_name=:none
+    for name in name_itr
+        if name in names(df)
+            col_name=name
+            break
+        end
+    end
+    if error
+        col_name!=:none || throw(@error "No $(name_itr) in $(repr(df)).")
+    else
+        col_name!=:none || @warn "No $(name_itr) in $(repr(df))."
+    end
+    return col_name
+end
+
+"""
+        combine_timeseries_weather_data(ts::ClustData,ts_weather::ClustData)
+-`ts` is the shorter timeseries with e.g. the demand
+-`ts_weather` is the longer timeseries with the weather information
+The `ts`-timeseries is repeated to match the number of periods of the longer `ts_weather`-timeseries.
+If the number of periods of the `ts_weather` data isn't a multiple of the `ts`-timeseries, the necessary number of the `ts`-timeseries periods 1 to x are attached to the end of the new combined timeseries.
+"""
+function combine_timeseries_weather_data(ts::ClustData,
+                                        ts_weather::ClustData)
+    ts.T==ts_weather.T || throw(@error "The number of timesteps per period is not the same: `ts.T=$(ts.T)≢$(ts_weather.T)=ts_weather.T`")
+    ts.K<=ts_weather.K || throw(@error "The number of timesteps in the `ts`-timeseries isn't shorter or equal to the ones in the `ts_weather`-timeseries.")
+    ts_weather.K%ts.K==0 || @warn "The number of periods of the `ts_weather` data isn't a multiple of the other `ts`-timeseries: periods 1 to $(ts_weather.K%ts.K) are attached to the end of the new combined timeseries."
+    ts_data=deepcopy(ts_weather.data)
+    ts_mean=deepcopy(ts_weather.mean)
+    ts_sdv=deepcopy(ts_weather.sdv)
+    for (k,v) in ts.data
+        ts_data[k]=repeat(v, 1, ceil(Int,ts_weather.K/ts.K))[:,1:ts_weather.K]
+    end
+    for (k,v) in ts.mean
+        ts_mean[k]=v
+    end
+    for (k,v) in ts.sdv
+        ts_sdv[k]=v
+    end
+
+    return ClustData(ts.region, ts_weather.years, ts_weather.K, ts_weather.T, ts_data, ts_weather.weights, ts_mean, ts_sdv, ts_weather.delta_t, ts_weather.k_ids)
+end
