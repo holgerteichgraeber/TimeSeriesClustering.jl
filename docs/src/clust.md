@@ -25,19 +25,19 @@ run_clust
 
 ## Opt Types
 ```@docs
-InputData
 FullInputData
 ClustData
 ClustDataMerged
 ClustResultAll
 ClustResultBest
+ClustResultSimple
 ```
 
 ## Example running clustering
 ```@example
 using ClustForOpt
-# laod ts-input-data
-ts_input_data = load_timeseries_data(normpath(joinpath(dirname(@__FILE__),"..","..","examples","TS_GER_1")); T=24, years=[2016])
+# load ts-input-data
+ts_input_data = load_timeseries_data(normpath(joinpath(@__DIR__,"..","data","TS_GER_1")); T=24, years=[2016])
 ts_clust_data = run_clust(ts_input_data).best_results
 using Plots
 plot(ts_clust_data.data["solar-germany"], legend=false, linestyle=:solid, width=3, xlabel="Time [h]", ylabel="Solar availability factor [%]")
