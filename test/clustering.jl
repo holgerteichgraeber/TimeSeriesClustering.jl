@@ -1,5 +1,5 @@
 using Test
-import ClustForOpt
+using ClustForOpt
 
 @testset "z_normalize" begin
   #srand(1991)
