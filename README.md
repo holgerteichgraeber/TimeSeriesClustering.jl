@@ -1,4 +1,4 @@
-![ClustForOpt](docs/src/assets/clust_for_opt_text.svg)
+﻿![ClustForOpt](docs/src/assets/clust_for_opt_text.svg)
 ===
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://holgerteichgraeber.github.io/ClustForOpt.jl/stable)
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://holgerteichgraeber.github.io/ClustForOpt.jl/dev)
@@ -7,7 +7,7 @@
 
 ClustForOpt is a [julia](www.juliaopt.com) implementation of clustering methods for finding representative periods for the optimization of energy systems. The package furthermore provides a multi-node capacity expansion model.
 
-The package has three main purposes: 1) Provide a simple process of clustering time-series input data, with clustered data output in a generalized type system 2) provide an interface between clustered data and optimization problem 3) provide a generalizable capacity expansion problem formulation and data to test clustering on this problem.
+The package has two main purposes: 1) Provide a simple process of clustering time-series input data, with clustered data output in a generalized type system 2) provide an interface between clustered data and optimization problem.
 
 The package follows the clustering framework presented in [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012).
 The package is actively developed, and new features are continuously added. For a reproducible version of the methods and data of the original paper by [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012), please refer to release [v0.1](https://github.com/holgerteichgraeber/ClustForOpt.jl/tree/v0.1).
@@ -34,7 +34,7 @@ Install using:
 
 ```julia
 ]
-add https://github.com/holgerteichgraeber/ClustForOpt.jl.git
+add ClustForOpt
 ```
 where `]` opens the julia package manager.
 
@@ -102,4 +102,4 @@ For use of DTW barycenter averaging (DBA) and k-shape clustering on single-attri
 ### Optimization
 The function `run_opt()` runs the optimization problem and gives as an output a struct that contains optimal objective function value, decision variables, and additional info. The `run_opt()` function infers the optimization problem type from the input data. See the examples folder for further details.
 
-More detailed documentation on the Capacity Expansion Problem can be found in the documentation.
+A Capacity Expansion Optimization Problem that utilizes `ClustForOpt` can be found in the package [CEP](https://github.com/YoungFaithful/CEP.jl). 
