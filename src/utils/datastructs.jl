@@ -63,7 +63,7 @@ struct ClustResultAll <: ClustResult
  weights::Array{Array{AbstractFloat},1}
  clustids::Array{Array{Int,1},1}
  cost::Array{AbstractFloat,1}
- iter::Array{Int,1}A
+ iter::Array{Int,1}
 end
 
 # TODO: not used yet, but maybe best to implement this one later for users who just want to use clustering but do not care about the locally converged solutions
