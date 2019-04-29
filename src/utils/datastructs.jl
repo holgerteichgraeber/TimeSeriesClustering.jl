@@ -56,7 +56,7 @@ end
 struct ClustResultAll <: ClustResult
  best_results::ClustData
  best_ids::Array{Int,1}
- best_cost::Float
+ best_cost::Number
  data_type::Array{String}
  clust_config::Dict{String,Any}
  centers::Array{Array{Float},1}
@@ -71,7 +71,7 @@ end
 struct ClustResultBest <: ClustResult
  best_results::ClustData
  best_ids::Array{Int,1}
- best_cost::Float
+ best_cost::Number
  data_type::Array{String}
  clust_config::Dict{String,Any}
 end
