@@ -4,7 +4,7 @@
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://holgerteichgraeber.github.io/ClustForOpt.jl/dev)
 [![Build Status](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl.svg?token=HRFemjSxM1NBCsbHGNDG&branch=master)](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl)
 
-[ClustForOpt](https://github.com/holgerteichgraeber/ClustForOpt.jl) is a [julia](https://www.juliaopt.com) implementation of clustering methods for finding representative periods for optimization problems. A utilization in a scalable capacity expansion problem can be found in the package [CEP](https://github.com/YoungFaithful/CEP.jl).
+[ClustForOpt](https://github.com/holgerteichgraeber/ClustForOpt.jl) is a [julia](https://www.juliaopt.com) implementation of clustering methods for finding representative periods for optimization problems. A utilization in a scalable capacity expansion problem can be found in the package [CEP](https://github.com/YoungFaithful/CapacityExpansion.jl).
 
 The package has two main purposes: 1) Provide a simple process of clustering time-series input data, with clustered data output in a generalized type system 2) provide an interface between clustered data and optimization problem.
 
@@ -33,6 +33,6 @@ Install using:
 
 ```julia
 ]
-add https://github.com/holgerteichgraeber/ClustForOpt.jl.git
+add ClustForOpt
 ```
 where `]` opens the julia package manager.
