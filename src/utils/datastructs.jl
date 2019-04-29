@@ -7,13 +7,13 @@ abstract type ClustResult end
 "FullInputData"
 struct FullInputData <: TSData
  region::String
- years::Array{Int64}
+ years::Array{Int}
  N::Int
  data::Dict{String,Array}
 end
 
 """
-      ClustData{region::String,K::Int,T::Int,data::Dict{String,Array},weights::Array{Float64},mean::Dict{String,Array},sdv::Dict{String,Array}} <: TSData
+      ClustData{region::String,K::Int,T::Int,data::Dict{String,Array},weights::Array{Float},mean::Dict{String,Array},sdv::Dict{String,Array}} <: TSData
 - region: optional information to specify the region data belongs to
 - K: number of periods
 - T: time steps per period
@@ -26,43 +26,43 @@ end
 """
 struct ClustData <: TSData
  region::String
- years::Array{Int64}
+ years::Array{Int}
  K::Int
  T::Int
  data::Dict{String,Array}
- weights::Array{Float64}
+ weights::Array{Float}
  mean::Dict{String,Array}
  sdv::Dict{String,Array}
- delta_t::Array{Float64,2}
- k_ids::Array{Int64}
+ delta_t::Array{Float,2}
+ k_ids::Array{Int}
 end
 
 "ClustDataMerged"
 struct ClustDataMerged <: TSData
  region::String
- years::Array{Int64}
+ years::Array{Int}
  K::Int
  T::Int
  data::Array
  data_type::Array{String}
- weights::Array{Float64}
+ weights::Array{Float}
  mean::Dict{String,Array}
  sdv::Dict{String,Array}
- delta_t::Array{Float64,2}
- k_ids::Array{Int64}
+ delta_t::Array{Float,2}
+ k_ids::Array{Int}
 end
 
 "ClustResultAll"
 struct ClustResultAll <: ClustResult
  best_results::ClustData
  best_ids::Array{Int,1}
- best_cost::Float64
+ best_cost::Float
  data_type::Array{String}
  clust_config::Dict{String,Any}
- centers::Array{Array{Float64},1}
- weights::Array{Array{Float64},1}
+ centers::Array{Array{Float},1}
+ weights::Array{Array{Float},1}
  clustids::Array{Array{Int,1},1}
- cost::Array{Float64,1}
+ cost::Array{Float,1}
  iter::Array{Int,1}
 end
 
@@ -71,7 +71,7 @@ end
 struct ClustResultBest <: ClustResult
  best_results::ClustData
  best_ids::Array{Int,1}
- best_cost::Float64
+ best_cost::Float
  data_type::Array{String}
  clust_config::Dict{String,Any}
 end
@@ -88,12 +88,12 @@ struct SimpleExtremeValueDescr
    data_type::String
    extremum::String
    peak_def::String
-   consecutive_periods::Int64
+   consecutive_periods::Int
    "Replace default constructor to only allow certain entries"
    function SimpleExtremeValueDescr(data_type::String,
                                     extremum::String,
                                     peak_def::String,
-                                    consecutive_periods::Int64)
+                                    consecutive_periods::Int)
        # only allow certain entries
        if !(extremum in ["min","max"])
          @error("extremum - "*extremum*" - not defined")
@@ -142,34 +142,34 @@ end
 
 """
   ClustData(region::String,
-                         years::Array{Int64,1},
+                         years::Array{Int,1},
                          K::Int,
                          T::Int;
                          el_price::Array=[],
                          el_demand::Array=[],
                          solar::Array=[],
                          wind::Array=[],
-                         weights::Array{Float64}=ones(K),
+                         weights::Array{Float}=ones(K),
                          mean::Dict{String,Array}=Dict{String,Array}(),
                          sdv::Dict{String,Array}=Dict{String,Array}(),
-                         delta_t::Array{Float64,2}=ones(T,K),
-                         k_ids::Array{Int64,1}=collect(1:K)
+                         delta_t::Array{Float,2}=ones(T,K),
+                         k_ids::Array{Int,1}=collect(1:K)
                          )
 constructor 1 for ClustData: provide data individually
 """
 function ClustData(region::String,
-                         years::Array{Int64,1},
+                         years::Array{Int,1},
                          K::Int,
                          T::Int;
                          el_price::Array=[],
                          el_demand::Array=[],
                          solar::Array=[],
                          wind::Array=[],
-                         weights::Array{Float64}=ones(K),
+                         weights::Array{Float}=ones(K),
                          mean::Dict{String,Array}=Dict{String,Array}(),
                          sdv::Dict{String,Array}=Dict{String,Array}(),
-                         delta_t::Array{Float64,2}=ones(T,K),
-                         k_ids::Array{Int64,1}=collect(1:K)
+                         delta_t::Array{Float,2}=ones(T,K),
+                         k_ids::Array{Int,1}=collect(1:K)
                          )
    dt = Dict{String,Array}()
    mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
@@ -208,26 +208,26 @@ end
 
 """
     ClustData(region::String,
-                      years::Array{Int64,1},
+                      years::Array{Int,1},
                       K::Int,
                       T::Int,
                       data::Dict{String,Array},
-                      weights::Array{Float64},
-                      delta_t::Array{Float64,2},
-                      k_ids::Array{Int64,1};
+                      weights::Array{Float},
+                      delta_t::Array{Float,2},
+                      k_ids::Array{Int,1};
                       mean::Dict{String,Array}=Dict{String,Array}(),
                       sdv::Dict{String,Array}=Dict{String,Array}()
                       )
 constructor 2 for ClustData: provide data as dict
 """
 function ClustData(region::String,
-                       years::Array{Int64,1},
+                       years::Array{Int,1},
                        K::Int,
                        T::Int,
                        data::Dict{String,Array},
-                       weights::Array{Float64},
-                       delta_t::Array{Float64,2},
-                       k_ids::Array{Int64,1};
+                       weights::Array{Float},
+                       delta_t::Array{Float,2},
+                       k_ids::Array{Int,1};
                        mean::Dict{String,Array}=Dict{String,Array}(),
                        sdv::Dict{String,Array}=Dict{String,Array}()
                        )
@@ -273,27 +273,27 @@ end
 
 """
     ClustDataMerged(region::String,
-                        years::Array{Int64,1},
+                        years::Array{Int,1},
                         K::Int,
                         T::Int,
                         data::Array,
                         data_type::Array{String},
-                        weights::Array{Float64},
-                        k_ids::Array{Int64,1};
+                        weights::Array{Float},
+                        k_ids::Array{Int,1};
                         mean::Dict{String,Array}=Dict{String,Array}(),
                         sdv::Dict{String,Array}=Dict{String,Array}()
                         )
 constructor 1: construct ClustDataMerged
 """
 function ClustDataMerged(region::String,
-                       years::Array{Int64,1},
+                       years::Array{Int,1},
                        K::Int,
                        T::Int,
                        data::Array,
                        data_type::Array{String},
-                       weights::Array{Float64},
-                       k_ids::Array{Int64,1};
-                       delta_t::Array{Float64}=ones(T,K),
+                       weights::Array{Float},
+                       k_ids::Array{Int,1};
+                       delta_t::Array{Float}=ones(T,K),
                        mean::Dict{String,Array}=Dict{String,Array}(),
                        sdv::Dict{String,Array}=Dict{String,Array}()
                        )
