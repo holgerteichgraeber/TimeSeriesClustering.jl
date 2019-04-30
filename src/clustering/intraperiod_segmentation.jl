@@ -28,10 +28,10 @@ function intraperiod_segmentation(data_merged::ClustDataMerged;
 end
 
 """
-      run_clust_segmentation(period::Array{AbstractFloat,2};n_seg::Int=24,iterations::Int=300,norm_scope::String="full")
+      run_clust_segmentation(period::Array{Float64,2};n_seg::Int=24,iterations::Int=300,norm_scope::String="full")
 !!! Not yet proven implementation of segmentation introduced by Bahl et al. 2018
 """
-function run_clust_segmentation(period::Array{AbstractFloat,2};
+function run_clust_segmentation(period::Array{Float64,2};
                 n_seg::Int=24,
                 iterations::Int=300,
                 norm_scope::String="full")

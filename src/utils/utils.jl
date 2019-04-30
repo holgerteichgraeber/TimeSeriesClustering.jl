@@ -212,7 +212,7 @@ function calc_medoids(data::Array,assignments::Array)
   K=maximum(assignments) #number of clusters
   n_per_period=size(data,1)
   n_periods =size(data,2)
-  SSE=AbstractFloat[]
+  SSE=Float64[]
   for i=1:K
     push!(SSE,Inf)
   end
@@ -310,7 +310,7 @@ function set_clust_config(;kwargs...)
 end
 
 """
-    run_pure_clust(data::ClustData; norm_op::String="zscore", norm_scope::String="full", method::String="kmeans", representation::String="centroid", n_clust_1::Int=5, n_clust_2::Int=3, n_seg::Int=data.T, n_init::Int=100, iterations::Int=300, attribute_weights::Dict{String,AbstractFloat}=Dict{String,AbstractFloat}(), clust::Array{String,1}=Array{String,1}(), get_all_clust_results::Bool=false, kwargs...)
+    run_pure_clust(data::ClustData; norm_op::String="zscore", norm_scope::String="full", method::String="kmeans", representation::String="centroid", n_clust_1::Int=5, n_clust_2::Int=3, n_seg::Int=data.T, n_init::Int=100, iterations::Int=300, attribute_weights::Dict{String,Float64}=Dict{String,Float64}(), clust::Array{String,1}=Array{String,1}(), get_all_clust_results::Bool=false, kwargs...)
 Replace the original timeseries of the attributes in clust with their clustered value
 """
 function run_pure_clust(data::ClustData;
@@ -322,7 +322,7 @@ function run_pure_clust(data::ClustData;
                             n_seg::Int=data.T,
                             n_init::Int=100,
                             iterations::Int=300,
-                            attribute_weights::Dict{String,AbstractFloat}=Dict{String,AbstractFloat}(),
+                            attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
                             clust::Array{String,1}=Array{String,1}(),
                             get_all_clust_results::Bool=false,
                             kwargs...)
