@@ -67,7 +67,7 @@ function simple_extr_val_ident(data::ClustData,
 end
 
 """
-    simple_extr_val_ident(data::Array{AbstractFloat};extremum="max",peak_def="absolute")
+    simple_extr_val_ident(data::Array{Float64};extremum="max",peak_def="absolute")
 identifies a single simple extreme period from the data and returns column index of extreme period
 - `data_type`: any attribute from the attributes contained within *data*
 - `extremum`: "min" or "max"

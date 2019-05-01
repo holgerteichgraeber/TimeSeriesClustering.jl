@@ -2,15 +2,15 @@
 
 "Holds results of kmedoids run"
 mutable struct kmedoidsResult
-    medoids::Array{AbstractFloat}
+    medoids::Array{Float64}
     assignments::Array{Int}
-    totalcost::AbstractFloat
+    totalcost::Float64
 end
 
 
 """
     kmedoids_exact(
-     data::Array{AbstractFloat},
+     data::Array{Float64},
      nclust::Int,
      _dist::SemiMetric = SqEuclidean(),
      env::Any;
@@ -21,7 +21,7 @@ Performs the exact kmedoids algorithm as in Kotzur et al, 2017
 optimizer=Gurobi.Optimizer
 """
 function kmedoids_exact(
-   data::Array{AbstractFloat},
+   data::Array{Float64},
    nclust::Int,
    optimizer::DataType;
    _dist::SemiMetric = SqEuclidean(),

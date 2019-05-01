@@ -14,7 +14,7 @@ ts_input_data = load_timeseries_data(data_path; T=24, years=[2016])
 
 #= ClustData
 How the struct is setup:
-    ClustData{region::String,K::Int,T::Int,data::Dict{String,Array},weights::Array{AbstractFloat},mean::Dict{String,Array},sdv::Dict{String,Array}} <: TSData
+    ClustData{region::String,K::Int,T::Int,data::Dict{String,Array},weights::Array{Float64},mean::Dict{String,Array},sdv::Dict{String,Array}} <: TSData
 -region: specifies region data belongs to
 -K: number of periods
 -T: time steps per period

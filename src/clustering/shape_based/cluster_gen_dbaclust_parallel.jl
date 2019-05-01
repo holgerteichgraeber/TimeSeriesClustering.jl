@@ -64,7 +64,7 @@ writetable(joinpath("outfiles",string("parameters_dtw_",region,".txt")),df)
 
  # Function that can be an input to pmap
 
- @everywhere function dbac_par_sc(n_clust::Int,i::Int,rad_sc::Int,seq::Array{AbstractFloat,2},n_init::Int,iterations::Int,inner_iterations::Int) # function to use with pmap to parallelize sc band calculation
+ @everywhere function dbac_par_sc(n_clust::Int,i::Int,rad_sc::Int,seq::Array{Float64,2},n_init::Int,iterations::Int,inner_iterations::Int) # function to use with pmap to parallelize sc band calculation
 
   rmin,rmax=sakoe_chiba_band(rad_sc,24)
 

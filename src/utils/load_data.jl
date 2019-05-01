@@ -81,7 +81,7 @@ function add_timeseries_data!(dt::Dict{String,Array},
             else
                 K=K_calc
             end
-            dt[data_name*"-"*string(column[1])]=AbstractFloat.(column[2][1:(Int(T*K))])
+            dt[data_name*"-"*string(column[1])]=Float64.(column[2][1:(Int(T*K))])
         end
     end
     return K

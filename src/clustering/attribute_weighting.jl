@@ -1,10 +1,10 @@
 """
-function attribute_weighting(data::ClustData,attribute_weights::Dict{String,AbstractFloat})
+function attribute_weighting(data::ClustData,attribute_weights::Dict{String,Float64})
 
 apply the different attribute weights based on the dictionary entry for each tech or exact name
 """
 function attribute_weighting(data::ClustData,
-                              attribute_weights::Dict{String,AbstractFloat}
+                              attribute_weights::Dict{String,Float64}
                               )
   for name in keys(data.data)
     tech=split(name,"-")[1]

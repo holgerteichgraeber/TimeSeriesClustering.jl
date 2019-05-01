@@ -1,6 +1,6 @@
 
 """
-    run_clust(data::ClustData;norm_op::String="zscore",norm_scope::String="full",method::String="kmeans",representation::String="centroid",n_clust::Int=5,n_init::Int=100,iterations::Int=300,save::String="",attribute_weights::Dict{String,AbstractFloat}=Dict{String,AbstractFloat}(),get_all_clust_results::Bool=false,kwargs...)
+    run_clust(data::ClustData;norm_op::String="zscore",norm_scope::String="full",method::String="kmeans",representation::String="centroid",n_clust::Int=5,n_init::Int=100,iterations::Int=300,save::String="",attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),get_all_clust_results::Bool=false,kwargs...)
 norm_op: "zscore", "01"(not implemented yet)
 norm_scope: "full","sequence","hourly"
 method: "kmeans","kmedoids","kmedoids_exact","hierarchical"
@@ -15,7 +15,7 @@ function run_clust(data::ClustData;
       n_seg::Int=data.T,
       n_init::Int=100,
       iterations::Int=300,
-      attribute_weights::Dict{String,AbstractFloat}=Dict{String,AbstractFloat}(),
+      attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
       save::String="",#QUESTION dead?
       get_all_clust_results::Bool=false,
       kwargs...
@@ -78,10 +78,10 @@ function run_clust(data_norm_merged::ClustDataMerged,
                   orig_k_ids::Array{Int,1}=Array{Int,1}(),
                   kwargs...)
     # initialize data arrays
-    centers = Array{Array{AbstractFloat},1}(undef,n_init)
+    centers = Array{Array{Float64},1}(undef,n_init)
     clustids = Array{Array{Int,1},1}(undef,n_init)
-    weights = Array{Array{AbstractFloat},1}(undef,n_init)
-    cost = Array{AbstractFloat,1}(undef,n_init)
+    weights = Array{Array{Float64},1}(undef,n_init)
+    cost = Array{Float64,1}(undef,n_init)
     iter = Array{Int,1}(undef,n_init)
 
     # clustering
@@ -346,7 +346,7 @@ end
 Helper function to run run_clust_hierarchical_centroids and run_clust_hierarchical_medoid
 """
 function run_clust_hierarchical(
-    data::Array{AbstractFloat,2},
+    data::Array{Float64,2},
     n_clust::Int,
     iterations::Int;
     _dist::SemiMetric = SqEuclidean()
