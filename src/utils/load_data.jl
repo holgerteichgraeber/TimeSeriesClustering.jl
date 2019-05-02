@@ -1,5 +1,5 @@
 """
-    load_timeseriesdata(data_path::String; T-#Segments,years::Array{Int64,1}=# years to be selected for the time series, att::Array{String,1}=# attributes to be loaded)
+    load_timeseriesdata(data_path::String; T-#Segments,years::Array{Int,1}=# years to be selected for the time series, att::Array{String,1}=# attributes to be loaded)
 - Loading all `*.csv` files in the folder or the file `data_path`
 - The `*.csv` files shall have the following structure and must have the same length:
 |Timestamp |Year  |[column names...]|
@@ -13,8 +13,8 @@
 """
 function load_timeseries_data(data_path;
                               region::String="none",
-                              T::Int64=24,
-                              years::Array{Int64,1}=[2016],
+                              T::Int=24,
+                              years::Array{Int,1}=[2016],
                               att::Array{String,1}=Array{String,1}())
   dt = Dict{String,Array}()
   num=0
@@ -43,15 +43,15 @@ function load_timeseries_data(data_path;
 end #load_timeseries_data
 
 """
-    add_timeseries_data!(dt::Dict{String,Array}, data::DataFrame; K::Int64=0, T::Int64=24, years::Array{Int64,1}=[2016])
+    add_timeseries_data!(dt::Dict{String,Array}, data::DataFrame; K::Int=0, T::Int=24, years::Array{Int,1}=[2016])
 selects first the years and second the data_points so that their number is a multiple of T and same with the other timeseries
 """
 function add_timeseries_data!(dt::Dict{String,Array},
                             data_name::SubString,
                             data_path::String;
-                            K::Int64=0,
-                            T::Int64=24,
-                            years::Array{Int64,1}=[2016])
+                            K::Int=0,
+                            T::Int=24,
+                            years::Array{Int,1}=[2016])
     #Load the data
     data_df=CSV.read(joinpath(data_path,data_name*".csv");allowmissing=:none)
     # Add it to the dictionary
@@ -59,15 +59,15 @@ function add_timeseries_data!(dt::Dict{String,Array},
 end
 
 """
-    add_timeseries_data!(dt::Dict{String,Array}, data::DataFrame; K::Int64=0, T::Int64=24, years::Array{Int64,1}=[2016])
+    add_timeseries_data!(dt::Dict{String,Array}, data::DataFrame; K::Int=0, T::Int=24, years::Array{Int,1}=[2016])
 selects first the years and second the data_points so that their number is a multiple of T and same with the other timeseries
 """
 function add_timeseries_data!(dt::Dict{String,Array},
                             data_name::SubString,
                             data::DataFrame;
-                            K::Int64=0,
-                            T::Int64=24,
-                            years::Array{Int64,1}=[2016])
+                            K::Int=0,
+                            T::Int=24,
+                            years::Array{Int,1}=[2016])
     # find the right years to select
     time_name=find_column_name(data, [:Timestamp, :timestamp, :Time, :time, :Zeit, :zeit, :Date, :date, :Datum, :datum]; error=false)
     year_name=find_column_name(data, [:year, :Year, :jahr, :Jahr])

@@ -38,7 +38,7 @@ function run_clust_segmentation(period::Array{Float64,2};
   norm_period, typely_mean, typely_sdv=z_normalize(period;scope=norm_scope)
   #x,weights,clustids,x,iter= run_clust_hierarchical(norm_period,n_seg,iterations)
   data=norm_period
-  clustids=run_clust_hierarchical_partitional(data::Array, n_seg::Int64)
+  clustids=run_clust_hierarchical_partitional(data::Array, n_seg::Int)
   weights = calc_weights(clustids,n_seg)
 
 
@@ -48,7 +48,7 @@ function run_clust_segmentation(period::Array{Float64,2};
   return centers,weights,clustids,cost,1
 end
 
-function get_clustids(ends::Array{Int64,1})
+function get_clustids(ends::Array{Int,1})
   clustids=collect(1:size(data,2))
   j=1
   for i in 1:size(data,2)
@@ -61,12 +61,12 @@ function get_clustids(ends::Array{Int64,1})
 end
 
 """
-      run_clust_hierarchical_partitional(data::Array, n_seg::Int64)
+      run_clust_hierarchical_partitional(data::Array, n_seg::Int)
 !!! Not yet proven
 Usees provided data and number of segments to aggregate them together
 """
 function run_clust_hierarchical_partitional(data::Array,
-                                            n_seg::Int64)
+                                            n_seg::Int)
   _dist= SqEuclidean()
   #Assign each timeperiod it's own cluster
   clustids=collect(1:size(data,2))
@@ -99,20 +99,20 @@ function run_clust_hierarchical_partitional(data::Array,
 end
 
 """
-      merge_clustids!(clustids::Array{Int64,1},index::Int64)
+      merge_clustids!(clustids::Array{Int,1},index::Int)
 Calculate the new clustids by merging the cluster of the index provided with the cluster of index+1
 """
-function merge_clustids!(clustids::Array{Int64,1},index::Int64)
+function merge_clustids!(clustids::Array{Int,1},index::Int)
   clustids[index+1]=clustids[index]
   clustids[index+2:end].-=1
 end
 
 """
-      get_mean_data(data::Array, clustids::Array{Int64,1})
+      get_mean_data(data::Array, clustids::Array{Int,1})
 Calculate mean of data: The number of columns is kept the same, mean is calculated for aggregated columns and the same in all with same clustid
 """
 function get_mean_data(data::Array,
-                    clustids::Array{Int64,1})
+                    clustids::Array{Int,1})
   mean_data=zeros(size(data))
   for i in 1:size(data,2)
     mean_data[:,i]=mean(data[:,findall(clustids.==clustids[i])], dims=2)

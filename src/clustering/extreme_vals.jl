@@ -78,7 +78,7 @@ function simple_extr_val_ident(clust_data::ClustData,
                                data_type::String;
                                extremum::String="max",
                                peak_def::String="absolute",
-                               consecutive_periods::Int64=1)
+                               consecutive_periods::Int=1)
   data=clust_data.data[data_type]
   delta_period=consecutive_periods-1
   # set data to be compared
@@ -168,7 +168,7 @@ function extreme_val_output(data::ClustData,
   end
   weights_ed=[]
   #initiate new k-ids-ed that don't represent any original time-period
-  k_ids_ed=zeros(Int64,size(data.k_ids))
+  k_ids_ed=zeros(Int,size(data.k_ids))
   if rep_mod_method == "feasibility"
     weights_ed = zeros(length(unique_extr_val_idcs))
     #no representation is done of the original time-period, it's just for feasibility

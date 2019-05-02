@@ -62,7 +62,7 @@ function run_clust(data_norm_merged::ClustDataMerged;
                   n_clust::Int=5,
                   n_init::Int=100,
                   iterations::Int=300,
-                  orig_k_ids::Array{Int64,1}=Array{Int64,1}(),
+                  orig_k_ids::Array{Int,1}=Array{Int,1}(),
                   kwargs...)
 
 method: "kmeans","kmedoids","kmedoids_exact","hierarchical"
@@ -75,7 +75,7 @@ function run_clust(data_norm_merged::ClustDataMerged,
                   n_clust::Int=5,
                   n_init::Int=100,
                   iterations::Int=300,
-                  orig_k_ids::Array{Int64,1}=Array{Int64,1}(),
+                  orig_k_ids::Array{Int,1}=Array{Int,1}(),
                   kwargs...)
     # initialize data arrays
     centers = Array{Array{Float64},1}(undef,n_init)
