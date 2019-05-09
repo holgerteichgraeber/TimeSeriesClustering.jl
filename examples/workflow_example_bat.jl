@@ -17,15 +17,15 @@ end
 
  # optimization
 
-opt_res = run_opt("battery",clust_res_ar[2].best_results)
- #opt_res = run_opt("gas_turbine",clust_res.best_results[5])
+opt_res = run_opt("battery",clust_res_ar[2].clust_data)
+ #opt_res = run_opt("gas_turbine",clust_res.clust_data[5])
 
  ###
  # run optimization for all k=1:9
 opt_res_all = []
 obj=[]
 for i=1:2
-  push!(opt_res_all,run_opt("battery", clust_res_ar[i].best_results))
+  push!(opt_res_all,run_opt("battery", clust_res_ar[i].clust_data))
   push!(obj,opt_res_all[i].obj)
 end
  # run reference case

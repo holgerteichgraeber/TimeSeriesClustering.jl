@@ -140,7 +140,7 @@ function input_data_modification(data::ClustData,extr_val_idcs::Array{Int,1})
   #just modify the k_ids that are also represented within this clust-data (don't reduce 0 to -1...)
   k_ids_dn[findall(data.k_ids.!=0)]=k_ids_dn_data
   #return the new Clust Data
-  return ClustData(data.region,data.years,K_dn,data.T,data_dn,weights_dn,deltas_dn,k_ids_dn;mean=data.mean,sdv=data.sdv)
+  return ClustData(data.region,data.years,K_dn,data.T,data_dn,weights_dn,k_ids_dn;delta_t=deltas_dn,mean=data.mean,sdv=data.sdv)
 end
 
 """
@@ -186,7 +186,7 @@ function extreme_val_output(data::ClustData,
     @error("rep_mod_method - "*rep_mod_method*" - does not exist")
   end
   delta_t_ed=data.delta_t[:,unique_extr_val_idcs]
-  extr_vals = ClustData(data.region,data.years,K_ed,data.T,data_ed,weights_ed,delta_t_ed,k_ids_ed;mean=data.mean,sdv=data.sdv)
+  extr_vals = ClustData(data.region,data.years,K_ed,data.T,data_ed,weights_ed,k_ids_ed;delta_t=delta_t_ed,mean=data.mean,sdv=data.sdv)
   return extr_vals
 end
 
@@ -219,7 +219,7 @@ function representation_modification(extr_vals::ClustData,
   k_ids_mod=deepcopy(clust_data.k_ids)
   # if this particular original time series period is though represented in the extreme values, the new period number of the extreme value (clust_data.K+old number) is assigned to this original time series period - in case of feasibility they are all zero and nothing is changed
   k_ids_mod[findall(extr_vals.k_ids.!=0)]=extr_vals.k_ids[findall(extr_vals.k_ids.!=0)].+clust_data.K
-  return ClustData(clust_data.region,clust_data.years,K_mod,clust_data.T,data_mod,weights_mod,delta_t_mod,k_ids_mod;mean=clust_data.mean,sdv=clust_data.sdv)
+  return ClustData(clust_data.region,clust_data.years,K_mod,clust_data.T,data_mod,weights_mod,k_ids_mod;delta_t=delta_t_mod,mean=clust_data.mean,sdv=clust_data.sdv)
 end
 
 """
