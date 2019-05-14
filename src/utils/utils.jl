@@ -354,3 +354,7 @@ function data_type(data::ClustData)
   return data_type
 end
 
+function data_type(data::ClustDataMerged)
+  return data.data_type
+end
+

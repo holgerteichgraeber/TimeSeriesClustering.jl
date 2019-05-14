@@ -5,7 +5,7 @@
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE)
 [![Build Status](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl.svg?token=HRFemjSxM1NBCsbHGNDG&branch=master)](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl)
 
-ClustForOpt is a [julia](www.juliaopt.com) implementation of clustering methods for finding representative periods for the optimization of energy systems. The package furthermore provides a multi-node capacity expansion model.
+ClustForOpt is a [julia](www.juliaopt.com) implementation of clustering methods for finding representative periods for the optimization of energy systems. The package can be used in conjunction with the multi-node capacity expansion model [CapacityExpansion](https://github.com/YoungFaithful/CapacityExpansion.jl). 
 
 The package has two main purposes: 1) Provide a simple process of clustering time-series input data, with clustered data output in a generalized type system 2) provide an interface between clustered data and optimization problem.
 
@@ -38,6 +38,8 @@ add ClustForOpt
 ```
 where `]` opens the julia package manager.
 
+**See [NEWS](NEWS.md) for significant breaking changes when updating from one version of ClustForOpt to another.**
+
 ## Documentation
 [Stable](https://holgerteichgraeber.github.io/ClustForOpt.jl/stable)
 
@@ -49,6 +51,8 @@ Generally, the workflow requires three steps:
 - load data
 - clustering
 - optimization
+
+An example workflow with examples on how to use the different functions can be found in [`examples/workflow_introduction.jl`](examples/workflow_introduction.jl)
 
 ```julia
 using ClustForOpt
@@ -102,4 +106,4 @@ For use of DTW barycenter averaging (DBA) and k-shape clustering on single-attri
 ### Optimization
 The function `run_opt()` runs the optimization problem and gives as an output a struct that contains optimal objective function value, decision variables, and additional info. The `run_opt()` function infers the optimization problem type from the input data. See the examples folder for further details.
 
-A Capacity Expansion Optimization Problem that utilizes `ClustForOpt` can be found in the package [CEP](https://github.com/YoungFaithful/CEP.jl). 
+A Capacity Expansion Optimization Problem that utilizes `ClustForOpt` can be found in the package [CapacityExpansion](https://github.com/YoungFaithful/CapacityExpansion.jl). 
