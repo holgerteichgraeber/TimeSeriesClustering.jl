@@ -19,7 +19,7 @@ jobs:
       script:
         - julia --project=test/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
         - julia --project=test/ test/clustering.jl
-        - julia --project=test/ test/capacityexpansion.jl
+        - julia --project=test/ test/test_workflow_introduction.jl
       after_success:
     - stage: "Documentation"
       julia: 1.0
