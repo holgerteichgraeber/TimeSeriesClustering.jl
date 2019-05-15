@@ -14,6 +14,9 @@ using Test
   It should be cut into K=365 periods (365 days) with T=24 timesteps per period (24h per day) =#
   data_path=normpath(joinpath(dirname(@__FILE__),"..","data","TS_GER_1"))
   ts_input_data = load_timeseries_data(data_path; T=24, years=[2016])
+  
+  data_path_GER18=normpath(joinpath(dirname(@__FILE__),"..","data","TS_GER_18"))
+  ts_input_data_GER18 = load_timeseries_data(data_path; T=24, years=[2016])
 
   #= ClustData
   How the struct is setup:
