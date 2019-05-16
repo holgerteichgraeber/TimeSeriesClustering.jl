@@ -10,7 +10,7 @@ using Clp
         # run clustering
         ts_clust_res = run_clust(ts_input_data;method="kmeans",representation="centroid",n_init=1,n_clust=365) # default k-means
         # run optimization
-        model = run_opt(ts_clust_res.best_results,cep_input_data,Clp.Optimizer)
+        model = run_opt(ts_clust_res.clust_data,cep_input_data,Clp.Optimizer)
         # compare to exact result
         exact_res=[70540.26439790576;0.0;8498.278397905757;0.0;80132.88454450261]
         @test exact_res ≈ model.variables["CAP"].data[:,1,1] atol=1
@@ -26,13 +26,13 @@ using Clp
         ts_full_data = run_clust(ts_input_data;method="hierarchical",representation="centroid",n_init=1,n_clust=30)
         ## OPTIMIZATION ##
         optimizer=Clp.Optimizer
-        scenarios["$state-$years-co2"] = run_opt(ts_clust_data.best_results,cep_data,optimizer;descriptor="co2",co2_limit=1000)
-        scenarios["$state-$years-slack"] = run_opt(ts_clust_data.best_results,cep_data,optimizer;descriptor="slack",lost_el_load_cost=1e6, lost_CO2_emission_cost=700)
-        scenarios["$state-$years-ex"] = run_opt(ts_clust_data.best_results,cep_data,optimizer;descriptor="ex",existing_infrastructure=true)
-        scenarios["$state-$years-simple"] = run_opt(ts_clust_data.best_results,cep_data,optimizer;descriptor="simple storage",storage="simple")
-        scenarios["$state-$years-seasonal"] = run_opt(ts_clust_data.best_results,cep_data,optimizer;descriptor="seasonal storage",storage="seasonal")
-        design_result=run_opt(ts_clust_data.best_results,cep_data,optimizer;descriptor="des&op")
-        scenarios["$state-$years-des&op"] = run_opt(ts_full_data.best_results,cep_data,design_result.opt_config,get_cep_design_variables(design_result),optimizer;lost_el_load_cost=1e6,lost_CO2_emission_cost=700)
+        scenarios["$state-$years-co2"] = run_opt(ts_clust_data.clust_data,cep_data,optimizer;descriptor="co2",co2_limit=1000)
+        scenarios["$state-$years-slack"] = run_opt(ts_clust_data.clust_data,cep_data,optimizer;descriptor="slack",lost_el_load_cost=1e6, lost_CO2_emission_cost=700)
+        scenarios["$state-$years-ex"] = run_opt(ts_clust_data.clust_data,cep_data,optimizer;descriptor="ex",existing_infrastructure=true)
+        scenarios["$state-$years-simple"] = run_opt(ts_clust_data.clust_data,cep_data,optimizer;descriptor="simple storage",storage="simple")
+        scenarios["$state-$years-seasonal"] = run_opt(ts_clust_data.clust_data,cep_data,optimizer;descriptor="seasonal storage",storage="seasonal")
+        design_result=run_opt(ts_clust_data.clust_data,cep_data,optimizer;descriptor="des&op")
+        scenarios["$state-$years-des&op"] = run_opt(ts_full_data.clust_data,cep_data,design_result.opt_config,get_cep_design_variables(design_result),optimizer;lost_el_load_cost=1e6,lost_CO2_emission_cost=700)
         end
     end
     #Test transmission for a multi-node scenario
@@ -44,7 +44,7 @@ using Clp
            ts_clust_data = run_clust(ts_input_data;method="hierarchical",representation="centroid",n_init=1,n_clust=3)
            ## OPTIMIZATION ##
            optimizer=Clp.Optimizer
-           scenarios["$state-$years-trans"] = run_opt(ts_clust_data.best_results,cep_data,optimizer;descriptor="trans",transmission=true)
+           scenarios["$state-$years-trans"] = run_opt(ts_clust_data.clust_data,cep_data,optimizer;descriptor="trans",transmission=true)
        end
     end
     #Test exact values for each of the previously calculated scenarios by comparison with exact scenarios

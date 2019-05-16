@@ -2,7 +2,7 @@
 abstract type InputData end
 abstract type TSData <:InputData end
 abstract type OptData <: InputData end
-abstract type ClustResult end
+abstract type AbstractClustResult end
 
 "FullInputData"
 struct FullInputData <: TSData
@@ -53,34 +53,23 @@ struct ClustDataMerged <: TSData
 end
 
 "ClustResultAll"
-struct ClustResultAll <: ClustResult
- best_results::ClustData
- best_ids::Array{Int,1}
- best_cost::Float64
- data_type::Array{String}
- clust_config::Dict{String,Any}
- centers::Array{Array{Float64},1}
- weights::Array{Array{Float64},1}
- clustids::Array{Array{Int,1},1}
- cost::Array{Float64,1}
- iter::Array{Int,1}
+struct ClustResultAll <: AbstractClustResult
+ clust_data::ClustData
+ cost::Float64
+ config::Dict{String,Any}
+ centers_all::Array{Array{Float64},1}
+ weights_all::Array{Array{Float64},1}
+ clustids_all::Array{Array{Int,1},1}
+ cost_all::Array{Float64,1}
+ iter_all::Array{Int,1}
 end
 
 # TODO: not used yet, but maybe best to implement this one later for users who just want to use clustering but do not care about the locally converged solutions
-"ClustResultBest"
-struct ClustResultBest <: ClustResult
- best_results::ClustData
- best_ids::Array{Int,1}
- best_cost::Float64
- data_type::Array{String}
- clust_config::Dict{String,Any}
-end
-
-"ClustResultSimple"
-struct ClustResultSimple <: ClustResult
- best_results::ClustData
- #TODO: clust_data::ClustData
- clust_config::Dict{String,Any}
+"ClustResult"
+struct ClustResult <: AbstractClustResult
+ clust_data::ClustData
+ cost::Float64
+ config::Dict{String,Any}
 end
 
 "SimpleExtremeValueDescr"
@@ -226,8 +215,8 @@ function ClustData(region::String,
                        T::Int,
                        data::Dict{String,Array},
                        weights::Array{Float64},
-                       delta_t::Array{Float64,2},
                        k_ids::Array{Int,1};
+                       delta_t::Array{Float64,2}=ones(T,K),
                        mean::Dict{String,Array}=Dict{String,Array}(),
                        sdv::Dict{String,Array}=Dict{String,Array}()
                        )
@@ -268,7 +257,7 @@ function ClustData(data::FullInputData,
   for (k,v) in data.data
      data_reshape[k] =  reshape(v,T,K)
   end
-  return ClustData(data.region,data.years,K,T,data_reshape,ones(K),ones(T,K),collect(1:K))
+  return ClustData(data.region,data.years,K,T,data_reshape,ones(K),collect(1:K))
 end
 
 """

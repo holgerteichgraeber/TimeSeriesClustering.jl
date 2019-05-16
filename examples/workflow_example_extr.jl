@@ -18,4 +18,4 @@ ts_input_data = load_timeseries_data(data_path; T=24, years=[2015])
 ts_clust_res = run_clust(ts_input_data_mod;method="kmeans",representation="centroid",n_init=10,n_clust=5) # default k-means
 
 # representation modification
-ts_clust_extr = representation_modification(extr_vals,ts_clust_res.best_results)
+ts_clust_extr = representation_modification(extr_vals,ts_clust_res.clust_data)

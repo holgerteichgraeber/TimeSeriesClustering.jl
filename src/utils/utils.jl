@@ -40,7 +40,7 @@ function z_normalize(data::ClustData;
  for (k,v) in data.data
    data_norm[k],mean[k],sdv[k] = z_normalize(v,scope=scope)
  end
- return ClustData(data.region,data.years,data.K,data.T,data_norm,data.weights,data.delta_t,data.k_ids;mean=mean,sdv=sdv)
+ return ClustData(data.region,data.years,data.K,data.T,data_norm,data.weights,data.k_ids;delta_t=data.delta_t,mean=mean,sdv=sdv)
 end
 
 """
@@ -327,7 +327,7 @@ function run_pure_clust(data::ClustData;
                             get_all_clust_results::Bool=false,
                             kwargs...)
   clust_result=run_clust(data;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_clust=n_clust,n_init=n_init,iterations=iterations,attribute_weights=attribute_weights)
-  clust_data=clust_result.best_results
+  clust_data=clust_result.clust_data
   mod_data=deepcopy(data.data)
   for i in 1:clust_data.K
     index=findall(clust_data.k_ids.==i)
@@ -338,5 +338,23 @@ function run_pure_clust(data::ClustData;
       end
     end
   end
-  return ClustResultSimple(ClustData(data.region, data.years, data.K, data.T, mod_data, data.weights, data.delta_t, data.k_ids), clust_result.clust_config)
+  return ClustResult(ClustData(data.region, data.years, data.K, data.T, mod_data, data.weights, data.k_ids;delta_t=data.delta_t),clust_result.cost, clust_result.config)
 end
+
+"""
+    data_type(clust_data::ClustData)
+Get data_type from a struct ClustData
+"""
+function data_type(data::ClustData)
+  n_datasets = length(keys(data.data))
+  data_type=String[]
+  for (k,v) in data.data
+    push!(data_type,k)
+  end
+  return data_type
+end
+
+function data_type(data::ClustDataMerged)
+  return data.data_type
+end
+

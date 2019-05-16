@@ -24,42 +24,40 @@ function run_clust(data::ClustData;
     # When adding new methods: add combination of clust+rep to sup_kw_args
     check_kw_args(norm_op,norm_scope,method,representation)
 
-    # normalize
-    # TODO: implement 0-1 normalization and add as a choice to runclust
-    data_norm = z_normalize(data;scope=norm_scope)
-    if !isempty(attribute_weights)
-      data_norm = attribute_weighting(data_norm,attribute_weights)
-    end
-    data_norm_merged = ClustDataMerged(data_norm)
-
     #clustering
-    b_merged, cost, cost_best, iter =run_clust(data_norm_merged, data; method=method, representation=representation, n_clust=n_clust, n_init=n_init, iterations=iterations, orig_k_ids=deepcopy(data.k_ids), kwargs...)
-
-     if n_seg!=b_merged.T &&  n_seg!=0
-       b_merged=intraperiod_segmentation(b_merged;n_seg=n_seg,norm_scope=norm_scope,iterations=iterations)
-     else
-       n_seg=b_merged.T
+    clust_data, cost, centers_all, weights_all, clustids_all, cost_all, iter_all =run_clust_method(data;norm_op=norm_op, norm_scope=norm_scope, method=method, representation=representation, n_clust=n_clust, n_init=n_init, iterations=iterations, attribute_weights=attribute_weights, orig_k_ids=deepcopy(data.k_ids), kwargs...)
+      
+     # inter period segmentation (reduce the number of time steps per cluster - not fully implemented yet)
+       if n_seg!=data.T &&  n_seg!=0
+       clust_data_merged = ClustDataMerged(clust_data) 
+       segmented_merged=intraperiod_segmentation(clust_data_merged;n_seg=n_seg,norm_scope=norm_scope,iterations=iterations)
+       clust_data = ClustData(segmented_merged)
+     else # if interperiod segmentation is not used
+       n_seg=clust_data.T
      end
 
-    # transfer into ClustData format
-    best_results = ClustData(b_merged)
+    # set configuration file
     clust_config = set_clust_config(;norm_op=norm_op, norm_scope=norm_scope, method=method, representation=representation, n_clust=n_clust, n_seg=n_seg, n_init=n_init, iterations=iterations, attribute_weights=attribute_weights)
-    # save all locally converged solutions and the best into a struct
-
+    
     if get_all_clust_results
-      clust_result = ClustResultAll(best_results,b_merged.k_ids,cost_best,data_norm_merged.data_type,clust_config,b_merged.centers,b_merged.weights,b_merged.k_ids,cost,iter)
+      # save all locally converged solutions and the best into a struct
+      clust_result = ClustResultAll(clust_data,cost,clust_config,centers_all,weights_all,clustids_all,cost_all,iter_all)
     else
-      clust_result =  ClustResultBest(best_results,b_merged.k_ids,cost_best,data_norm_merged.data_type,clust_config)
+      # save best locally converged solution into a struct
+      clust_result =  ClustResult(clust_data,cost,clust_config)
     end
-    #TODO save in save file
+    #TODO save in save file  save_clust_result()
     return clust_result
 end
 
 """
-function run_clust(data_norm_merged::ClustDataMerged;
+    run_clust_method(data::ClustData;
+                  norm_op::String="zscore",
+                  norm_scope::String="full",
                   method::String="kmeans",
                   representation::String="centroid",
                   n_clust::Int=5,
+                  n_seg::Int=data.T,
                   n_init::Int=100,
                   iterations::Int=300,
                   orig_k_ids::Array{Int,1}=Array{Int,1}(),
@@ -68,16 +66,27 @@ function run_clust(data_norm_merged::ClustDataMerged;
 method: "kmeans","kmedoids","kmedoids_exact","hierarchical"
 representation: "centroid","medoid"
 """
-function run_clust(data_norm_merged::ClustDataMerged,
-                  data::ClustData;
+function run_clust_method(data::ClustData;
+                  norm_op::String="zscore",
+                  norm_scope::String="full",
                   method::String="kmeans",
                   representation::String="centroid",
                   n_clust::Int=5,
+                  n_seg::Int=data.T,
                   n_init::Int=100,
                   iterations::Int=300,
+                  attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
                   orig_k_ids::Array{Int,1}=Array{Int,1}(),
                   kwargs...)
-    # initialize data arrays
+    # normalize
+    # TODO: implement 0-1 normalization and add as a choice to runclust
+    data_norm = z_normalize(data;scope=norm_scope)
+    if !isempty(attribute_weights)
+      data_norm = attribute_weighting(data_norm,attribute_weights)
+    end
+    data_norm_merged = ClustDataMerged(data_norm)
+   
+    # initialize data arrays (all initial starting points)
     centers = Array{Array{Float64},1}(undef,n_init)
     clustids = Array{Array{Int,1},1}(undef,n_init)
     weights = Array{Array{Float64},1}(undef,n_init)
@@ -97,16 +106,18 @@ function run_clust(data_norm_merged::ClustDataMerged,
         centers[i] = resize_medoids(data,centers[i],weights[i])
       end
     end
-    # find best
-    # TODO: write as function
+    # find best. TODO: write as function
     cost_best,ind_mincost = findmin(cost)  # along dimension 2, only store indice
 
     k_ids=orig_k_ids
     k_ids[findall(orig_k_ids.!=0)]=clustids[ind_mincost]
     # save in merged format as array
+    
     # NOTE if you need clustered data more precise than 8 digits change the following line accordingly
-     n_digits_data_round=8 # Gurobi throws warning when rounding errors on order~1e-13 are passed in. Rounding errors occur in clustering of many zeros (e.g. solar).
-     return ClustDataMerged(data_norm_merged.region,data_norm_merged.years,n_clust,data_norm_merged.T,round.(centers[ind_mincost]; digits=n_digits_data_round),data_norm_merged.data_type,weights[ind_mincost],k_ids), cost, cost_best, iter
+    n_digits_data_round=8 # Gurobi throws warning when rounding errors on order~1e-13 are passed in. Rounding errors occur in clustering of many zeros (e.g. solar).
+    clust_data_merged = ClustDataMerged(data.region,data.years,n_clust,data.T,round.(centers[ind_mincost]; digits=n_digits_data_round),data_type(data),weights[ind_mincost],k_ids)
+    clust_data = ClustData(clust_data_merged)
+        return clust_data, cost_best, centers, weights, clustids, cost, iter
  end
 
 """
@@ -129,7 +140,7 @@ function run_clust(
       save::String="",
       kwargs...
     )
-    results_ar = Array{ClustResult,1}(undef,length(n_clust_ar))
+    results_ar = Array{AbstractClustResult,1}(undef,length(n_clust_ar))
     for i=1:length(n_clust_ar)
       results_ar[i] = run_clust(data;norm_op=norm_op,norm_scope=norm_scope,method=method,representation=representation,n_init=n_init,n_clust=n_clust_ar[i],iterations=iterations,save=save,kwargs...)
     end
