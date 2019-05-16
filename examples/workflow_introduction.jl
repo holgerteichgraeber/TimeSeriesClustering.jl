@@ -66,7 +66,7 @@ end
 #############
 # Quick example and investigation of the best result:
 ts_clust_result = run_clust(ts_input_data; method="kmeans", representation="centroid", n_init=5, n_clust=5) # note that you should use n_init=1000 at least for kmeans.
-ts_clust_data = ts_clust_result.best_results
+ts_clust_data = ts_clust_result.clust_data
 # And some plotting:
 plot_comb_solar=plot!(plot_input_solar, ts_clust_data.data["solar-germany"], linestyle=:solid, width=3)
 plot_clust_soar=plot(ts_clust_data.data["el_demand-germany"], legend=false, linestyle=:solid, width=3, xlabel="Time [h]", ylabel="Solar availability factor [%]")
