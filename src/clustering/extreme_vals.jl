@@ -67,7 +67,7 @@ function simple_extr_val_ident(data::ClustData,
 end
 
 """
-    simple_extr_val_ident(data::Array{Float64};extremum="max",peak_def="absolute")
+    simple_extr_val_ident(clust_data::ClustData, data_type::STRING;extremum="max",peak_def="absolute")
 identifies a single simple extreme period from the data and returns column index of extreme period
 - `data_type`: any attribute from the attributes contained within *data*
 - `extremum`: "min" or "max"
@@ -79,7 +79,18 @@ function simple_extr_val_ident(clust_data::ClustData,
                                extremum::String="max",
                                peak_def::String="absolute",
                                consecutive_periods::Int=1)
-  data=clust_data.data[data_type]
+  #allow to indentify multiple data types (like wind at multiple nodes wind-node1 wind-node2 ... with one data_type)
+  # get all data types within the provided clust data
+  data_type_all=collect(keys(clust_data.data))
+  # select all data types that include the String data_type
+  data_type_itr=data_type_all[occursin.(data_type,data_type_all)]
+  #if multiple data types are given, data is the summation of them
+  # Create data with the right size based on first entry
+  data=zeros(size(clust_data.data[first(data_type_itr)]))
+  #Adding the values of each attribute to data
+  for data_type in data_type_itr
+    data.+=clust_data.data[data_type]
+  end
   delta_period=consecutive_periods-1
   # set data to be compared
   if peak_def=="absolute" && consecutive_periods==1
