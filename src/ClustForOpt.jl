@@ -33,7 +33,8 @@ module ClustForOpt
           representation_modification,
           get_sup_kw_args,
           run_clust,
-          run_opt,
+          run_battery_opt,
+          run_gas_opt,
           data_type,
           get_EUR_to_USD, #TODO Check which of the following should really be exported
           z_normalize,

@@ -1,17 +1,31 @@
 """
-    load_timeseriesdata(data_path::String; T-#Segments,years::Array{Int,1}=# years to be selected for the time series, att::Array{String,1}=# attributes to be loaded)
-- Loading all `*.csv` files in the folder or the file `data_path`
+    function load_timeseries_data(data_path::String;
+                              region::String="none",
+                              T::Int=24,
+                              years::Array{Int,1}=[2016],
+                              att::Array{String,1}=Array{String,1}())
+
+Return all time series as ClustData struct that are stored as csv files in the specified path.
+
+- Loads `*.csv` files in the folder or the file `data_path`
+- Loads all attributes (all `*.csv` files) if the `att`-Array is empty or only the files specified in `att`
 - The `*.csv` files shall have the following structure and must have the same length:
 |Timestamp |Year  |[column names...]|
 |----------|------|-----------------|
 |[iterator]|[year]|[values]         |
-- The first column should be called `Timestamp` if it contains a time iterator
+- The first column of a `.csv` file should be called `Timestamp` if it contains a time iterator
 - The second column should be called `Year` and contains the corresponding year
-- The other columns can specify the single timeseries like specific geolocation.
-- Each column in `[file name].csv` file will be added to the ClustData.data called `"[file name]-[column name]"`
-- Loads all attributes if the `att`-Array is empty or only the ones specified in it
+- Each other column should contain the time series data. For one node systems, only one column is used; for an N-node system, N columns need to be used. In an N-node system, each column specifies time series data at a specific geolocation.
+- Returns time series as ClustData struct
+- The `.data` field of the ClustData struct is a Dictionary where each column in `[file name].csv` file is the key (called `"[file name]-[column name]"`). `file name` should correspond to the attribute name, and `column name` should correspond to the node name.
+
+Optional inputs to `load_timeseries_data`:
+- region-region descriptor
+- T- Number of Segments
+- years::Array{Int,1}= The years to be selected from the csv file as specified in `years column`
+- att::Array{String,1}= The attributes to be loaded. If left empty, all attributes will be loaded.
 """
-function load_timeseries_data(data_path;
+function load_timeseries_data(data_path::String;
                               region::String="none",
                               T::Int=24,
                               years::Array{Int,1}=[2016],
@@ -41,6 +55,50 @@ function load_timeseries_data(data_path;
   ts_input_data =  ClustData(FullInputData(region, years, num, dt),K,T)
   return ts_input_data
 end #load_timeseries_data
+
+"""
+    function load_timeseries_data(existing_data::Symbol;
+                              region::String="none",
+                              T::Int=24,
+                              years::Array{Int,1}=[2016],
+                              att::Array{String,1}=Array{String,1}())
+
+Return time series of example data sets as ClustData struct.
+
+The choice of example data set is given by e.g. existing_data=:CEP-GER1. Example data sets are:
+- `:DAM_CA` : Hourly Day Ahead Market Electricity prices for California-Stanford 2015
+- `:DAM_GER` : Hourly Day Ahead Market Electricity prices for Germany 2015
+- `:CEP_GER1` : Hourly Wind, Solar, Demand data Germany one node
+- `:CEP_GER18`: Hourly Wind, Solar, Demand data Germany 18 nodes
+
+Optional inputs to `load_timeseries_data`:
+- region-region descriptor
+- T- Number of Segments
+- years::Array{Int,1}= The years to be selected from the csv file as specified in `years column`
+- att::Array{String,1}= The attributes to be loaded. If left empty, all attributes will be loaded.
+"""
+function load_timeseries_data(existing_data::Symbol;
+                              region::String="none",
+                              T::Int=24,
+                              years::Array{Int,1}=[2016],
+                              att::Array{String,1}=Array{String,1}())
+  data_path = normpath(joinpath(dirname(@__FILE__),"..","..","data"))
+  if existing_data == :DAM_CA
+      data_path=joinpath(data_path,"DAM","CA")
+      years=[2015]
+  elseif existing_data == :DAM_GER
+      data_path=joinpath(data_path,"DAM","GER")
+      years=[2015]
+  elseif existing_data == :CEP_GER1
+      data_path=joinpath(data_path,"TS_GER_1")
+  elseif existing_data == :CEP_GER18
+      data_path=joinpath(data_path,"TS_GER_18")
+  else
+      @error("The symbol - $existing_data - does not exist")
+  end
+  return load_timeseries_data(data_path;region=region,T=T,years=years,att=att)
+end
+
 
 """
     add_timeseries_data!(dt::Dict{String,Array}, data::DataFrame; K::Int=0, T::Int=24, years::Array{Int,1}=[2016])
