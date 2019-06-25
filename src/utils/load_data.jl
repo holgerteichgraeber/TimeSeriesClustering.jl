@@ -53,7 +53,7 @@ function add_timeseries_data!(dt::Dict{String,Array},
                             T::Int=24,
                             years::Array{Int,1}=[2016])
     #Load the data
-    data_df=CSV.read(joinpath(data_path,data_name*".csv");allowmissing=:none)
+    data_df=CSV.read(joinpath(data_path,data_name*".csv");strict=true)
     # Add it to the dictionary
     return add_timeseries_data!(dt,data_name, data_df; K=K, T=T, years=years)
 end
