@@ -26,10 +26,10 @@ function run_clust(data::ClustData;
 
     #clustering
     clust_data, cost, centers_all, weights_all, clustids_all, cost_all, iter_all =run_clust_method(data;norm_op=norm_op, norm_scope=norm_scope, method=method, representation=representation, n_clust=n_clust, n_init=n_init, iterations=iterations, attribute_weights=attribute_weights, orig_k_ids=deepcopy(data.k_ids), kwargs...)
-      
+
      # inter period segmentation (reduce the number of time steps per cluster - not fully implemented yet)
        if n_seg!=data.T &&  n_seg!=0
-       clust_data_merged = ClustDataMerged(clust_data) 
+       clust_data_merged = ClustDataMerged(clust_data)
        segmented_merged=intraperiod_segmentation(clust_data_merged;n_seg=n_seg,norm_scope=norm_scope,iterations=iterations)
        clust_data = ClustData(segmented_merged)
      else # if interperiod segmentation is not used
@@ -38,7 +38,7 @@ function run_clust(data::ClustData;
 
     # set configuration file
     clust_config = set_clust_config(;norm_op=norm_op, norm_scope=norm_scope, method=method, representation=representation, n_clust=n_clust, n_seg=n_seg, n_init=n_init, iterations=iterations, attribute_weights=attribute_weights)
-    
+
     if get_all_clust_results
       # save all locally converged solutions and the best into a struct
       clust_result = ClustResultAll(clust_data,cost,clust_config,centers_all,weights_all,clustids_all,cost_all,iter_all)
@@ -85,7 +85,7 @@ function run_clust_method(data::ClustData;
       data_norm = attribute_weighting(data_norm,attribute_weights)
     end
     data_norm_merged = ClustDataMerged(data_norm)
-   
+
     # initialize data arrays (all initial starting points)
     centers = Array{Array{Float64},1}(undef,n_init)
     clustids = Array{Array{Int,1},1}(undef,n_init)
@@ -112,10 +112,10 @@ function run_clust_method(data::ClustData;
     k_ids=orig_k_ids
     k_ids[findall(orig_k_ids.!=0)]=clustids[ind_mincost]
     # save in merged format as array
-    
+
     # NOTE if you need clustered data more precise than 8 digits change the following line accordingly
     n_digits_data_round=8 # Gurobi throws warning when rounding errors on order~1e-13 are passed in. Rounding errors occur in clustering of many zeros (e.g. solar).
-    clust_data_merged = ClustDataMerged(data.region,data.years,n_clust,data.T,round.(centers[ind_mincost]; digits=n_digits_data_round),data_type(data),weights[ind_mincost],k_ids)
+    clust_data_merged = ClustDataMerged(data.region,data.years,n_clust,data.T,round.(centers[ind_mincost]; digits=n_digits_data_round),data_norm_merged.data_type,weights[ind_mincost],k_ids)
     clust_data = ClustData(clust_data_merged)
         return clust_data, cost_best, centers, weights, clustids, cost, iter
  end
