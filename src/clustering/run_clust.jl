@@ -152,7 +152,7 @@ function run_clust_method(data::ClustData;
 
     # NOTE if you need clustered data more precise than 8 digits change the following line accordingly
     n_digits_data_round=8 # Gurobi throws warning when rounding errors on order~1e-13 are passed in. Rounding errors occur in clustering of many zeros (e.g. solar).
-    clust_data_merged = ClustDataMerged(data.region,data.years,n_clust,data.T,round.(centers[ind_mincost]; digits=n_digits_data_round),data_type(data),weights[ind_mincost],k_ids)
+    clust_data_merged = ClustDataMerged(data.region,data.years,n_clust,data.T,round.(centers[ind_mincost]; digits=n_digits_data_round),data_norm_merged.data_type,weights[ind_mincost],k_ids)
     clust_data = ClustData(clust_data_merged)
         return clust_data, cost_best, centers, weights, clustids, cost, iter
  end
