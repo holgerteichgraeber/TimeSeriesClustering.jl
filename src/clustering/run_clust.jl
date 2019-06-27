@@ -312,7 +312,7 @@ function run_clust_kmeans_medoid(
     # kmeans() in Clustering.jl is implemented for k>=2
     elseif n_clust==data_norm.K
         clustids = collect(1:data_norm.K)
-        centers = undo_z_normalize(data_norm,data_norm.mean,data_norm.sdv;idx=clustids) # need to provide idx in case that sequence-based normalization is used
+        centers = undo_z_normalize(data_norm.data,data_norm.mean,data_norm.sdv;idx=clustids) # need to provide idx in case that sequence-based normalization is used
         cost = 0.0
         iter = 1
     else
