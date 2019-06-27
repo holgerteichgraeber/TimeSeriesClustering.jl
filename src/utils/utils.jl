@@ -340,21 +340,3 @@ function run_pure_clust(data::ClustData;
   end
   return ClustResult(ClustData(data.region, data.years, data.K, data.T, mod_data, data.weights, data.k_ids;delta_t=data.delta_t),clust_result.cost, clust_result.config)
 end
-
-"""
-    data_type(clust_data::ClustData)
-Get data_type from a struct ClustData
-"""
-function data_type(data::ClustData)
-  n_datasets = length(keys(data.data))
-  data_type=String[]
-  for (k,v) in data.data
-    push!(data_type,k)
-  end
-  return data_type
-end
-
-function data_type(data::ClustDataMerged)
-  return data.data_type
-end
-
