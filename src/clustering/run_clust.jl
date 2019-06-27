@@ -24,7 +24,7 @@ Name | method | representation | comment
 k-means clustering | `<kmeans>` | `<centroid>` | -
 k-means clustering with medoid representation | `<kmeans>` | `<medoid>` | -
 k-medoids clustering (partitional) | `<kmedoids>` | `<medoid>` | -
-k-medoids clustering (exact) | `<kmedoids_exact>` | `<medoid>` | requires Gurobi and the additional keyword argument `gurobi_opt`. See [examples] folder for example use. Set `n_init=1`
+k-medoids clustering (exact) | `<kmedoids_exact>` | `<medoid>` | requires Gurobi and the additional keyword argument `kmexact_optimizer`. See [examples] folder for example use. Set `n_init=1`
 hierarchical clustering with centroid representation | `<hierarchical>` | `<centroid>` | set `n_init=1`
 hierarchical clustering with medoid representation | `<hierarchical>` | `<medoid>` | set `n_init=1`
 
@@ -41,7 +41,7 @@ Keyword | options | comment
 `attribute_weights` | e.g. Dict("wind-germany"=>3,"solar-germany"=>1,"el_demand-germany"=>5) | weights the respective attributes when clustering. In this example, demand and wind are deemed more important than solar.
 `save` | `false` | Save clustered data as csv or jld2 file. Not yet implemented.
 `get_all_clust_results` | `true`,`false` | `false` gives a `ClustData` struct with only the best locally converged solution in terms of clustering measure. `true` gives a `ClustDataAll` struct as output, with all locally converged solutions.
-`kwargs` | e.g. `gurobi_opt` | optional keyword arguments that are required for specific methods, for example k-medoids exact.
+`kwargs` | e.g. `kmexact_optimizer` | optional keyword arguments that are required for specific methods, for example k-medoids exact.
 """
 function run_clust(data::ClustData;
       norm_op::String="zscore",
@@ -372,14 +372,14 @@ function run_clust_kmedoids_exact_medoid(
     data_norm::ClustDataMerged,
     n_clust::Int,
     iterations::Int;
-    gurobi_opt=0
+    kmexact_optimizer=0
     )
 
-    (typeof(gurobi_opt)==Int) && @error("Please provide a gurobi_opt (Gurobi Environment). See test file for example")
+    (typeof(kmexact_optimizer)==Int) && @error("Please provide a kmexact_optimizer (Gurobi Environment). See test file for example")
 
     # TODO: optional in future: pass distance metric as kwargs
     dist = SqEuclidean()
-    results = kmedoids_exact(data_norm.data,n_clust,gurobi_opt;_dist=dist)#;distance_type_ar[dist])
+    results = kmedoids_exact(data_norm.data,n_clust,kmexact_optimizer;_dist=dist)#;distance_type_ar[dist])
     clustids = results.assignments
     centers_norm = results.medoids
     centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)

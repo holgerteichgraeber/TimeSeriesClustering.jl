@@ -1,5 +1,7 @@
 using ClustForOpt
 using JLD2
+using Cbc
+using Random
 
 reference_results = Dict{String,Any}()
 
@@ -43,11 +45,18 @@ for data in ["CEP_GER1","CEP_GER18"]
             println("$data-$method-$repr-n_clustK not defined")
         end
     end
-#    mr_kmexact = [["kmedoids_exact","centroid",1],
-#    for (method,repr,n_init) in mr_kmexact
-
-#    end
 end
+
+data = "CEP_GER1"
+method = "kmedoids_exact"
+repr = "medoid"
+using Cbc
+optimizer = Cbc.Optimizer
+ts_input_data = load_timeseries_data(Symbol(data))
+reference_results["$data-$method-$repr-default"] = run_clust(ts_input_data;method=method,representation=repr,n_clust=5,n_init=1,kmexact_optimizer=optimizer)
+reference_results["$data-$method-$repr-n_clust1"] = run_clust(ts_input_data;method=method,representation=repr,n_clust=1,n_init=1,kmexact_optimizer=optimizer)
+reference_results["$data-$method-$repr-n_clustK"] = run_clust(ts_input_data;method=method,representation=repr,n_clust=ts_input_data.K,n_init=1,kmexact_optimizer=optimizer)
+
 
 
 @save normpath(joinpath(dirname(@__FILE__),"run_clust.jld2")) reference_results

@@ -9,23 +9,15 @@ julia:
 notifications:
   email: false
 
-after_success:
-
 jobs:
   include:
-    - stage: "Testing"
-      julia: 1.0
-      os: linux
-      script:
-        - julia --project=test/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
-        - julia --project=test/ test/clustering.jl
-        - julia --project=test/ test/test_workflow_introduction.jl
-      after_success:
     - stage: "Documentation"
       julia: 1.0
       os: linux
       script:
         - julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
         - julia --project=docs/ docs/make.jl
-      after_success:
-services: docker
+
+after_success:
+    - julia -e 'using Pkg; Pkg.add("Coverage")'
+    - julia -e 'using Coverage; Codecov.submit(process_folder())'
