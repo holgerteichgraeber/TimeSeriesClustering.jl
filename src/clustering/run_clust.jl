@@ -452,7 +452,7 @@ function run_clust_hierarchical_medoid(
     iterations::Int;
     _dist::SemiMetric = SqEuclidean()
     )
-    ~,weights,clustids,~,iter= run_clust_hierarchical(data_norm,n_clust,iterations;_dist=_dist)
+    ~,weights,clustids,~,iter= run_clust_hierarchical(data_norm.data,n_clust,iterations;_dist=_dist)
     centers_norm = calc_medoids(data_norm.data,clustids)
     cost = calc_SSE(data_norm.data,centers_norm,clustids)
     centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
