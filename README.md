@@ -6,9 +6,13 @@
 [![Build Status](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl.svg?token=HRFemjSxM1NBCsbHGNDG&branch=master)](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl)
 
 
-[ClustForOpt](https://github.com/holgerteichgraeber/ClustForOpt.jl) is a [julia](https://www.juliaopt.com) implementation of clustering methods and extreme value selection methods for finding representative periods for energy systems optimization problems.
+[ClustForOpt](https://github.com/holgerteichgraeber/ClustForOpt.jl) is a [julia](https://www.juliaopt.com) implementation of unsupervised machine learning methods for finding representative periods for energy systems optimization problems.
+By reducing the number of time steps used in the optimization model, using representative periods leads to significant reductions in computational complexity.
 
-The package has two main purposes: 1) Provide a simple process of finding representative periods for time-series input data, with representative period data output in a generalized type system 2) provide an interface between representative period data and optimization problem.
+The package has three main purposes:
+1) Provide a simple process of finding representative periods for time-series input data, with implementations of the most commonly used clustering methods and extreme value selection methods.
+2) Provide an interface between representative period data and optimization problem by having representative period data stored in a generalized type system.
+3) Provide a generalized import feature for time series, where variable names, attributes, and node names are automatically stored and can then be used in the definition of sets of the optimization problem later.
 
 An example energy systems optimization problem that uses ClustForOpt for its input data is the package [CapacityExpansion](https://github.com/YoungFaithful/CapacityExpansion.jl), which implements a scalable generation and transmission capacity expansion problem.
 
