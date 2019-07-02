@@ -8,4 +8,6 @@ include("test_utils.jl")
 
 include("run_clust.jl")
 include("extreme_vals.jl")
-include("z_normalize.jl")
+include("datastructs.jl")
+include("load_data.jl")
+include("utils.jl")

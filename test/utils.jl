@@ -1,6 +1,37 @@
-using Test
-using StatsBase
-using ClustForOpt
+@testset "sort centers" begin
+  c = [1 2 3;4 5 6]
+  w = [0.2, 0.5, 0.3]
+  c_s, w_s = sort_centers(c,w)
+  @test all(c_s .== c[:,[2,3,1]])
+  @test all(w_s .== w[[2,3,1]])
+end
+
+@testset "sakoe_chiba_band" begin
+  r=0
+  l=3
+  i2min,i2max = sakoe_chiba_band(r,l)
+  @test all(i2min .== [1,2,3])
+  @test all(i2max .== [1,2,3])
+  r=1
+  l=3
+  i2min,i2max = sakoe_chiba_band(r,l)
+  @test all(i2min .== [1,1,2])
+  @test all(i2max .== [2,3,3])
+  r=3
+  l=3
+  i2min,i2max = sakoe_chiba_band(r,l)
+  @test all(i2min .== [1,1,1])
+  @test all(i2max .== [3,3,3])
+end
+
+@testset "calc SSE" begin
+  c = [1 2 3;4 5 6]
+  a = [1,1,1]
+  sse = calc_SSE(c,a)
+  @test sse ≈ 2 + 2
+end
+
+# resize medoids
 
 @testset "z_normalize" begin
   #srand(1991)
