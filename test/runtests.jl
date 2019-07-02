@@ -3,6 +3,7 @@ using Test
 using JLD2
 using Random
 using Cbc
+using StatsBase
 
 include("test_utils.jl")
 
