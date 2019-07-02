@@ -136,9 +136,9 @@ struct SimpleExtremeValueDescr
                                     consecutive_periods::Int)
        # only allow certain entries
        if !(extremum in ["min","max"])
-         @error("extremum - "*extremum*" - not defined")
+         error("extremum - "*extremum*" - not defined")
        elseif !(peak_def in ["absolute","integral"])
-         @error("peak_def - "*peak_def*" - not defined")
+         error("peak_def - "*peak_def*" - not defined")
        end
        new(data_type,extremum,peak_def,consecutive_periods)
    end
@@ -166,99 +166,6 @@ end
 #### Constructors for data structures###
 
 """
-    FullInputData(region::String,
-                        N::Int;
-                        el_price::Array=[],
-                        el_demand::Array=[],
-                        solar::Array=[],
-                        wind::Array=[]
-                        )
-Constructor for FullInputData with optional data input
-"""
-function FullInputData(region::String,
-                      N::Int;
-                      el_price::Array=[],
-                      el_demand::Array=[],
-                      solar::Array=[],
-                      wind::Array=[]
-                      )
- dt = Dict{String,Array}()
- !isempty(el_price) && (dt["el_price"]=el_price)
- !isempty(el_demand) &&  (dt["el_demand"]=el_demand)
- !isempty(wind) && (dt["wind"]=wind)
- !isempty(solar) && (dt["solar"]=solar)
- # TODO: Check dimensionality of N and supplied input data streams Nx1
- isempty(dt) && @error("Need to provide at least one input data stream")
- FullInputData(region,N,dt)
-end
-
-"""
-  ClustData(region::String,
-                         years::Array{Int,1},
-                         K::Int,
-                         T::Int;
-                         el_price::Array=[],
-                         el_demand::Array=[],
-                         solar::Array=[],
-                         wind::Array=[],
-                         weights::Array{Float64}=ones(K),
-                         mean::Dict{String,Array}=Dict{String,Array}(),
-                         sdv::Dict{String,Array}=Dict{String,Array}(),
-                         delta_t::Array{Float64,2}=ones(T,K),
-                         k_ids::Array{Int,1}=collect(1:K)
-                         )
-constructor 1 for ClustData: provide data individually
-"""
-function ClustData(region::String,
-                         years::Array{Int,1},
-                         K::Int,
-                         T::Int;
-                         el_price::Array=[],
-                         el_demand::Array=[],
-                         solar::Array=[],
-                         wind::Array=[],
-                         weights::Array{Float64}=ones(K),
-                         mean::Dict{String,Array}=Dict{String,Array}(),
-                         sdv::Dict{String,Array}=Dict{String,Array}(),
-                         delta_t::Array{Float64,2}=ones(T,K),
-                         k_ids::Array{Int,1}=collect(1:K)
-                         )
-   dt = Dict{String,Array}()
-   mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
-   if !isempty(el_price)
-     dt["el_price"]=el_price
-     if !mean_sdv_provided
-       mean["el_price"]=zeros(T)
-       sdv["el_price"]=ones(T)
-     end
-   end
-   if !isempty(el_demand)
-     dt["el_demand"]=el_demand
-     if !mean_sdv_provided
-       mean["el_demand"]=zeros(T)
-       sdv["el_demand"]=ones(T)
-     end
-   end
-   if !isempty(wind)
-     dt["wind"]=wind
-     if !mean_sdv_provided
-       mean["wind"]=zeros(T)
-       sdv["wind"]=ones(T)
-     end
-   end
-   if !isempty(solar)
-     dt["solar"]=solar
-     if !mean_sdv_provided
-       mean["solar"]=zeros(T)
-       sdv["solar"]=ones(T)
-     end
-   end
-   isempty(dt) && @error("Need to provide at least one input data stream")
-   # TODO: Check dimensionality of K T and supplied input data streams KxT
-   ClustData(region,years,K,T,dt,weights,mean,sdv,delta_t,k_ids)
-end
-
-"""
     ClustData(region::String,
                       years::Array{Int,1},
                       K::Int,
@@ -270,7 +177,7 @@ end
                       mean::Dict{String,Array}=Dict{String,Array}(),
                       sdv::Dict{String,Array}=Dict{String,Array}()
                       )
-constructor 2 for ClustData: provide data as dict
+constructor 1 for ClustData: provide data as dict
 """
 function ClustData(region::String,
                        years::Array{Int,1},
@@ -297,7 +204,7 @@ end
 
 """
     ClustData(data::ClustDataMerged)
-constructor 3: Convert ClustDataMerged to ClustData
+constructor 2: Convert ClustDataMerged to ClustData
 """
 function ClustData(data::ClustDataMerged)
  data_dict=Dict{String,Array}()
@@ -311,7 +218,7 @@ end
 
 """
     ClustData(data::FullInputData,K,T)
-constructor 4: Convert FullInputData to ClustData
+constructor 3: Convert FullInputData to ClustData
 """
 function ClustData(data::FullInputData,
                                  K::Int,
