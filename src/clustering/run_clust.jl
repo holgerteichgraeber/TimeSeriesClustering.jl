@@ -375,7 +375,7 @@ function run_clust_kmedoids_exact_medoid(
     kmexact_optimizer=0
     )
 
-    (typeof(kmexact_optimizer)==Int) && @error("Please provide a kmexact_optimizer (Gurobi Environment). See test file for example")
+    (typeof(kmexact_optimizer)==Int) && error("Please provide a kmexact_optimizer (Gurobi Environment). See test file for example")
 
     # TODO: optional in future: pass distance metric as kwargs
     dist = SqEuclidean()

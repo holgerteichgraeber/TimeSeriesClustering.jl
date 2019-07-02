@@ -49,7 +49,7 @@ function load_timeseries_data(data_path::String;
       data_name=split(full_data_name,".")[1]
       K=add_timeseries_data!(dt, data_name, dirname(data_path); K=K, T=T, years=years)
   else
-      throw(@error("The path $data_path is neither recognized as a directory nor as a file"))
+      error("The path $data_path is neither recognized as a directory nor as a file")
   end
   # Store the data
   ts_input_data =  ClustData(FullInputData(region, years, num, dt),K,T)
@@ -94,7 +94,7 @@ function load_timeseries_data(existing_data::Symbol;
   elseif existing_data == :CEP_GER18
       data_path=joinpath(data_path,"TS_GER_18")
   else
-      @error("The symbol - $existing_data - does not exist")
+      error("The symbol - $existing_data - does not exist")
   end
   return load_timeseries_data(data_path;region=region,T=T,years=years,att=att)
 end
@@ -135,7 +135,7 @@ function add_timeseries_data!(dt::Dict{String,Array},
         if !(column[1] in [time_name, year_name])
             K_calc=Int(floor(length(column[2])/T))
             if K_calc!=K && K!=0
-                @error("The time_series $(column[1]) has K=$K_calc != K=$K of the previous")
+                error("The time_series $(column[1]) has K=$K_calc != K=$K of the previous")
             else
                 K=K_calc
             end
@@ -158,7 +158,7 @@ function find_column_name(df::DataFrame, name_itr::Array{Symbol,1}; error::Bool=
         end
     end
     if error
-        col_name!=:none || throw(@error "No $(name_itr) in $(repr(df)).")
+        col_name!=:none || error("No $(name_itr) in $(repr(df)).")
     else
         col_name!=:none || @warn "No $(name_itr) in $(repr(df))."
     end
@@ -174,8 +174,8 @@ If the number of periods of the `ts_weather` data isn't a multiple of the `ts`-t
 """
 function combine_timeseries_weather_data(ts::ClustData,
                                         ts_weather::ClustData)
-    ts.T==ts_weather.T || throw(@error "The number of timesteps per period is not the same: `ts.T=$(ts.T)≢$(ts_weather.T)=ts_weather.T`")
-    ts.K<=ts_weather.K || throw(@error "The number of timesteps in the `ts`-timeseries isn't shorter or equal to the ones in the `ts_weather`-timeseries.")
+    ts.T==ts_weather.T || error("The number of timesteps per period is not the same: `ts.T=$(ts.T)≢$(ts_weather.T)=ts_weather.T`")
+    ts.K<=ts_weather.K || error("The number of timesteps in the `ts`-timeseries isn't shorter or equal to the ones in the `ts_weather`-timeseries.")
     ts_weather.K%ts.K==0 || @warn "The number of periods of the `ts_weather` data isn't a multiple of the other `ts`-timeseries: periods 1 to $(ts_weather.K%ts.K) are attached to the end of the new combined timeseries."
     ts_data=deepcopy(ts_weather.data)
     ts_mean=deepcopy(ts_weather.mean)

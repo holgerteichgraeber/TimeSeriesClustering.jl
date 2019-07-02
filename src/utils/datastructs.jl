@@ -190,7 +190,7 @@ function ClustData(region::String,
                        mean::Dict{String,Array}=Dict{String,Array}(),
                        sdv::Dict{String,Array}=Dict{String,Array}()
                        )
- isempty(data) && @error("Need to provide at least one input data stream")
+ isempty(data) && error("Need to provide at least one input data stream")
  mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
  if !mean_sdv_provided
    for (k,v) in data
@@ -282,7 +282,7 @@ function ClustDataMerged(data::ClustData)
    push!(data_type,k)
  end
  if maximum(data.delta_t)!=1
-   throw(@error "You cannot recluster data with different Δt")
+   error("You cannot recluster data with different Δt")
  end
  ClustDataMerged(data.region,data.years,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv,data.delta_t,data.k_ids)
 end
