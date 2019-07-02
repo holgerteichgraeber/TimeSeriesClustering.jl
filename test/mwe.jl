@@ -1,6 +1,14 @@
 using ClustForOpt
 using Test
 using Random
+using JLD2
+
+
+@load normpath(joinpath(dirname(@__FILE__),"reference_generation","run_clust.jld2")) reference_results
+data = "CEP_GER1"
+ts_input_data = load_timeseries_data(Symbol(data))
+
+include("test_utils.jl")
 
 
 @testset "ClustResultAll" begin
