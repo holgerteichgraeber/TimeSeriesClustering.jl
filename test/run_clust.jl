@@ -22,8 +22,7 @@ Random.seed!(1111)
     ["hierarchical","medoid",1]]
     @testset "method=$method + representation=$repr" for (method,repr,n_init) in mr begin
         # somehow the following passes if I use julia runtest.jl, but does not pass if
-        # I use ] test ClustForOpt. I assume it has something to do with tolerances, even though it should be the same.
-        # possibly different environments that trigger differences in random number generators?
+        # I use ] test ClustForOpt.
         #@testset "default" begin
         #    Random.seed!(1111)
         #        ref = reference_results["$data-$method-$repr-default"]
@@ -58,12 +57,14 @@ Random.seed!(1111)
   end
 end
 
+# Use the same data for all subsequent tests
 data = "CEP_GER1"
-method = "kmedoids_exact"
-repr = "medoid"
+ts_input_data = load_timeseries_data(Symbol(data))
+
 using Cbc
 optimizer = Cbc.Optimizer
-ts_input_data = load_timeseries_data(Symbol(data))
+method = "kmedoids_exact"
+repr = "medoid"
 # kmedoids exact: only run for small system because cbc does not solve for large system
 # no seed needed because kmedoids exact solves globally optimal
 @testset "$method-$repr-$data" begin
@@ -84,11 +85,39 @@ ts_input_data = load_timeseries_data(Symbol(data))
     end
 end
 
+@testset "MultiClustAtOnce" begin
+    method = "hierarchical"
+    repr = "centroid"
+    Random.seed!(1111)
+    ref_array = reference_results["$data-$method-$repr-MultiClust"]
+    t_array = run_clust(ts_input_data,[1,5,ts_input_data.K];method=method,representation=repr,n_init=1)
+    for i = 1:length(t_array)
+        test_ClustResult(t_array[i],ref_array[i])
+    end
+end
 
-# run_clust
- # method + representation (exact with Cbc on a mini problem)
+@testset "ClustResultAll" begin
+    method = "hierarchical"
+    repr = "medoid"
+    Random.seed!(1111)
+    ref_all = reference_results["$data-$method-$repr-ClustResultAll"]
+    t_all = run_clust(ts_input_data;method=method,representation=repr,n_clust=5,n_init=10,get_all_clust_results=true)
+    test_ClustResult(t_all,ref_all)
+    for i = 1:length(t_all.centers_all)
+        @test all(t_all.centers_all[i] .≈ ref_all.centers_all[i])
+        @test all(t_all.weights_all[i] .≈ ref_all.weights_all[i])
+        @test all(t_all.clustids_all[i] .≈ ref_all.clustids_all[i])
+        @test all(t_all.cost_all[i] .≈ ref_all.cost_all[i])
+        @test all(t_all.iter_all[i] .≈ ref_all.iter_all[i])
+    end
+end
 
-# make sure to include edge cases: n=1, n=K ...
-
-# make a new file for extreme values
-# make a test file for every file in src
+@testset "AttributeWeighting" begin
+    method = "hierarchical"
+    repr = "centroid"
+    Random.seed!(1111)
+    attribute_weights=Dict("solar"=>1.0, "wind"=>2.0, "el_demand"=>3.0)
+    ref = reference_results["$data-$method-$repr-AttributeWeighting"]
+    t = run_clust(ts_input_data;method=method,representation=repr,n_clust=5,n_init=1,attribute_weights=attribute_weights)
+    test_ClustResult(t,ref)
+end

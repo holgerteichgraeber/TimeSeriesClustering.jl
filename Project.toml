@@ -21,12 +21,12 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 julia = "^1.0"
 
 [extras]
-Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Cbc = "9961bab8-2fa3-5c5a-9d89-47fab24efd76"
-Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Pkg","Test","StatsBase","Cbc","Random","JLD2"]
+test = ["Pkg", "Test", "StatsBase", "Cbc", "Random", "JLD2"]
