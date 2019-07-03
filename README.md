@@ -31,11 +31,9 @@ Pkg.add("ClustForOpt")
 ```
 
 ## Documentation
-Please refer to the documentation for details on how to use ClustForOpt:
-[Documentation (Stable)](https://holgerteichgraeber.github.io/ClustForOpt.jl/stable)
+[Documentation (Stable)](https://holgerteichgraeber.github.io/ClustForOpt.jl/stable): Please refer to this documentation for details on how to use ClustForOpt the current version of ClustForOpt. This is the documentation of the default version of the package.
 
-The documentation for the development version of ClustForOpt can be found here:
-[Documentation (Development)](https://holgerteichgraeber.github.io/ClustForOpt.jl/dev)
+[Documentation (Development)](https://holgerteichgraeber.github.io/ClustForOpt.jl/dev): If you like to try the development version of ClustForOpt, please refer to this documentation.
 
 **See [NEWS](NEWS.md) for significant breaking changes when updating from one version of ClustForOpt to another.**
 
