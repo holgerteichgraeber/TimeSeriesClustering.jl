@@ -6,9 +6,9 @@ makedocs(sitename="ClustForOpt.jl",
     authors = "Holger Teichgraeber, and Elias Kuepper",
     pages = [
         "Introduction" => "index.md",
-        "Workflow" => "workflow.md",
+        "Quick Start Guide" => "quickstart.md",
         "Load Data" => "load_data.md",
-        "Clustering" => "clust.md",
+        "Representative Periods" => "repr_per.md",
         "Optimization" => "opt.md"
         ],
     format = Documenter.HTML(assets=["assets/clust_for_opt_text.svg"])

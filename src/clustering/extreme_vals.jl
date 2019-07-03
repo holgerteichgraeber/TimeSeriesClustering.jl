@@ -2,7 +2,11 @@
     simple_extr_val_sel(data::ClustData,
                         extreme_value_descr_ar::Array{SimpleExtremeValueDescr,1};
                         rep_mod_method::String="feasibility")
+
 Selects simple extreme values and returns modified data, extreme values, and the corresponding indices.
+
+Inputs options for `rep_mod_method`:
+- `rep_mod_method`::String : `feasibility`,`append`
 """
 function simple_extr_val_sel(data::ClustData,
                              extr_value_descr_ar::Array{SimpleExtremeValueDescr,1};
@@ -23,7 +27,7 @@ end
 
 """
     simple_extr_val_sel(data::ClustData,
-                        extreme_value_descr_ar::SimpleExtremeValueDescr;
+                        extreme_value_descr::SimpleExtremeValueDescr;
                         rep_mod_method::String="feasibility")
 Wrapper function for only one simple extreme value.
 Selects simple extreme values and returns modified data, extreme values, and the corresponding indices.
@@ -36,8 +40,10 @@ function simple_extr_val_sel(data::ClustData,
 end
 
 """
-    simple_extr_val_ident(data::ClustData,extreme_value_descr::Array{SimpleExtremeValueDescr,1})
-identifies multiple simple extreme values from the data and returns array of column indices of extreme value within data
+    simple_extr_val_ident(data::ClustData,
+                               extreme_value_descr_ar::Array{SimpleExtremeValueDescr,1})
+
+Identifies multiple simple extreme values from the data and returns array of column indices of extreme value within data
 - data_type: any attribute from the attributes contained within *data*
 - extremum: "min" or "max"
 - peak_def: "absolute" or "integral"
@@ -53,7 +59,9 @@ function simple_extr_val_ident(data::ClustData,
 end
 
 """
-    simple_extr_val_ident(data::ClustData,extreme_value_descr::SimpleExtremeValueDescr)
+    simple_extr_val_ident(data::ClustData,
+                               extreme_value_descr::SimpleExtremeValueDescr)
+
 Wrapper function for only one simple extreme value:
 identifies a single simple extreme value from the data and returns column index of extreme value
 - `data_type`: any attribute from the attributes contained within *data*
@@ -67,8 +75,13 @@ function simple_extr_val_ident(data::ClustData,
 end
 
 """
-    simple_extr_val_ident(data::Array{Float64};extremum="max",peak_def="absolute")
-identifies a single simple extreme period from the data and returns column index of extreme period
+    simple_extr_val_ident(clust_data::ClustData,
+                               data_type::String;
+                               extremum::String="max",
+                               peak_def::String="absolute",
+                               consecutive_periods::Int=1)
+
+Identifies a single simple extreme period from the data and returns column index of extreme period
 - `data_type`: any attribute from the attributes contained within *data*
 - `extremum`: "min" or "max"
 - `peak_def`: "absolute" or "integral"
@@ -106,13 +119,16 @@ function simple_extr_val_ident(clust_data::ClustData,
 end
 
 """
-    input_data_modification(data::ClustData,extr_val_idcs::Array{Int,1})
-returns ClustData structs with extreme vals and with remaining input data [data-extreme_vals].
+    input_data_modification(data::ClustData,
+                                 extr_val_idcs::Array{Int,1})
+
+Returns ClustData structs with extreme vals and with remaining input data [data-extreme_vals].
 Gives extreme vals the weight that they had in data.
 This function is needed for the append method for representation modification
 ! the k-ids have to be monoton increasing - don't modify clustered data !
 """
-function input_data_modification(data::ClustData,extr_val_idcs::Array{Int,1})
+function input_data_modification(data::ClustData,
+                                 extr_val_idcs::Array{Int,1})
   unique_extr_val_idcs = unique(extr_val_idcs)
   K_dn = data.K- length(unique_extr_val_idcs)
   data_dn=Dict{String,Array}()
@@ -145,6 +161,7 @@ end
 
 """
     input_data_modification(data::ClustData,extr_val_idcs::Int)
+
 wrapper function for a single extreme val.
 returns ClustData structs with extreme vals and with remaining input data [data-extreme_vals].
 Gives extreme vals the weight that they had in data.
@@ -154,7 +171,10 @@ function input_data_modification(data::ClustData,extr_val_idcs::Int)
 end
 
 """
-   extreme_val_output(data::ClustData,extr_val_idcs::Array{Int,1};rep_mod_method="feasibility")
+    extreme_val_output(data::ClustData,
+                            extr_val_idcs::Array{Int,1};
+                            rep_mod_method="feasibility")
+
 Takes indices as input and returns ClustData struct that contains the extreme vals from within data.
 """
 function extreme_val_output(data::ClustData,
@@ -192,6 +212,7 @@ end
 
 """
    extreme_val_output(data::ClustData,extr_val_idcs::Array{Int,1};rep_mod_method="feasibility")
+
 wrapper function for a single extreme val.
 Takes indices as input and returns ClustData struct that contains the extreme vals from within data.
 """
@@ -203,6 +224,7 @@ end
 
 """
     representation_modification(extr_vals::ClustData,clust_data::ClustData)
+
 Merges the clustered data and extreme vals into one ClustData struct. Weights are chosen according to the rep_mod_method
 """
 function representation_modification(extr_vals::ClustData,
@@ -224,6 +246,7 @@ end
 
 """
     representation_modification(extr_vals::ClustData,clust_data::ClustData)
+
 Merges the clustered data and extreme vals into one ClustData struct. Weights are chosen according to the rep_mod_method
 """
 function representation_modification(extr_vals_array::Array{ClustData,1},
@@ -237,6 +260,7 @@ end
 
 """
     representation_modification(full_data::ClustData,clust_data::ClustData,extr_val_idcs::Array{Int,1};rep_mod_method::String="feasibility")
+
 Merges the clustered data and extreme vals into one ClustData struct. Weights are chosen according to the rep_mod_method
 """
 function representation_modification(full_data::ClustData,
@@ -249,6 +273,7 @@ end
 
 """
     representation_modification(full_data::ClustData,clust_data::ClustData,extr_val_idcs::Int;rep_mod_method::String="feasibility")
+
 wrapper function for a single extreme val.
 Merges the clustered data and extreme vals into one ClustData struct. Weights are chosen according to the rep_mod_method
 """
