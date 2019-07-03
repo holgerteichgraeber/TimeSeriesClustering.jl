@@ -8,9 +8,12 @@ tags:
   - time series
 authors:
   - name: Holger Teichgraeber
-    orcid:
+    orcid: 0000-0002-4061-2226
     affiliation: 1
   - name: Lucas Elias Kuepper
+    orcid:
+    affiliation: 1
+  - name: Adam R. Brandt
     orcid:
     affiliation: 1
 affiliations:
@@ -37,7 +40,7 @@ To the best of our knowledge, time-series aggregation has been included in two o
 @TSAM provides an implementation of several time-series aggregation methods in python.
 Calliope [@Pfenninger:2018] is a capacity expansion modeling software in python that includes time-series aggregation for the use case of generation and transmission capacity expansion modeling.
 
-ClustForOpt is the first package to provide time-series aggregation in julia. This is advantageous because it can be used in conjunction with the JuMP package in julia, which provides an excellent modeling language for optimization problems. Furthermore, ClustForOpt includes both clustering and extreme value selection and integrates them into the same output type. This is important in order to retain the characteristics of the time-series that are relevant to many optimization problems.
+ClustForOpt is the first package to provide time-series aggregation in julia. This is advantageous because it can be used in conjunction with the JuMP [@Dunning:2017] package in julia, which provides an excellent modeling language for optimization problems. Furthermore, ClustForOpt includes both clustering and extreme value selection and integrates them into the same output type. This is important in order to retain the characteristics of the time-series that are relevant to many optimization problems.
 
 At this point, we would like to point to the key features that ``ClustForOpt`` provides. Implementation details can be found in the software's documentation.
 
