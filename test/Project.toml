@@ -1,5 +1,7 @@
 [deps]
-Clp = "e2554f3b-3117-50c0-817c-e040a3ddf72d"
+Cbc = "9961bab8-2fa3-5c5a-9d89-47fab24efd76"
+JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"
+Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-CapacityExpansion = "c5f7ca31-19be-526c-ac1d-e0dcac83edb8"

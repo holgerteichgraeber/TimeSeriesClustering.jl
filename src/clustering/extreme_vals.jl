@@ -20,7 +20,7 @@ function simple_extr_val_sel(data::ClustData,
   elseif rep_mod_method=="append"
     data_mod = input_data_modification(data,idcs)
   else
-    @error("rep_mod_method - "*rep_mod_method*" - does not exist")
+    error("rep_mod_method - "*rep_mod_method*" - does not exist")
   end
   return data_mod,extr_vals,idcs
 end
@@ -104,7 +104,7 @@ function simple_extr_val_ident(clust_data::ClustData,
       data_eval[1,k] = sum(data[:,k:(k+delta_period)])
     end
   else
-    @error("peak_def - "*peak_def*" and consecutive_periods $consecutive_periods - not defined")
+    error("peak_def - "*peak_def*" and consecutive_periods $consecutive_periods - not defined")
   end
   # find minimum or maximum index. Second argument returns cartesian indices, second argument of that is the column (period) index
   if extremum=="max"
@@ -112,7 +112,7 @@ function simple_extr_val_ident(clust_data::ClustData,
   elseif extremum=="min"
     idx_k = findmin(data_eval)[2][2]
   else
-    @error("extremum - "*extremum*" - not defined")
+    error("extremum - "*extremum*" - not defined")
   end
   idx=collect(idx_k:(idx_k+delta_period))
   return idx
@@ -143,8 +143,8 @@ function input_data_modification(data::ClustData,
   k_ids_dn=deepcopy(data.k_ids)
   #check for uniqueness and right sorting (however just those one representing)
   k_ids_check=k_ids_dn[findall(k_ids_dn.!=0)]
-  allunique(k_ids_check) || @error "the provided clust_data.k_ids are not unique - The clust_data is probably the result of a clustering already."
-  sort(k_ids_check)==k_ids_check || @error "the provided clust_data.k_ids are not monoton increasing - The clust_data is probably the result of a clustering already."
+  allunique(k_ids_check) || error("the provided clust_data.k_ids are not unique - The clust_data is probably the result of a clustering already.")
+  sort(k_ids_check)==k_ids_check || error("the provided clust_data.k_ids are not monoton increasing - The clust_data is probably the result of a clustering already.")
   #get all k-ids that are represented within this clust-data
   k_ids_dn_data=k_ids_dn[findall(data.k_ids.!=0)]
   for k in sort(extr_val_idcs)
@@ -203,7 +203,7 @@ function extreme_val_output(data::ClustData,
     # assign it to the full original time-series
     k_ids_ed[index_k_ids_data]=k_ids_ed_data
   else
-    @error("rep_mod_method - "*rep_mod_method*" - does not exist")
+    error("rep_mod_method - "*rep_mod_method*" - does not exist")
   end
   delta_t_ed=data.delta_t[:,unique_extr_val_idcs]
   extr_vals = ClustData(data.region,data.years,K_ed,data.T,data_ed,weights_ed,k_ids_ed;delta_t=delta_t_ed,mean=data.mean,sdv=data.sdv)
