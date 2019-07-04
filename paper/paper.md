@@ -11,7 +11,7 @@ authors:
     orcid: 0000-0002-4061-2226
     affiliation: 1
   - name: Lucas Elias Kuepper
-    orcid:
+    orcid: 0000-0002-1992-310X
     affiliation: 1
   - name: Adam R. Brandt
     orcid: 0000-0002-2528-1473
