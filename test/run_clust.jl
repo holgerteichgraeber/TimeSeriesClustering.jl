@@ -11,8 +11,8 @@ using Random
 @load normpath(joinpath(dirname(@__FILE__),"reference_generation","run_clust.jld2")) reference_results
 
 Random.seed!(1111)
-@testset "run_clust $data" for data in ["CEP_GER1","CEP_GER18"] begin
-    ts_input_data = load_timeseries_data(Symbol(data))
+@testset "run_clust $data" for data in [:CEP_GER1,:CEP_GER18] begin
+    ts_input_data = load_timeseries_data(data)
     #mr: method, representation, n_init
     mr = [["kmeans","centroid",1000],
     ["kmeans","medoid",1000],
@@ -58,8 +58,8 @@ Random.seed!(1111)
 end
 
 # Use the same data for all subsequent tests
-data = "CEP_GER1"
-ts_input_data = load_timeseries_data(Symbol(data))
+data = :CEP_GER1
+ts_input_data = load_timeseries_data(data)
 
 using Cbc
 optimizer = Cbc.Optimizer
