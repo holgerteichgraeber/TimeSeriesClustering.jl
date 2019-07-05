@@ -1,7 +1,7 @@
 Quick Start Guide
 =================
 
-This quick start guide introduces the main concepts of using ClustForOpt. For more detail on the different functionalities that ClustForOpt provides, please refer to the subsequent chapters of the documentation or the examples in the [examples](https://github.com/holgerteichgraeber/ClustForOpt.jl/tree/master/examples) folder.
+This quick start guide introduces the main concepts of using ClustForOpt. For more detail on the different functionalities that ClustForOpt provides, please refer to the subsequent chapters of the documentation or the examples in the [examples](https://github.com/holgerteichgraeber/ClustForOpt.jl/tree/master/examples) folder, specifically [workflow_introduction.jl](https://github.com/holgerteichgraeber/ClustForOpt.jl/blob/master/examples/workflow_introduction.jl).
 
 Generally, the workflow consists of three steps:
 - load data

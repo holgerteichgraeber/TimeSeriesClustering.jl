@@ -4,6 +4,7 @@
 [![](https://img.shields.io/badge/docs-dev-blue.svg)](https://holgerteichgraeber.github.io/ClustForOpt.jl/dev)
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE)
 [![Build Status](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl.svg?token=HRFemjSxM1NBCsbHGNDG&branch=master)](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl)
+[![codecov](https://codecov.io/gh/holgerteichgraeber/ClustForOpt.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/holgerteichgraeber/ClustForOpt.jl)
 
 
 [ClustForOpt](https://github.com/holgerteichgraeber/ClustForOpt.jl) is a [julia](https://www.juliaopt.com) implementation of clustering methods and extreme value selection methods for finding representative periods for energy systems optimization problems.
@@ -53,7 +54,7 @@ If you find ClustForOpt useful in your work, we kindly request that you cite the
 
 ## Quick Start Guide
 
-This quick start guide introduces the main concepts of using ClustForOpt. For more detail on the different functionalities that ClustForOpt provides, please refer to the subsequent chapters of the documentation or the examples in the [examples](https://github.com/holgerteichgraeber/ClustForOpt.jl/tree/master/examples) folder.
+This quick start guide introduces the main concepts of using ClustForOpt. For more detail on the different functionalities that ClustForOpt provides, please refer to the subsequent chapters of the documentation or the examples in the [examples](https://github.com/holgerteichgraeber/ClustForOpt.jl/tree/master/examples) folder, specifically [workflow_introduction.jl](https://github.com/holgerteichgraeber/ClustForOpt.jl/blob/master/examples/workflow_introduction.jl).
 
 Generally, the workflow consists of three steps:
 - load data

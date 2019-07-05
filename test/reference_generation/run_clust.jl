@@ -6,8 +6,8 @@ using Random
 reference_results = Dict{String,Any}()
 
 Random.seed!(1111)
-for data in ["CEP_GER1","CEP_GER18"]
-    ts_input_data = load_timeseries_data(Symbol(data))
+for data in [:CEP_GER1,:CEP_GER18]
+    ts_input_data = load_timeseries_data(data)
     #mr: method, representation, n_init
     mr = [["kmeans","centroid",1000],
     ["kmeans","medoid",1000],
@@ -47,8 +47,8 @@ for data in ["CEP_GER1","CEP_GER18"]
     end
 end
 
-data = "CEP_GER1"
-ts_input_data = load_timeseries_data(Symbol(data))
+data = :CEP_GER1
+ts_input_data = load_timeseries_data(data)
 method = "kmedoids_exact"
 repr = "medoid"
 using Cbc
