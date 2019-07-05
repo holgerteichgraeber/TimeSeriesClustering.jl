@@ -44,7 +44,7 @@ Calliope [@Pfenninger:2018] is a capacity expansion modeling software in python 
 
 At this point, we would like to point to the key features that ``ClustForOpt`` provides. Implementation details can be found in the software's documentation.
 
-- *The type system*: The data type (called struct in julia) ``ClustData`` stores all time-series data in a common format. Besides the data itself, it automatically processes and stores information such as number of periods, the number of time steps per period, which is called the period lenght, and the chronology of the periods, which are relevant to formulating the sets of the optimization problem later. The data type ``ClustResult`` additionally stores information relevant for evaluating clustering performance. These data types make ``ClustForOpt`` to be easily integrated with any optimization problem and analysis.
+- *The type system*: The data type (called struct in julia) ``ClustData`` stores all time-series data in a common format. Besides the data itself, it automatically processes and stores information such as number of periods, the number of time steps per period, which is called the period length, and the chronology of the periods, which are relevant to formulating the sets of the optimization problem later. The data type ``ClustResult`` additionally stores information relevant for evaluating clustering performance. These data types make ``ClustForOpt`` to be easily integrated with any optimization problem and analysis.
 
 - *The aggregation methods*: The most commonly used clustering methods and extreme value selection methods are implemented with a common interface, allowing for simple comparison of these methods on a given data set and optimization problem.
 
