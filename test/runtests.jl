@@ -1,12 +1,14 @@
-using Test
 using ClustForOpt
-using Clp
+using Test
+using JLD2
+using Random
+using Cbc
+using StatsBase
 
-tests = ["cep"]
+include("test_utils.jl")
 
-println("Runing tests:")
-for t in tests
-    fp = "$(t).jl"
-    println("* $fp ...")
-    include(fp)
-end
+include("run_clust.jl")
+include("extreme_vals.jl")
+include("datastructs.jl")
+include("load_data.jl")
+include("utils.jl")

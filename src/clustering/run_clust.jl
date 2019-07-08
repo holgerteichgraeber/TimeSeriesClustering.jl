@@ -1,10 +1,47 @@
 
 """
-    run_clust(data::ClustData;norm_op::String="zscore",norm_scope::String="full",method::String="kmeans",representation::String="centroid",n_clust::Int=5,n_init::Int=100,iterations::Int=300,save::String="",attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),get_all_clust_results::Bool=false,kwargs...)
-norm_op: "zscore", "01"(not implemented yet)
-norm_scope: "full","sequence","hourly"
-method: "kmeans","kmedoids","kmedoids_exact","hierarchical"
-representation: "centroid","medoid"
+    run_clust(data::ClustData;
+      norm_op::String="zscore",
+      norm_scope::String="full",
+      method::String="kmeans",
+      representation::String="centroid",
+      n_clust::Int=5,
+      n_seg::Int=data.T,
+      n_init::Int=1000,
+      iterations::Int=300,
+      attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
+      save::String="",#QUESTION dead?
+      get_all_clust_results::Bool=false,
+      kwargs...)
+
+Take input data `data` of dimensionality `N x T` and cluster into data of dimensionality `K x T`.
+
+
+The following combinations of `method` and `representation` are supported by `run_clust`:
+
+Name | method | representation | comment
+:--- | :-------------- | :-------------- | :----
+k-means clustering | `<kmeans>` | `<centroid>` | -
+k-means clustering with medoid representation | `<kmeans>` | `<medoid>` | -
+k-medoids clustering (partitional) | `<kmedoids>` | `<medoid>` | -
+k-medoids clustering (exact) | `<kmedoids_exact>` | `<medoid>` | requires Gurobi and the additional keyword argument `kmexact_optimizer`. See [examples] folder for example use. Set `n_init=1`
+hierarchical clustering with centroid representation | `<hierarchical>` | `<centroid>` | set `n_init=1`
+hierarchical clustering with medoid representation | `<hierarchical>` | `<medoid>` | set `n_init=1`
+
+The other optional inputs are:
+
+Keyword | options | comment
+:------ | :------ | :-----
+`norm_op` | `zscore` | Normalization operation. `0-1` not yet implemented
+`norm_scope` | `full`,`sequence`,`hourly` | Normalization scope. The default (`full`) is used in most of the current literature.
+`n_clust` | e.g. `5` | Number of clusters that you want to obtain
+`n_seg` | e.g. `10` | Number of segments per period. Not yet implemented, keep as default value.
+`n_init` | e.g. `1000` | Number of initializations of locally converging clustering algorithms. `10000` often yields very stable results.
+`iterations` | e.g. `300` | Internal parameter of the partitional clustering algorithms.
+`attribute_weights` | e.g. Dict("wind-germany"=>3,"solar-germany"=>1,"el_demand-germany"=>5) | weights the respective attributes when clustering. In this example, demand and wind are deemed more important than solar.
+`save` | `false` | Save clustered data as csv or jld2 file. Not yet implemented.
+`get_all_clust_results` | `true`,`false` | `false` gives a `ClustData` struct with only the best locally converged solution in terms of clustering measure. `true` gives a `ClustDataAll` struct as output, with all locally converged solutions.
+`kwargs` | e.g. `kmexact_optimizer` | optional keyword arguments that are required for specific methods, for example k-medoids exact.
 """
 function run_clust(data::ClustData;
       norm_op::String="zscore",
@@ -13,7 +50,7 @@ function run_clust(data::ClustData;
       representation::String="centroid",
       n_clust::Int=5,
       n_seg::Int=data.T,
-      n_init::Int=100,
+      n_init::Int=1000,
       iterations::Int=300,
       attribute_weights::Dict{String,Float64}=Dict{String,Float64}(),
       save::String="",#QUESTION dead?
@@ -121,12 +158,20 @@ function run_clust_method(data::ClustData;
  end
 
 """
-    run_clust(data::ClustData,n_clust_ar::Array{Int,1};norm_op::String="zscore",norm_scope::String="full",method::String="kmeans",representation::String="centroid",n_init::Int=100,iterations::Int=300,save::String="",kwargs...)
-This function is a wrapper function around run_clust(). It runs multiple number of clusters k and returns an array of results.
-norm_op: "zscore", "01"(not implemented yet)
-norm_scope: "full","sequence","hourly"
-method: "kmeans","kmedoids","kmedoids_exact","hierarchical"
-representation: "centroid","medoid"
+    run_clust(
+      data::ClustData,
+      n_clust_ar::Array{Int,1};
+      norm_op::String="zscore",
+      norm_scope::String="full",
+      method::String="kmeans",
+      representation::String="centroid",
+      n_init::Int=100,
+      iterations::Int=300,
+      save::String="",
+      kwargs...)
+
+Run multiple number of clusters k and return an array of results.
+This function is a wrapper function around run_clust().
 """
 function run_clust(
       data::ClustData,
@@ -267,7 +312,7 @@ function run_clust_kmeans_medoid(
     # kmeans() in Clustering.jl is implemented for k>=2
     elseif n_clust==data_norm.K
         clustids = collect(1:data_norm.K)
-        centers = undo_z_normalize(data_norm,data_norm.mean,data_norm.sdv;idx=clustids) # need to provide idx in case that sequence-based normalization is used
+        centers = undo_z_normalize(data_norm.data,data_norm.mean,data_norm.sdv;idx=clustids) # need to provide idx in case that sequence-based normalization is used
         cost = 0.0
         iter = 1
     else
@@ -327,14 +372,14 @@ function run_clust_kmedoids_exact_medoid(
     data_norm::ClustDataMerged,
     n_clust::Int,
     iterations::Int;
-    gurobi_opt=0
+    kmexact_optimizer=0
     )
 
-    (typeof(gurobi_opt)==Int) && @error("Please provide a gurobi_opt (Gurobi Environment). See test file for example")
+    (typeof(kmexact_optimizer)==Int) && error("Please provide a kmexact_optimizer (Gurobi Environment). See test file for example")
 
     # TODO: optional in future: pass distance metric as kwargs
     dist = SqEuclidean()
-    results = kmedoids_exact(data_norm.data,n_clust,gurobi_opt;_dist=dist)#;distance_type_ar[dist])
+    results = kmedoids_exact(data_norm.data,n_clust,kmexact_optimizer;_dist=dist)#;distance_type_ar[dist])
     clustids = results.assignments
     centers_norm = results.medoids
     centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
@@ -407,7 +452,7 @@ function run_clust_hierarchical_medoid(
     iterations::Int;
     _dist::SemiMetric = SqEuclidean()
     )
-    ~,weights,clustids,~,iter= run_clust_hierarchical(data_norm,n_clust,iterations;_dist=_dist)
+    ~,weights,clustids,~,iter= run_clust_hierarchical(data_norm.data,n_clust,iterations;_dist=_dist)
     centers_norm = calc_medoids(data_norm.data,clustids)
     cost = calc_SSE(data_norm.data,centers_norm,clustids)
     centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)

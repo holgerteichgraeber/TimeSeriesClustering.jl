@@ -1,4 +1,4 @@
-#TODO Rewrite battery problem
+#TODO Rewrite battery problem / update to JuMP v0.19, give optimizer CLP as addtional argument
 """
     run_battery_opt(data::ClustData)
 
@@ -89,6 +89,7 @@ end # run_battery_opt()
 
  ###
 
+#TODO update gas turbine problem, update to JuMP v0.19
 """
     run_gas_opt(data::ClustData)
 

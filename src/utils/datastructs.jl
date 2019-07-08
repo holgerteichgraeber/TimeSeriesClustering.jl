@@ -4,7 +4,6 @@ abstract type TSData <:InputData end
 abstract type OptData <: InputData end
 abstract type AbstractClustResult end
 
-"FullInputData"
 struct FullInputData <: TSData
  region::String
  years::Array{Int,1}
@@ -13,16 +12,20 @@ struct FullInputData <: TSData
 end
 
 """
-      ClustData{region::String,K::Int,T::Int,data::Dict{String,Array},weights::Array{Float64,2},mean::Dict{String,Array},sdv::Dict{String,Array},delta_t::Array{Float64,2},k_ids::Array{Int}} <: TSData
-- region: optional information to specify the region data belongs to
-- K: number of periods
-- T: time steps per period
-- data: Dictionary with an entry for each attribute `[file name (e.g technology)]-[column name (e.g. location)]`, Each entry of the dictionary is a 2-dimensional `time-steps T x periods K`-Array holding the actual value
-- weights: 1-dimensional `periods K`-Array with the absolute weight for each period. E.g. for a year of 365 days, sum(weights)=365
-- mean: Dictionary with a entry for each attribute `[file name (e.g technology)]-[column name (e.g. location)]`, Each entry of the dictionary is a 1-dimensional `periods K`-Array holding the shift of the mean
-- sdv:  Dictionary with an entry for each attribute `[file name (e.g technology)]-[column name (e.g. location)]`, Each entry of the dictionary is a 1-dimensional `periods K`-Array holding the standard deviation
-- delta_t: 2-dimensional `time-steps T x periods K`-Array with the temporal duration Δt for each timestep in [h]
-- k_ids: 1-dimensional `original periods I`-Array with the information, which original period is represented by which period K. If an original period is not represented by any period within this ClustData the entry will be `0`.
+      ClustData <: TSData
+
+Contains time series data by attribute (e.g. wind, solar, electricity demand) and respective information.
+
+Fields:
+- region::String: optional information to specify the region data belongs to
+- K::Int: number of periods
+- T::Int: time steps per period
+- data::Dict{String,Array}: Dictionary with an entry for each attribute `[file name (attribute: e.g technology)]-[column name (node: e.g. location)]`, Each entry of the dictionary is a 2-dimensional `time-steps T x periods K`-Array holding the data
+- weights::Array{Float64,2}: 1-dimensional `periods K`-Array with the absolute weight for each period. The weight of a period corresponds to the number of days it representes. E.g. for a year of 365 days, sum(weights)=365
+- mean::Dict{String,Array}: Dictionary with a entry for each attribute `[file name (e.g technology)]-[column name (e.g. location)]`, Each entry of the dictionary is a 1-dimensional `periods K`-Array holding the shift of the mean. This is used internally for normalization.
+- sdv::Dict{String,Array}:  Dictionary with an entry for each attribute `[file name (e.g technology)]-[column name (e.g. location)]`, Each entry of the dictionary is a 1-dimensional `periods K`-Array holding the standard deviation. This is used internally for normalization.
+- delta_t::Array{Float64,2}: 2-dimensional `time-steps T x periods K`-Array with the temporal duration Δt for each timestep. The default is that all timesteps have the same length.
+- k_ids::Array{Int}: 1-dimensional `original periods I`-Array with the information, which original period is represented by which period K. E.g. if the data is a year of 365 periods, the array has length 365. If an original period is not represented by any period within this ClustData the entry will be `0`.
 """
 struct ClustData <: TSData
  region::String
@@ -37,7 +40,23 @@ struct ClustData <: TSData
  k_ids::Array{Int}
 end
 
-"ClustDataMerged"
+"""
+      ClustDataMerged <: TSData
+
+Contains time series data by attribute (e.g. wind, solar, electricity demand) and respective information.
+
+Fields:
+- region::String: optional information to specify the region data belongs to
+- K::Int: number of periods
+- T::Int: time steps per period
+- data::Array: Array of the dimension `(time-steps T * length(data_types)  x periods K`. The first T rows are data_type 1, the second T rows are data_type 2, ...
+- data_type::Array{String}: The data types (attributes) of the data.
+- weights::Array{Float64,2}: 1-dimensional `periods K`-Array with the absolute weight for each period. E.g. for a year of 365 days, sum(weights)=365
+- mean::Dict{String,Array}: Dictionary with a entry for each attribute `[file name (e.g technology)]-[column name (e.g. location)]`, Each entry of the dictionary is a 1-dimensional `periods K`-Array holding the shift of the mean
+- sdv::Dict{String,Array}:  Dictionary with an entry for each attribute `[file name (e.g technology)]-[column name (e.g. location)]`, Each entry of the dictionary is a 1-dimensional `periods K`-Array holding the standard deviation
+- delta_t::Array{Float64,2}: 2-dimensional `time-steps T x periods K`-Array with the temporal duration Δt for each timestep in [h]
+- k_ids::Array{Int}: 1-dimensional `original periods I`-Array with the information, which original period is represented by which period K. If an original period is not represented by any period within this ClustData the entry will be `0`.
+"""
 struct ClustDataMerged <: TSData
  region::String
  years::Array{Int}
@@ -52,7 +71,35 @@ struct ClustDataMerged <: TSData
  k_ids::Array{Int}
 end
 
-"ClustResultAll"
+"""
+    ClustResult <: AbstractClustResult
+Contains the results from a clustering run: The data, the cost in terms of the clustering algorithm, and a config file describing the clustering method used.
+
+Fields:
+- clust_data::ClustData
+- cost::Float64: Cost of the clustering algorithm
+- config::Dict{String,Any}: Details on the clustering method used
+"""
+struct ClustResult <: AbstractClustResult
+ clust_data::ClustData
+ cost::Float64
+ config::Dict{String,Any}
+end
+
+"""
+    ClustResultAll <: AbstractClustResult
+Contains the results from a clustering run for all locally converged solutions
+
+Fields:
+- clust_data::ClustData: The best centers, weights, clustids in terms of cost of the clustering algorithm
+- cost::Float64: Cost of the clustering algorithm
+- config::Dict{String,Any}: Details on the clustering method used
+- centers_all::Array{Array{Float64},1}
+- weights_all::Array{Array{Float64},1}
+- clustids_all::Array{Array{Int,1},1}
+- cost_all::Array{Float64,1}
+- iter_all::Array{Int,1}
+"""
 struct ClustResultAll <: AbstractClustResult
  clust_data::ClustData
  cost::Float64
@@ -64,16 +111,20 @@ struct ClustResultAll <: AbstractClustResult
  iter_all::Array{Int,1}
 end
 
-# TODO: not used yet, but maybe best to implement this one later for users who just want to use clustering but do not care about the locally converged solutions
-"ClustResult"
-struct ClustResult <: AbstractClustResult
- clust_data::ClustData
- cost::Float64
- config::Dict{String,Any}
-end
+"""
+    SimpleExtremeValueDescr
 
-"SimpleExtremeValueDescr"
+Defines a simple extreme day by its characteristics
+
+Fields:
+
+- data_type::String : Choose one of the attributes from the data you have loaded into ClustData
+- extremum::String : `min`,`max`
+- peak_def::String : `absolute`,`integral`
+- consecutive_periods::Int: For a single extreme day, set as 1
+"""
 struct SimpleExtremeValueDescr
+  # TODO: make this one constructor, with consecutive_periods as optional argument
    data_type::String
    extremum::String
    peak_def::String
@@ -85,14 +136,26 @@ struct SimpleExtremeValueDescr
                                     consecutive_periods::Int)
        # only allow certain entries
        if !(extremum in ["min","max"])
-         @error("extremum - "*extremum*" - not defined")
+         error("extremum - "*extremum*" - not defined")
        elseif !(peak_def in ["absolute","integral"])
-         @error("peak_def - "*peak_def*" - not defined")
+         error("peak_def - "*peak_def*" - not defined")
        end
        new(data_type,extremum,peak_def,consecutive_periods)
    end
 end
 
+"""
+    SimpleExtremeValueDescr(data_type::String,
+                                 extremum::String,
+                                 peak_def::String)
+
+Defines a simple extreme day by its characteristics
+
+Input options:
+- data_type::String : Choose one of the attributes from the data you have loaded into ClustData
+- extremum::String : `min`,`max`
+- peak_def::String : `absolute`,`integral`
+"""
 function SimpleExtremeValueDescr(data_type::String,
                                  extremum::String,
                                  peak_def::String)
@@ -101,99 +164,6 @@ end
 
 
 #### Constructors for data structures###
-
-"""
-    FullInputData(region::String,
-                        N::Int;
-                        el_price::Array=[],
-                        el_demand::Array=[],
-                        solar::Array=[],
-                        wind::Array=[]
-                        )
-Constructor for FullInputData with optional data input
-"""
-function FullInputData(region::String,
-                      N::Int;
-                      el_price::Array=[],
-                      el_demand::Array=[],
-                      solar::Array=[],
-                      wind::Array=[]
-                      )
- dt = Dict{String,Array}()
- !isempty(el_price) && (dt["el_price"]=el_price)
- !isempty(el_demand) &&  (dt["el_demand"]=el_demand)
- !isempty(wind) && (dt["wind"]=wind)
- !isempty(solar) && (dt["solar"]=solar)
- # TODO: Check dimensionality of N and supplied input data streams Nx1
- isempty(dt) && @error("Need to provide at least one input data stream")
- FullInputData(region,N,dt)
-end
-
-"""
-  ClustData(region::String,
-                         years::Array{Int,1},
-                         K::Int,
-                         T::Int;
-                         el_price::Array=[],
-                         el_demand::Array=[],
-                         solar::Array=[],
-                         wind::Array=[],
-                         weights::Array{Float64}=ones(K),
-                         mean::Dict{String,Array}=Dict{String,Array}(),
-                         sdv::Dict{String,Array}=Dict{String,Array}(),
-                         delta_t::Array{Float64,2}=ones(T,K),
-                         k_ids::Array{Int,1}=collect(1:K)
-                         )
-constructor 1 for ClustData: provide data individually
-"""
-function ClustData(region::String,
-                         years::Array{Int,1},
-                         K::Int,
-                         T::Int;
-                         el_price::Array=[],
-                         el_demand::Array=[],
-                         solar::Array=[],
-                         wind::Array=[],
-                         weights::Array{Float64}=ones(K),
-                         mean::Dict{String,Array}=Dict{String,Array}(),
-                         sdv::Dict{String,Array}=Dict{String,Array}(),
-                         delta_t::Array{Float64,2}=ones(T,K),
-                         k_ids::Array{Int,1}=collect(1:K)
-                         )
-   dt = Dict{String,Array}()
-   mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
-   if !isempty(el_price)
-     dt["el_price"]=el_price
-     if !mean_sdv_provided
-       mean["el_price"]=zeros(T)
-       sdv["el_price"]=ones(T)
-     end
-   end
-   if !isempty(el_demand)
-     dt["el_demand"]=el_demand
-     if !mean_sdv_provided
-       mean["el_demand"]=zeros(T)
-       sdv["el_demand"]=ones(T)
-     end
-   end
-   if !isempty(wind)
-     dt["wind"]=wind
-     if !mean_sdv_provided
-       mean["wind"]=zeros(T)
-       sdv["wind"]=ones(T)
-     end
-   end
-   if !isempty(solar)
-     dt["solar"]=solar
-     if !mean_sdv_provided
-       mean["solar"]=zeros(T)
-       sdv["solar"]=ones(T)
-     end
-   end
-   isempty(dt) && @error("Need to provide at least one input data stream")
-   # TODO: Check dimensionality of K T and supplied input data streams KxT
-   ClustData(region,years,K,T,dt,weights,mean,sdv,delta_t,k_ids)
-end
 
 """
     ClustData(region::String,
@@ -207,7 +177,7 @@ end
                       mean::Dict{String,Array}=Dict{String,Array}(),
                       sdv::Dict{String,Array}=Dict{String,Array}()
                       )
-constructor 2 for ClustData: provide data as dict
+constructor 1 for ClustData: provide data as dict
 """
 function ClustData(region::String,
                        years::Array{Int,1},
@@ -220,7 +190,7 @@ function ClustData(region::String,
                        mean::Dict{String,Array}=Dict{String,Array}(),
                        sdv::Dict{String,Array}=Dict{String,Array}()
                        )
- isempty(data) && @error("Need to provide at least one input data stream")
+ isempty(data) && error("Need to provide at least one input data stream")
  mean_sdv_provided = ( !isempty(mean) && !isempty(sdv))
  if !mean_sdv_provided
    for (k,v) in data
@@ -234,7 +204,7 @@ end
 
 """
     ClustData(data::ClustDataMerged)
-constructor 3: Convert ClustDataMerged to ClustData
+constructor 2: Convert ClustDataMerged to ClustData
 """
 function ClustData(data::ClustDataMerged)
  data_dict=Dict{String,Array}()
@@ -248,7 +218,7 @@ end
 
 """
     ClustData(data::FullInputData,K,T)
-constructor 4: Convert FullInputData to ClustData
+constructor 3: Convert FullInputData to ClustData
 """
 function ClustData(data::FullInputData,
                                  K::Int,
@@ -312,7 +282,7 @@ function ClustDataMerged(data::ClustData)
    push!(data_type,k)
  end
  if maximum(data.delta_t)!=1
-   throw(@error "You cannot recluster data with different Δt")
+   error("You cannot recluster data with different Δt")
  end
  ClustDataMerged(data.region,data.years,data.K,data.T,data_merged,data_type,data.weights,data.mean,data.sdv,data.delta_t,data.k_ids)
 end
