@@ -1,6 +1,6 @@
 # This file exemplifies the workflow from data input to optimization result generation
 
-using ClustForOpt
+using TimeSeriesClustering
 
 # load data
 data_path=normpath(joinpath(dirname(@__FILE__),"..","data","TS_GER_18"))

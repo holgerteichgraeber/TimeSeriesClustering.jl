@@ -1,4 +1,4 @@
-ClustForOpt release notes
+TimeSeriesClustering release notes
 =========================
 
 Version 0.4.0

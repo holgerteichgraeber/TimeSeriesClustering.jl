@@ -1,8 +1,8 @@
 using Documenter
 using Plots
-using ClustForOpt
+using TimeSeriesClustering
 
-makedocs(sitename="ClustForOpt.jl",
+makedocs(sitename="TimeSeriesClustering.jl",
     authors = "Holger Teichgraeber, and Elias Kuepper",
     pages = [
         "Introduction" => "index.md",
@@ -14,4 +14,4 @@ makedocs(sitename="ClustForOpt.jl",
     format = Documenter.HTML(assets=["assets/clust_for_opt_text.svg"])
     )
 
-deploydocs(repo = "github.com/holgerteichgraeber/ClustForOpt.jl.git", devbranch="dev")
+deploydocs(repo = "github.com/holgerteichgraeber/TimeSeriesClustering.jl.git", devbranch="dev")

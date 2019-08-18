@@ -11,7 +11,7 @@ run_clust(::ClustData)
 
 The following examples show some use cases of `run_clust`.
 ```@setup clust
-using ClustForOpt
+using TimeSeriesClustering
 ts_input_data=load_timeseries_data(:CEP_GER1)
 ```
 ```@repl clust
@@ -27,14 +27,14 @@ clust_config = clust_res.config
 ```
 The `ts_clust_data` is a `ClustData` data struct, this time with clustered data (i.e. less representative periods).
 
-Shape-based clustering methods are supported in an older version of ClustForOpt: For use of DTW barycenter averaging (DBA) and k-shape clustering on single-attribute data (e.g. electricity prices), please use [v0.1](https://github.com/holgerteichgraeber/ClustForOpt.jl/tree/v0.1).
+Shape-based clustering methods are supported in an older version of TimeSeriesClustering: For use of DTW barycenter averaging (DBA) and k-shape clustering on single-attribute data (e.g. electricity prices), please use [v0.1](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl/tree/v0.1).
 
 ## Extreme period selection
 Additionally to clustering the input data, extremes of the data may be relevant to the optimization problem. Therefore, we provide methods for extreme value identification, and to include them in the set of representative periods.
 
 The methods can be used as follows.
 ```@example
-using ClustForOpt
+using TimeSeriesClustering
 ts_input_data = load_timeseries_data(:CEP_GER1)
  # define simple extreme days of interest
  ev1 = SimpleExtremeValueDescr("wind-germany","min","absolute")
@@ -76,7 +76,7 @@ ClustResultAll
 ## Example running clustering
 In this example, the wind, solar, and demand data from Germany for 2016 are clustered to 5 representative periods, and the solar data is shown in the plot.
 ```@example
-using ClustForOpt
+using TimeSeriesClustering
 ts_input_data = load_timeseries_data(:CEP_GER1; T=24, years=[2016])
 ts_clust_data = run_clust(ts_input_data;n_clust=5).clust_data
 using Plots

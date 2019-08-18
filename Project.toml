@@ -1,4 +1,4 @@
-name = "ClustForOpt"
+name = "TimeSeriesClustering"
 uuid = "f34a0dec-cdff-52ca-a698-8a683c311173"
 keywords = ["clustering", "JuMP", "optimization"]
 license = "MIT"
