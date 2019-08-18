@@ -23,7 +23,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -46,7 +46,7 @@
      inkscape:window-x="3827"
      inkscape:window-y="-13"
      inkscape:window-maximized="1"
-     inkscape:current-layer="text5684"
+     inkscape:current-layer="g5690"
      inkscape:snap-center="true"
      inkscape:snap-intersection-paths="false"
      inkscape:object-paths="false"
@@ -3088,6 +3088,6 @@
          id="tspan649"
          x="174.15398"
          y="103.7761"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:60px;font-family:'MN Latin';-inkscape-font-specification:'MN Latin'">TimeSeriesClustering</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:60px;font-family:sans-serif;-inkscape-font-specification:sans-serif">TimeSeriesClustering</tspan></text>
   </g>
 </svg>
