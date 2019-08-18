@@ -1,8 +1,8 @@
 name = "TimeSeriesClustering"
 uuid = "f34a0dec-cdff-52ca-a698-8a683c311173"
-keywords = ["clustering", "JuMP", "optimization"]
+keywords = ["clustering", "data mining", "optimization", "motifs", "data segmentation"]
 license = "MIT"
-desc = "julia implementation of using different clustering methods for finding representative periods for the optimization of energy systems"
+desc = "julia implementation of unsupervised learning methods for time series datasets. It provides functionality for clustering and aggregating, detecting motifs, and quantifying similarity between time series datasets."
 author = ["Holger Teichgraeber"]
 version = "0.5.0"
 
