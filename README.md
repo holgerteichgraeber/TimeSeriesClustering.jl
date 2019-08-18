@@ -7,15 +7,20 @@
 [![codecov](https://codecov.io/gh/holgerteichgraeber/TimeSeriesClustering.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/holgerteichgraeber/TimeSeriesClustering.jl)
 
 
-[TimeSeriesClustering](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl) is a [julia](https://www.juliaopt.com) implementation of unsupervised machine learning methods for finding representative periods for energy systems optimization problems.
-By reducing the number of time steps used in the optimization model, using representative periods leads to significant reductions in computational complexity.
+[TimeSeriesClustering](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl) is a [Julia](https://www.juliaopt.com) implementation of unsupervised learning methods for time series datasets. It provides functionality for clustering and aggregating, detecting motifs, and quantifying similarity between time series datasets.
+The software provides a type system for temporal data, and provides an implementation of the most commonly used clustering methods and extreme value selection methods for temporal data.
+It provides simple integration of multi-dimensional time-series data (e.g. multiple attributes such as wind availability, solar availability, and electricity demand) in a single aggregation process.
+The software is applicable to general time series datasets and lends itself well to a multitude of application areas within the field of time series data mining.
+
+The TimeSeriesClustering package was originally developed to perform time series aggregation for energy systems optimization problems. By reducing the number of time steps used in the optimization model, using representative periods leads to significant reductions in computational complexity of these problems.
+The packages was previously known as `ClustForOpt.jl`.
 
 The package has three main purposes:
-1) Provide a simple process of finding representative periods for time-series input data, with implementations of the most commonly used clustering methods and extreme value selection methods.
-2) Provide an interface between representative period data and optimization problem by having representative period data stored in a generalized type system.
-3) Provide a generalized import feature for time series, where variable names, attributes, and node names are automatically stored and can then be used in the definition of sets of the optimization problem later.
+1) Provide a simple process of finding representative periods (reducing the number of observations) for time-series input data, with implementations of the most commonly used clustering methods and extreme value selection methods.
+2) Provide an interface between representative period data and application (e.g. optimization problem) by having representative period data stored in a generalized type system.
+3) Provide a generalized import feature for time series, where variable names, attributes, and node names are automatically stored and can then be used later when the reduced time series is used in the application at hand (e.g. in the definition of sets of the optimization problem).
 
-An example energy systems optimization problem that uses TimeSeriesClustering for its input data is the package [CapacityExpansion](https://github.com/YoungFaithful/CapacityExpansion.jl), which implements a scalable generation and transmission capacity expansion problem.
+In the domain of energy systems optimization, an example problem that uses TimeSeriesClustering for its input data is the package [CapacityExpansion](https://github.com/YoungFaithful/CapacityExpansion.jl), which implements a scalable generation and transmission capacity expansion problem.
 
 The TimeSeriesClustering package follows the clustering framework presented in [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012).
 The package is actively developed, and new features are continuously added.
@@ -92,5 +97,5 @@ ts_clust_data.data["wind-germany"] # the wind data. Note the dimensions compared
 ts_clust_data.K # number of periods
 ```
 
-The clustered input data can be used as input to an optimization problem.
+If this package is used in the domain of energy systems optimization, the clustered input data can be used as input to an optimization problem.
 The optimization problem formulated in the package [CapacityExpansion](https://github.com/YoungFaithful/CapacityExpansion.jl) can be used with the data clustered in this example.

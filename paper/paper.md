@@ -25,10 +25,10 @@ bibliography: paper.bib
 
 # Summary
 
-``TimeSeriesClustering`` is a Julia implementation of unsupervised learning methods for time series data sets. It provides functionality for clustering and aggregating, detecting motifs, and quantifying similarity between time series datasets.
+``TimeSeriesClustering`` is a Julia implementation of unsupervised learning methods for time series datasets. It provides functionality for clustering and aggregating, detecting motifs, and quantifying similarity between time series datasets.
 The software provides a type system for temporal data, and provides an implementation of the most commonly used clustering methods and extreme value selection methods for temporal data.
 ``TimeSeriesClustering`` provides simple integration of multi-dimensional time-series data (e.g. multiple attributes such as wind availability, solar availability, and electricity demand) in a single aggregation process.
-The software is applicable to general time series datasets and lends itself well to a multitude of application areas within the field of time series data mining. 
+The software is applicable to general time series datasets and lends itself well to a multitude of application areas within the field of time series data mining.
 ``TimeSeriesClustering`` was originally developed to perform time series aggregation for energy systems optimization problems. Because of the software's origin, many of the examples in this work stem from the field of energy systems optimization.
 
 ## General package features
