@@ -1,7 +1,7 @@
 # Holger Teichgraeber, 2017
 
  ######################
- # ClustForOpt
+ # TimeSeriesClustering
  # Analyzing clustering techniques as input for energy systems optimization
  #
  #####################
@@ -12,7 +12,7 @@ using Distances
 using StatsBase
 using JLD2
 using FileIO
-using JuMP #QUESTION should this be part of ClustForOpt?
+using JuMP #QUESTION should this be part of TimeSeriesClustering?
 
 
 

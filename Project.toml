@@ -1,10 +1,10 @@
-name = "ClustForOpt"
+name = "TimeSeriesClustering"
 uuid = "f34a0dec-cdff-52ca-a698-8a683c311173"
 keywords = ["clustering", "JuMP", "optimization"]
 license = "MIT"
 desc = "julia implementation of using different clustering methods for finding representative periods for the optimization of energy systems"
 author = ["Holger Teichgraeber"]
-version = "0.4.2"
+version = "0.5.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"

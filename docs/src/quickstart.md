@@ -1,7 +1,7 @@
 Quick Start Guide
 =================
 
-This quick start guide introduces the main concepts of using ClustForOpt. For more detail on the different functionalities that ClustForOpt provides, please refer to the subsequent chapters of the documentation or the examples in the [examples](https://github.com/holgerteichgraeber/ClustForOpt.jl/tree/master/examples) folder, specifically [workflow_introduction.jl](https://github.com/holgerteichgraeber/ClustForOpt.jl/blob/master/examples/workflow_introduction.jl).
+This quick start guide introduces the main concepts of using TimeSeriesClustering. For more detail on the different functionalities that TimeSeriesClustering provides, please refer to the subsequent chapters of the documentation or the examples in the [examples](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl/tree/master/examples) folder, specifically [workflow_introduction.jl](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl/blob/master/examples/workflow_introduction.jl).
 
 Generally, the workflow consists of three steps:
 - load data
@@ -9,9 +9,9 @@ Generally, the workflow consists of three steps:
 - optimization
 
 ## Example Workflow
-After ClustForOpt is installed, you can use it by saying:
+After TimeSeriesClustering is installed, you can use it by saying:
 ```@repl workflow
-using ClustForOpt
+using TimeSeriesClustering
 ```
 
 The first step is to load the data. The following example loads hourly wind, solar, and demand data for Germany (1 region) for one year.

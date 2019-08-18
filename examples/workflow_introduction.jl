@@ -1,5 +1,5 @@
 # To use this package
-using ClustForOpt
+using TimeSeriesClustering
 
 #########################
 #= Load Time Series Data
@@ -35,7 +35,7 @@ plot_input_solar=plot(ts_input_data.data["solar-germany"], legend=false, linesty
 
 # How to load your own data:
 # put your data into your homedirectory into a folder called tutorial
-# The data should have the following structure: see ClustForOpt/data folder
+# The data should have the following structure: see TimeSeriesClustering/data folder
 #=
 - Loading all `*.csv` files in the folder or the file `data_path`
 The `*.csv` files shall have the following structure and must have the same length:

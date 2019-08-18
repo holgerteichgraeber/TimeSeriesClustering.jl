@@ -1,11 +1,11 @@
 # Holger Teichgraeber, Elias Kuepper, 2019
 
  ######################
- # ClustForOpt
+ # TimeSeriesClustering
  # Analyzing clustering techniques as input for energy systems optimization
  #
  #####################
-module ClustForOpt
+module TimeSeriesClustering
   using Reexport
   using LinearAlgebra
   using CSV
@@ -55,4 +55,4 @@ module ClustForOpt
   include(joinpath("clustering","extreme_vals.jl"))
   include(joinpath("clustering","attribute_weighting.jl"))
   include(joinpath("clustering","intraperiod_segmentation.jl"))
-end # module ClustForOpt
+end # module TimeSeriesClustering

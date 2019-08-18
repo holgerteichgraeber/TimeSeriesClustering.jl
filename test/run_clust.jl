@@ -1,4 +1,4 @@
-using ClustForOpt
+using TimeSeriesClustering
 using Test
 using JLD2
 using Random
@@ -22,7 +22,7 @@ Random.seed!(1111)
     ["hierarchical","medoid",1]]
     @testset "method=$method + representation=$repr" for (method,repr,n_init) in mr begin
         # somehow the following passes if I use julia runtest.jl, but does not pass if
-        # I use ] test ClustForOpt.
+        # I use ] test TimeSeriesClustering.
         #@testset "default" begin
         #    Random.seed!(1111)
         #        ref = reference_results["$data-$method-$repr-default"]
