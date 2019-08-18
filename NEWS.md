@@ -7,7 +7,10 @@ Version 0.5.0
 Breaking changes
 
 - The package has been renamed to `TimeSeriesClustering.jl` (`ClustForOpt.jl` -> `TimeSeriesClustering.jl`). Besides the name change, the functionality stays the same.
-- Add the package with `Pkg.add("TimeSeriesClustering")`, and use it with `using TimeSeriesClustering`.
+- First, update your package registry `] up`.
+- Remove the old package with `] rm ClustForOpt` or `Pkg.rm("ClustForOpt")`
+- Add the package with `] add TimeSeriesClustering` or `Pkg.add("TimeSeriesClustering")`, and 
+- Use the package with `using TimeSeriesClustering`.
 
 Version 0.4.0
 -------------
