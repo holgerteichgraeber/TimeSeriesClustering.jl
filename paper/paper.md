@@ -73,7 +73,7 @@ In python, clustering and time-series analysic tasks can be performed using pack
 The package [``tslearn``](https://github.com/rtavenar/tslearn) provides clustering methods specifically for time series, both the conventional k-means method and shape-based methods such as k-shape and dynamic time warping barycenter averaging.
 The [``STUMPY``](https://github.com/TDAmeritrade/stumpy) package [@Law:2019] calculates something called the matrix profile, which can be used for many data mining tasks.
 
-In R, time series clustering can be performed using the [``tsclust``](https://cran.r-project.org/web/packages/TSclust/index.html) package [@Montero:2014], and the [``dtw``](http://dtw.r-forge.r-project.org/) package [Giorgino:2009] provides functionality for dynamic time warping, i.e. when the shape of the time series matters for clustering.
+In R, time series clustering can be performed using the [``tsclust``](https://cran.r-project.org/web/packages/TSclust/index.html) package [@Montero:2014], and the [``dtw``](http://dtw.r-forge.r-project.org/) package [@Giorgino:2009] provides functionality for dynamic time warping, i.e. when the shape of the time series matters for clustering.
 
 With specific focus on energy systems optimization, time-series aggregation has been included in two open-source packages to date, both in written in Python.
 [``TSAM``](https://github.com/FZJ-IEK3-VSA/tsam) [@TSAM] provides an implementation of several time-series aggregation methods in Python.
