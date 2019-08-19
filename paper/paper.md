@@ -69,7 +69,7 @@ The [``Clustering``](https://github.com/JuliaStats/Clustering.jl) in Julia packa
 
 The [``TimeSeries``](https://github.com/JuliaStats/TimeSeries.jl) package in Julia provides a way to store data with time stamps, and perform table opertions and plotting based on time stamps. The ``TimeSeries`` package may be useful for pre-processing or post-processing data in conjunction with ``TimeSeriesClustering``. The main difference is in the way data is stored: In the ``TimeSeries`` package, data is stored based on time stamps. In ``TimeSeriesClustering``, we store data based on index and time step length, which is relevant to clustering and its applications.
 
-In python, clustering and time-series analysic tasks can be performed using packages such as [``scikit-learn``](https://scikit-learn.org/stable/) [@Pedregosa:2011] and [``PyClustering``](https://github.com/annoviko/pyclustering/) [@Novikov:2019].
+In python, clustering and time-series analysis tasks can be performed using packages such as [``scikit-learn``](https://scikit-learn.org/stable/) [@Pedregosa:2011] and [``PyClustering``](https://github.com/annoviko/pyclustering/) [@Novikov:2019].
 The package [``tslearn``](https://github.com/rtavenar/tslearn) provides clustering methods specifically for time series, both the conventional k-means method and shape-based methods such as k-shape and dynamic time warping barycenter averaging.
 The [``STUMPY``](https://github.com/TDAmeritrade/stumpy) package [@Law:2019] calculates something called the matrix profile, which can be used for many data mining tasks.
 
