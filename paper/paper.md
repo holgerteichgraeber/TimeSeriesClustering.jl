@@ -42,7 +42,7 @@ The following are the key features that ``TimeSeriesClustering`` provides. Imple
 
 - *The aggregation methods*: The most commonly used clustering methods and extreme value selection methods are implemented with a common interface, allowing for simple comparison of these methods on a given data set and optimization problem.
 
-- *The generalized import of time series in csv format*: Time series can be loaded through csv files in a pre-defined format. From this, variable names, attributes, and node names are automatically loaded and stored. The original time series can be sliced into periods of user-defined length. This information can then be used in the definition of the sets of the optimization problem later.
+- *The generalized import of time series in csv format*: Time series can be loaded through csv files in a pre-defined format. From this, variable names, which we call attributes, and node names are automatically loaded and stored. The original time series can be sliced into periods of user-defined length. This information can then be used in the definition of the sets of the optimization problem later.
 
 - *Multiple attributes and nodes*: Multiple time series, one for each attribute (and node, if the data has a spatial component), are automatically combined and aggregated simultaneously.
 
