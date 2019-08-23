@@ -1,5 +1,5 @@
 name = "TimeSeriesClustering"
-uuid = "f34a0dec-cdff-52ca-a698-8a683c311173"
+uuid = "61e8395a-c5b7-11e9-0bf6-872d3bc7175c"
 keywords = ["clustering", "data mining", "optimization", "motifs", "data segmentation"]
 license = "MIT"
 desc = "julia implementation of unsupervised learning methods for time series datasets. It provides functionality for clustering and aggregating, detecting motifs, and quantifying similarity between time series datasets."
