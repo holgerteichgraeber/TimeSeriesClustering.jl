@@ -42,7 +42,7 @@ The following are the key features that ``TimeSeriesClustering`` provides. Imple
 
 - *The aggregation methods*: The most commonly used clustering methods and extreme value selection methods are implemented with a common interface, allowing for simple comparison of these methods on a given data set and optimization problem.
 
-- *The generalized import of time series in csv format*: Time series can be loaded through csv files in a pre-defined format. From this, variable names, attributes, and node names are automatically loaded and stored. The original time series can be sliced into periods of user-defined length. This information can then be used in the definition of the sets of the optimization problem later.
+- *The generalized import of time series in csv format*: Time series can be loaded through csv files in a pre-defined format. From this, variable names, which we call attributes, and node names are automatically loaded and stored. The original time series can be sliced into periods of user-defined length. This information can then be used in the definition of the sets of the optimization problem later.
 
 - *Multiple attributes and nodes*: Multiple time series, one for each attribute (and node, if the data has a spatial component), are automatically combined and aggregated simultaneously.
 
@@ -64,10 +64,10 @@ The Julia package [``CapacityExpansion``](https://github.com/YoungFaithful/Capac
 ``TimeSeriesClustering`` is the first package to provide broadly applicable unsupervised learning methods specifically for time series in Julia [@Bezanson:2017].
 There are several other related packages that provide useful tools for these tasks, both in Julia and in the general open-source community, and we describe them in order to provide guidance on the broader tools available for these kinds of modeling problems.
 
-The [``Clustering``](https://github.com/JuliaStats/Clustering.jl) in package in Julia provides a broad range of clustering methods and and allows computation of clustering validation measures. ``TimeSeriesClustering`` provides a simplified workflow for clustering time series, and works on top of the ``Clustering`` package by making use of a subset of the clustering methods implemented in the ``Clustering`` package.
+The [``Clustering``](https://github.com/JuliaStats/Clustering.jl) package in Julia provides a broad range of clustering methods and and allows computation of clustering validation measures. ``TimeSeriesClustering`` provides a simplified workflow for clustering time series, and works on top of the ``Clustering`` package by making use of a subset of the clustering methods implemented in the ``Clustering`` package.
 ``TimeSeriesClustering`` has several features that add to the functionality, such as automatically clustering multiple attributes simultaneously and providing multiple initializations for partitional clustering algorithms.
 
-The [``TSML``](https://github.com/IBM/TSML.jl) package in Julia provides processing and machine learning methods for time-series data. Its focus is on time-series data with date and time labels, and it provides a broad range of processing tools. It integrates with other machine learning libraries within the broader Julia ecoysystem. 
+The [``TSML``](https://github.com/IBM/TSML.jl) package in Julia provides processing and machine learning methods for time-series data. Its focus is on time-series data with date and time stamps, and it provides a broad range of processing tools. It integrates with other machine learning libraries within the broader Julia ecoysystem. 
 
 The [``TimeSeries``](https://github.com/JuliaStats/TimeSeries.jl) package in Julia provides a way to store data with time stamps, and perform table opertions and plotting based on time stamps. The ``TimeSeries`` package may be useful for pre-processing or post-processing data in conjunction with ``TimeSeriesClustering``. The main difference is in the way data is stored: In the ``TimeSeries`` package, data is stored based on time stamps. In ``TimeSeriesClustering``, we store data based on index and time step length, which is relevant to clustering and its applications.
 
