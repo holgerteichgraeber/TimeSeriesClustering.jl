@@ -1,4 +1,4 @@
-using ClustForOpt
+using TimeSeriesClustering
 using Test
 using JLD2
 using Random

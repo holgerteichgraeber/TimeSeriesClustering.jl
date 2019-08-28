@@ -1,25 +1,30 @@
-﻿![ClustForOpt](docs/src/assets/clust_for_opt_text.svg)
+﻿![TimeSeriesClustering](docs/src/assets/clust_for_opt_text.svg)
 ===
-[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://holgerteichgraeber.github.io/ClustForOpt.jl/stable)
-[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://holgerteichgraeber.github.io/ClustForOpt.jl/dev)
+[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://holgerteichgraeber.github.io/TimeSeriesClustering.jl/stable)
+[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://holgerteichgraeber.github.io/TimeSeriesClustering.jl/dev)
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE)
-[![Build Status](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl.svg?token=HRFemjSxM1NBCsbHGNDG&branch=master)](https://travis-ci.com/holgerteichgraeber/ClustForOpt.jl)
-[![codecov](https://codecov.io/gh/holgerteichgraeber/ClustForOpt.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/holgerteichgraeber/ClustForOpt.jl)
+[![Build Status](https://travis-ci.com/holgerteichgraeber/TimeSeriesClustering.jl.svg?token=HRFemjSxM1NBCsbHGNDG&branch=master)](https://travis-ci.com/holgerteichgraeber/TimeSeriesClustering.jl)
+[![codecov](https://codecov.io/gh/holgerteichgraeber/TimeSeriesClustering.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/holgerteichgraeber/TimeSeriesClustering.jl)
 
 
-[ClustForOpt](https://github.com/holgerteichgraeber/ClustForOpt.jl) is a [julia](https://www.juliaopt.com) implementation of unsupervised machine learning methods for finding representative periods for energy systems optimization problems.
-By reducing the number of time steps used in the optimization model, using representative periods leads to significant reductions in computational complexity.
+[TimeSeriesClustering](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl) is a [Julia](https://www.juliaopt.com) implementation of unsupervised learning methods for time series datasets. It provides functionality for clustering and aggregating, detecting motifs, and quantifying similarity between time series datasets.
+The software provides a type system for temporal data, and provides an implementation of the most commonly used clustering methods and extreme value selection methods for temporal data.
+It provides simple integration of multi-dimensional time-series data (e.g. multiple attributes such as wind availability, solar availability, and electricity demand) in a single aggregation process.
+The software is applicable to general time series datasets and lends itself well to a multitude of application areas within the field of time series data mining.
+
+The TimeSeriesClustering package was originally developed to perform time series aggregation for energy systems optimization problems. By reducing the number of time steps used in the optimization model, using representative periods leads to significant reductions in computational complexity of these problems.
+The packages was previously known as `ClustForOpt.jl`.
 
 The package has three main purposes:
-1) Provide a simple process of finding representative periods for time-series input data, with implementations of the most commonly used clustering methods and extreme value selection methods.
-2) Provide an interface between representative period data and optimization problem by having representative period data stored in a generalized type system.
-3) Provide a generalized import feature for time series, where variable names, attributes, and node names are automatically stored and can then be used in the definition of sets of the optimization problem later.
+1) Provide a simple process of finding representative periods (reducing the number of observations) for time-series input data, with implementations of the most commonly used clustering methods and extreme value selection methods.
+2) Provide an interface between representative period data and application (e.g. optimization problem) by having representative period data stored in a generalized type system.
+3) Provide a generalized import feature for time series, where variable names, attributes, and node names are automatically stored and can then be used later when the reduced time series is used in the application at hand (e.g. in the definition of sets of the optimization problem).
 
-An example energy systems optimization problem that uses ClustForOpt for its input data is the package [CapacityExpansion](https://github.com/YoungFaithful/CapacityExpansion.jl), which implements a scalable generation and transmission capacity expansion problem.
+In the domain of energy systems optimization, an example problem that uses TimeSeriesClustering for its input data is the package [CapacityExpansion](https://github.com/YoungFaithful/CapacityExpansion.jl), which implements a scalable generation and transmission capacity expansion problem.
 
-The ClustForOpt package follows the clustering framework presented in [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012).
+The TimeSeriesClustering package follows the clustering framework presented in [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012).
 The package is actively developed, and new features are continuously added.
-For a reproducible version of the methods and data of the original paper by [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012), please refer to [v0.1](https://github.com/holgerteichgraeber/ClustForOpt.jl/tree/v0.1) (including shape based methods such as `k-shape` and `dynamic time warping barycenter averaging`).
+For a reproducible version of the methods and data of the original paper by [Teichgraeber and Brandt, 2019](https://doi.org/10.1016/j.apenergy.2019.02.012), please refer to [v0.1](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl/tree/v0.1) (including shape based methods such as `k-shape` and `dynamic time warping barycenter averaging`).
 
 This package is developed by Holger Teichgraeber [@holgerteichgraeber](https://github.com/holgerteichgraeber) and Elias Kuepper [@YoungFaithful](https://github.com/youngfaithful).
 
@@ -29,18 +34,18 @@ Install using:
 
 ```julia
 import Pkg
-Pkg.add("ClustForOpt")
+Pkg.add("TimeSeriesClustering")
 ```
 
 ## Documentation
-[Documentation (Stable)](https://holgerteichgraeber.github.io/ClustForOpt.jl/stable): Please refer to this documentation for details on how to use ClustForOpt the current version of ClustForOpt. This is the documentation of the default version of the package.
+[Documentation (Stable)](https://holgerteichgraeber.github.io/TimeSeriesClustering.jl/stable): Please refer to this documentation for details on how to use TimeSeriesClustering the current version of TimeSeriesClustering. This is the documentation of the default version of the package.
 
-[Documentation (Development)](https://holgerteichgraeber.github.io/ClustForOpt.jl/dev): If you like to try the development version of ClustForOpt, please refer to this documentation.
+[Documentation (Development)](https://holgerteichgraeber.github.io/TimeSeriesClustering.jl/dev): If you like to try the development version of TimeSeriesClustering, please refer to this documentation.
 
-**See [NEWS](NEWS.md) for significant breaking changes when updating from one version of ClustForOpt to another.**
+**See [NEWS](NEWS.md) for significant breaking changes when updating from one version of TimeSeriesClustering to another.**
 
-## Citing ClustForOpt
-If you find ClustForOpt useful in your work, we kindly request that you cite the following paper ([link](https://doi.org/10.1016/j.apenergy.2019.02.012)):
+## Citing TimeSeriesClustering
+If you find TimeSeriesClustering useful in your work, we kindly request that you cite the following paper ([link](https://doi.org/10.1016/j.apenergy.2019.02.012)):
 
 ```
   @article{Teichgraeber2019,
@@ -56,7 +61,7 @@ If you find ClustForOpt useful in your work, we kindly request that you cite the
 
 ## Quick Start Guide
 
-This quick start guide introduces the main concepts of using ClustForOpt. For more detail on the different functionalities that ClustForOpt provides, please refer to the subsequent chapters of the documentation or the examples in the [examples](https://github.com/holgerteichgraeber/ClustForOpt.jl/tree/master/examples) folder, specifically [workflow_introduction.jl](https://github.com/holgerteichgraeber/ClustForOpt.jl/blob/master/examples/workflow_introduction.jl).
+This quick start guide introduces the main concepts of using TimeSeriesClustering. For more detail on the different functionalities that TimeSeriesClustering provides, please refer to the subsequent chapters of the documentation or the examples in the [examples](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl/tree/master/examples) folder, specifically [workflow_introduction.jl](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl/blob/master/examples/workflow_introduction.jl).
 
 Generally, the workflow consists of three steps:
 - load data
@@ -64,9 +69,9 @@ Generally, the workflow consists of three steps:
 - optimization
 
 ## Example Workflow
-After ClustForOpt is installed, you can use it by saying:
+After TimeSeriesClustering is installed, you can use it by saying:
 ```@repl workflow
-using ClustForOpt
+using TimeSeriesClustering
 ```
 
 The first step is to load the data. The following example loads hourly wind, solar, and demand data for Germany (1 region) for one year.
@@ -92,5 +97,5 @@ ts_clust_data.data["wind-germany"] # the wind data. Note the dimensions compared
 ts_clust_data.K # number of periods
 ```
 
-The clustered input data can be used as input to an optimization problem.
+If this package is used in the domain of energy systems optimization, the clustered input data can be used as input to an optimization problem.
 The optimization problem formulated in the package [CapacityExpansion](https://github.com/YoungFaithful/CapacityExpansion.jl) can be used with the data clustered in this example.

@@ -1,6 +1,6 @@
 # no need to run this to generate any jld2, but was used to get extreme indices
 
-using ClustForOpt
+using TimeSeriesClustering
 
 reference_results = Dict{String,Any}()
 

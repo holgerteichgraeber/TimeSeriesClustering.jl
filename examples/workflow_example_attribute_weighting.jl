@@ -1,4 +1,4 @@
-using ClustForOpt
+using TimeSeriesClustering
 data_path=normpath(joinpath(dirname(@__FILE__),"..","data","TS_GER_1"))
 ts_input_data = load_timeseries_data(data_path; T=24, years=[2016])
 

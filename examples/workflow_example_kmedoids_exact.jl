@@ -1,4 +1,4 @@
-using ClustForOpt
+using TimeSeriesClustering
 
 ts_input_data = load_timeseries_data(:CEP_GER1)
 
