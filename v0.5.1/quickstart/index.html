@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Quick Start Guide · TimeSeriesClustering.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link href="../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><a href="../"><img class="logo" src="../assets/logo.png" alt="TimeSeriesClustering.jl logo"/></a><h1>TimeSeriesClustering.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../">Introduction</a></li><li class="current"><a class="toctext" href>Quick Start Guide</a><ul class="internal"><li><a class="toctext" href="#Example-Workflow-1">Example Workflow</a></li></ul></li><li><a class="toctext" href="../load_data/">Load Data</a></li><li><a class="toctext" href="../repr_per/">Representative Periods</a></li><li><a class="toctext" href="../opt/">Optimization</a></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Quick Start Guide</a></li></ul><a class="edit-page" href="https://github.com/holgerteichgraeber/TimeSeriesClustering.jl/blob/master/docs/src/quickstart.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Quick Start Guide</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Quick-Start-Guide-1" href="#Quick-Start-Guide-1">Quick Start Guide</a></h1><p>This quick start guide introduces the main concepts of using TimeSeriesClustering. For more detail on the different functionalities that TimeSeriesClustering provides, please refer to the subsequent chapters of the documentation or the examples in the <a href="https://github.com/holgerteichgraeber/TimeSeriesClustering.jl/tree/master/examples">examples</a> folder, specifically <a href="https://github.com/holgerteichgraeber/TimeSeriesClustering.jl/blob/master/examples/workflow_introduction.jl">workflow_introduction.jl</a>.</p><p>Generally, the workflow consists of three steps:</p><ul><li>load data</li><li>find representative periods (clustering + extreme period selection)</li><li>optimization</li></ul><h2><a class="nav-anchor" id="Example-Workflow-1" href="#Example-Workflow-1">Example Workflow</a></h2><p>After TimeSeriesClustering is installed, you can use it by saying:</p><pre><code class="language-julia-repl">julia&gt; using TimeSeriesClustering</code></pre><p>The first step is to load the data. The following example loads hourly wind, solar, and demand data for Germany (1 region) for one year.</p><pre><code class="language-julia-repl">julia&gt; ts_input_data = load_timeseries_data(:CEP_GER1)
+┌ Warning: `getindex(df::DataFrame, col_ind::ColumnIndex)` is deprecated, use `df[!, col_ind]` instead.
+│   caller = #add_timeseries_data!#12(::Int64, ::Int64, ::Array{Int64,1}, ::Function, ::Dict{String,Array}, ::SubString{String}, ::DataFrames.DataFrame) at load_data.jl:132
+└ @ TimeSeriesClustering ~/build/holgerteichgraeber/TimeSeriesClustering.jl/src/utils/load_data.jl:132
+ClustData(&quot;none&quot;, [2016], 366, 24, Dict{String,Array}(&quot;solar-germany&quot;=&gt;[0.0 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.0; … ; 0.0 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.0],&quot;wind-germany&quot;=&gt;[0.1429 0.1453 … 0.1329 0.1832; 0.1368 0.1758 … 0.1312 0.1802; … ; 0.1098 0.4955 … 0.1904 0.3122; 0.1254 0.4875 … 0.1865 0.3187],&quot;el_demand-germany&quot;=&gt;[41913.0 39121.0 … 45343.0 45600.0; 40331.0 38271.0 … 44402.0 44332.0; … ; 44439.0 48859.0 … 50278.0 48988.0; 41257.0 45600.0 … 47534.0 47641.0]), [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0  …  1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], Dict{String,Array}(&quot;solar-germany&quot;=&gt;[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],&quot;wind-germany&quot;=&gt;[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],&quot;el_demand-germany&quot;=&gt;[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), Dict{String,Array}(&quot;solar-germany&quot;=&gt;[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0  …  1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],&quot;wind-germany&quot;=&gt;[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0  …  1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],&quot;el_demand-germany&quot;=&gt;[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0  …  1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]), [1.0 1.0 … 1.0 1.0; 1.0 1.0 … 1.0 1.0; … ; 1.0 1.0 … 1.0 1.0; 1.0 1.0 … 1.0 1.0], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  357, 358, 359, 360, 361, 362, 363, 364, 365, 366])</code></pre><p>The output <code>ts_input_data</code> is a <code>ClustData</code> data struct that contains the data and additional information about the data.</p><pre><code class="language-julia-repl">julia&gt; ts_input_data.data # a dictionary with the data.
+Dict{String,Array} with 3 entries:
+  &quot;solar-germany&quot;     =&gt; [0.0 0.0 … 0.0 0.0; 0.0 0.0 … 0.0 0.0; … ; 0.0 0.0 … 0…
+  &quot;wind-germany&quot;      =&gt; [0.1429 0.1453 … 0.1329 0.1832; 0.1368 0.1758 … 0.1312…
+  &quot;el_demand-germany&quot; =&gt; [41913.0 39121.0 … 45343.0 45600.0; 40331.0 38271.0 … …
+
+julia&gt; ts_input_data.data[&quot;wind-germany&quot;] # the wind data (choose solar, el_demand as other options in this example)
+24×366 Array{Float64,2}:
+ 0.1429  0.1453  0.4843  0.4279  0.248   …  0.3359  0.0793  0.1329  0.1832
+ 0.1368  0.1758  0.4819  0.4186  0.2574     0.318   0.0803  0.1312  0.1802
+ 0.1232  0.2135  0.4792  0.407   0.2682     0.2949  0.0791  0.1337  0.1779
+ 0.1096  0.2466  0.4838  0.3976  0.2764     0.2739  0.0775  0.1363  0.1796
+ 0.0964  0.2818  0.4917  0.3873  0.2784     0.2688  0.0774  0.1382  0.1872
+ 0.082   0.3209  0.4862  0.3776  0.2797  …  0.2638  0.0781  0.1387  0.1971
+ 0.0706  0.3548  0.4784  0.3655  0.2796     0.2419  0.08    0.1401  0.2072
+ 0.0593  0.3921  0.471   0.3528  0.2828     0.2151  0.0818  0.1416  0.2151
+ 0.0438  0.422   0.4786  0.3432  0.2878     0.1813  0.0777  0.1347  0.2067
+ 0.0317  0.4536  0.475   0.3259  0.2823     0.1494  0.0653  0.1177  0.1981
+ ⋮                                       ⋱                          ⋮
+ 0.0116  0.5288  0.4637  0.248   0.2738  …  0.1112  0.1266  0.2099  0.2792
+ 0.0222  0.542   0.4832  0.262   0.2733     0.1005  0.1458  0.233   0.2855
+ 0.0346  0.5416  0.4879  0.2673  0.2672     0.0811  0.1578  0.2339  0.2864
+ 0.0497  0.5316  0.4804  0.2629  0.2585     0.0636  0.1626  0.2217  0.2926
+ 0.0669  0.521   0.4651  0.2549  0.2511     0.0521  0.1627  0.2086  0.2974
+ 0.0817  0.5103  0.4526  0.2448  0.2453  …  0.0472  0.1576  0.2014  0.2987
+ 0.0948  0.5017  0.446   0.2379  0.2403     0.0517  0.1493  0.1961  0.3033
+ 0.1098  0.4955  0.4387  0.2395  0.2356     0.0617  0.1431  0.1904  0.3122
+ 0.1254  0.4875  0.4349  0.2433  0.2316     0.0725  0.1376  0.1865  0.3187
+
+julia&gt; ts_input_data.K # number of periods
+366</code></pre><p>The second step is to cluster the data into representative periods. Here, we use k-means clustering and get 5 representative periods.</p><pre><code class="language-julia-repl">julia&gt; clust_res = run_clust(ts_input_data;method=&quot;kmeans&quot;,n_clust=5)
+ClustResult(ClustData(&quot;none&quot;, [2016], 5, 24, Dict{String,Array}(&quot;solar-germany&quot;=&gt;[-0.0 -0.0 … 0.0 -0.0; -0.0 -0.0 … 0.0 -0.0; … ; -0.0 -0.0 … 0.0 -0.0; -0.0 -0.0 … 0.0 -0.0],&quot;wind-germany&quot;=&gt;[0.144016 0.548621 … 0.111879 0.279123; 0.140524 0.551439 … 0.10753 0.275462; … ; 0.158663 0.557464 … 0.117154 0.278736; 0.154858 0.550454 … 0.11598 0.270642],&quot;el_demand-germany&quot;=&gt;[42119.1 46807.9 … 44242.9 47728.1; 41490.6 45903.6 … 44332.4 47369.8; … ; 44497.6 52505.0 … 47708.6 52237.4; 42358.4 49345.3 … 45671.1 49488.9]), [95.0, 28.0, 66.0, 113.0, 64.0], Dict{String,Array}(&quot;solar-germany&quot;=&gt;[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],&quot;wind-germany&quot;=&gt;[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],&quot;el_demand-germany&quot;=&gt;[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), Dict{String,Array}(&quot;solar-germany&quot;=&gt;[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0  …  1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],&quot;wind-germany&quot;=&gt;[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0  …  1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],&quot;el_demand-germany&quot;=&gt;[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0  …  1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]), [1.0 1.0 … 1.0 1.0; 1.0 1.0 … 1.0 1.0; … ; 1.0 1.0 … 1.0 1.0; 1.0 1.0 … 1.0 1.0], [1, 2, 2, 5, 5, 3, 5, 2, 1, 5  …  3, 5, 2, 2, 2, 2, 1, 1, 1, 1]), 5665.825531962603, Dict{String,Any}(&quot;attribute_weights&quot;=&gt;Dict{String,Float64}(),&quot;n_clust&quot;=&gt;5,&quot;method&quot;=&gt;&quot;kmeans&quot;,&quot;iterations&quot;=&gt;300,&quot;norm_op&quot;=&gt;&quot;zscore&quot;,&quot;n_init&quot;=&gt;1000,&quot;norm_scope&quot;=&gt;&quot;full&quot;,&quot;representation&quot;=&gt;&quot;centroid&quot;,&quot;n_seg&quot;=&gt;24))
+
+julia&gt; ts_clust_data = clust_res.clust_data
+ClustData(&quot;none&quot;, [2016], 5, 24, Dict{String,Array}(&quot;solar-germany&quot;=&gt;[-0.0 -0.0 … 0.0 -0.0; -0.0 -0.0 … 0.0 -0.0; … ; -0.0 -0.0 … 0.0 -0.0; -0.0 -0.0 … 0.0 -0.0],&quot;wind-germany&quot;=&gt;[0.144016 0.548621 … 0.111879 0.279123; 0.140524 0.551439 … 0.10753 0.275462; … ; 0.158663 0.557464 … 0.117154 0.278736; 0.154858 0.550454 … 0.11598 0.270642],&quot;el_demand-germany&quot;=&gt;[42119.1 46807.9 … 44242.9 47728.1; 41490.6 45903.6 … 44332.4 47369.8; … ; 44497.6 52505.0 … 47708.6 52237.4; 42358.4 49345.3 … 45671.1 49488.9]), [95.0, 28.0, 66.0, 113.0, 64.0], Dict{String,Array}(&quot;solar-germany&quot;=&gt;[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],&quot;wind-germany&quot;=&gt;[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],&quot;el_demand-germany&quot;=&gt;[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  …  0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]), Dict{String,Array}(&quot;solar-germany&quot;=&gt;[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0  …  1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],&quot;wind-germany&quot;=&gt;[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0  …  1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],&quot;el_demand-germany&quot;=&gt;[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0  …  1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]), [1.0 1.0 … 1.0 1.0; 1.0 1.0 … 1.0 1.0; … ; 1.0 1.0 … 1.0 1.0; 1.0 1.0 … 1.0 1.0], [1, 2, 2, 5, 5, 3, 5, 2, 1, 5  …  3, 5, 2, 2, 2, 2, 1, 1, 1, 1])</code></pre><p>The <code>ts_clust_data</code> is a <code>ClustData</code> data struct, this time with clustered data (i.e. less representative periods).</p><pre><code class="language-julia-repl">julia&gt; ts_clust_data.data # the clustered data
+Dict{String,Array} with 3 entries:
+  &quot;solar-germany&quot;     =&gt; [-0.0 -0.0 … 0.0 -0.0; -0.0 -0.0 … 0.0 -0.0; … ; -0.0 …
+  &quot;wind-germany&quot;      =&gt; [0.144016 0.548621 … 0.111879 0.279123; 0.140524 0.551…
+  &quot;el_demand-germany&quot; =&gt; [42119.1 46807.9 … 44242.9 47728.1; 41490.6 45903.6 … …
+
+julia&gt; ts_clust_data.data[&quot;wind-germany&quot;] # the wind data. Note the dimensions compared to ts_input_data
+24×5 Array{Float64,2}:
+ 0.144016  0.548621  0.120139   0.111879   0.279123
+ 0.140524  0.551439  0.115391   0.10753    0.275462
+ 0.137479  0.555379  0.111139   0.103913   0.274094
+ 0.132972  0.555575  0.106932   0.0979832  0.271725
+ 0.123634  0.557968  0.103505   0.0846575  0.266947
+ 0.113371  0.562114  0.101791   0.0703797  0.261647
+ 0.11      0.562361  0.0997636  0.0655434  0.267825
+ 0.115243  0.561371  0.0961758  0.0728327  0.284169
+ 0.124365  0.565257  0.0925379  0.0824319  0.305178
+ 0.131591  0.578132  0.0918818  0.0881735  0.321837
+ ⋮
+ 0.136011  0.592429  0.107488   0.0904354  0.326442
+ 0.136342  0.590043  0.122298   0.0869142  0.314616
+ 0.140142  0.584318  0.134076   0.0888266  0.308023
+ 0.149868  0.577296  0.139071   0.099415   0.304941
+ 0.158697  0.570618  0.139342   0.110627   0.300441
+ 0.1617    0.563343  0.136606   0.115831   0.292245
+ 0.161424  0.560425  0.13353    0.117286   0.285137
+ 0.158663  0.557464  0.130994   0.117154   0.278736
+ 0.154858  0.550454  0.128324   0.11598    0.270642
+
+julia&gt; ts_clust_data.K # number of periods
+5</code></pre><p>The clustered input data can be used as input to an optimization problem. The optimization problem formulated in the package <a href="https://github.com/YoungFaithful/CapacityExpansion.jl">CapacityExpansion</a> can be used with the data clustered in this example.</p><footer><hr/><a class="previous" href="../"><span class="direction">Previous</span><span class="title">Introduction</span></a><a class="next" href="../load_data/"><span class="direction">Next</span><span class="title">Load Data</span></a></footer></article></body></html>
