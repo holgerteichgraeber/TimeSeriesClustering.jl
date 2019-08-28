@@ -2,9 +2,10 @@
 title: 'TimeSeriesClustering: An extensible framework in Julia'
 tags:
   - Julia
-  - clustering
+  - unsupervised learning
   - representative periods
   - optimization
+  - machine learning
   - time series
 authors:
   - name: Holger Teichgraeber
