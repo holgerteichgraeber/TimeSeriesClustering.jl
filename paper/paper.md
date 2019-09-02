@@ -20,7 +20,7 @@ authors:
 affiliations:
  - name: Department of Energy Resources Engineering, Stanford University
    index: 1
-date: 18 August 2019
+date: 2 September 2019
 bibliography: paper.bib
 ---
 
@@ -35,7 +35,7 @@ The software is applicable to general time series datasets and lends itself well
 ## General package features
 
 The unique design of ``TimeSeriesClustering`` allows for scientific comparison of the performance of different time-series aggregation methods, both in terms of the statistical error measure and in terms of its impact on the application outcome.
-The clustering methods that are implemented in ``TimeSeriesClustering`` follow the framework presented by @Teichgraeber:2019, and the extreme value selection methods follow the framework presented by @Lindenmeyer:2019. Using these frameworks allows ``TimeSeriesClustering`` to be generally extensible to new aggregation methods in the future.
+The clustering methods that are implemented in ``TimeSeriesClustering`` follow the framework presented by @Teichgraeber:2019, and the extreme value selection methods follow the framework presented by @Lindenmeyer:2020. Using these frameworks allows ``TimeSeriesClustering`` to be generally extensible to new aggregation methods in the future.
 
 The following are the key features that ``TimeSeriesClustering`` provides. Implementation details can be found in the software's documentation.
 
@@ -111,7 +111,7 @@ A related class of problems to which ``TimeSeriesClustering`` can be useful is s
 Furthermore, ``TimeSeriesClustering`` could be used in operational contexts such as developing operational strategies for typical days, or aggregating repetitive operating conditions for use in model predictive control.
 Because it keeps track of the chronology of the periods, it can also be used to calculate transition probabilities between clustered periods for Markov chain modeling.
 
-``TimeSeriesClustering`` has been used in several research projects to date. It has been used to compare both conventionally-used clustering methods and shape-based clustering methods and their characteristics [@Teichgraeber:2019], and also to compare extreme value selection methods [@Lindenmeyer:2019].
+``TimeSeriesClustering`` has been used in several research projects to date. It has been used to compare both conventionally-used clustering methods and shape-based clustering methods and their characteristics [@Teichgraeber:2019], and also to compare extreme value selection methods [@Lindenmeyer:2020].
 It has also been used to analyze temporal modeling detail in energy systems modeling with high renewable energy penetration [@Kuepper:2019].
 ``TimeSeriesClustering`` also serves as input to [``CapacityExpansion``](https://github.com/YoungFaithful/CapacityExpansion.jl), a scalable capacity expansion model in Julia.
 Furthermore, ``TimeSeriesClustering`` has been used as an educational tool. It is frequently used for class projects in the Stanford University course "Optimization of Energy Systems", and has also served as a basis for the capacity expansion studies evaluated in homeworks for the Stanford University course "Advanced Methods in Modeling for Climate and Energy Policy".
