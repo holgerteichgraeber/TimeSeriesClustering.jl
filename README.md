@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/holgerteichgraeber/TimeSeriesClustering.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/holgerteichgraeber/TimeSeriesClustering.jl)
 
 
-[TimeSeriesClustering](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl) is a [Julia](https://www.juliaopt.com) implementation of unsupervised learning methods for time series datasets. It provides functionality for clustering and aggregating, detecting motifs, and quantifying similarity between time series datasets.
+[TimeSeriesClustering](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl) is a [Julia](https://julialang.org) implementation of unsupervised learning methods for time series datasets. It provides functionality for clustering and aggregating, detecting motifs, and quantifying similarity between time series datasets.
 The software provides a type system for temporal data, and provides an implementation of the most commonly used clustering methods and extreme value selection methods for temporal data.
 It provides simple integration of multi-dimensional time-series data (e.g. multiple attributes such as wind availability, solar availability, and electricity demand) in a single aggregation process.
 The software is applicable to general time series datasets and lends itself well to a multitude of application areas within the field of time series data mining.
@@ -97,5 +97,5 @@ ts_clust_data.data["wind-germany"] # the wind data. Note the dimensions compared
 ts_clust_data.K # number of periods
 ```
 
-If this package is used in the domain of energy systems optimization, the clustered input data can be used as input to an optimization problem.
+If this package is used in the domain of energy systems optimization, the clustered input data can be used as input to an [optimization problem](https://www.juliaopt.org).
 The optimization problem formulated in the package [CapacityExpansion](https://github.com/YoungFaithful/CapacityExpansion.jl) can be used with the data clustered in this example.
