@@ -47,18 +47,20 @@ Pkg.add("TimeSeriesClustering")
 ## Citing TimeSeriesClustering
 If you find TimeSeriesClustering useful in your work, we kindly request that you cite the following paper ([link](https://doi.org/10.21105/joss.01573)):
 
-```@article{Teichgraeber2019joss,
-author = {Teichgraeber, Holger and Kuepper, Lucas Elias and Brandt, Adam R},
-doi = {https://doi.org/10.21105/joss.01573},
-journal = {Journal of Open Source Software},
-number = {41},
-pages = {1573},
-title = {TimeSeriesClustering : An extensible framework in Julia},
-volume = {4},
-year = {2019}
-}
+```
+  @article{Teichgraeber2019joss,
+  author = {Teichgraeber, Holger and Kuepper, Lucas Elias and Brandt, Adam R},
+  doi = {https://doi.org/10.21105/joss.01573},
+  journal = {Journal of Open Source Software},
+  number = {41},
+  pages = {1573},
+  title = {TimeSeriesClustering : An extensible framework in Julia},
+  volume = {4},
+  year = {2019}
+  }
+```
 
-If you find this package useful, our paper [Clustering methods to find representative periods for the optimization of energy systems: An initial framework and comparison](https://doi.org/10.1016/j.apenergy.2019.02.012) may additionally be of interest.
+If you find this package useful, our [paper](https://doi.org/10.1016/j.apenergy.2019.02.012) on comparing clustering methods for energy systems optimization problems may additionally be of interest.
 
 ## Quick Start Guide
 
