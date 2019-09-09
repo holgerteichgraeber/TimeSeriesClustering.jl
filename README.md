@@ -5,7 +5,7 @@
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE)
 [![Build Status](https://travis-ci.com/holgerteichgraeber/TimeSeriesClustering.jl.svg?token=HRFemjSxM1NBCsbHGNDG&branch=master)](https://travis-ci.com/holgerteichgraeber/TimeSeriesClustering.jl)
 [![codecov](https://codecov.io/gh/holgerteichgraeber/TimeSeriesClustering.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/holgerteichgraeber/TimeSeriesClustering.jl)
-
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.01573/status.svg)](https://doi.org/10.21105/joss.01573)
 
 [TimeSeriesClustering](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl) is a [Julia](https://julialang.org) implementation of unsupervised learning methods for time series datasets. It provides functionality for clustering and aggregating, detecting motifs, and quantifying similarity between time series datasets.
 The software provides a type system for temporal data, and provides an implementation of the most commonly used clustering methods and extreme value selection methods for temporal data.
@@ -38,26 +38,27 @@ Pkg.add("TimeSeriesClustering")
 ```
 
 ## Documentation
-[Documentation (Stable)](https://holgerteichgraeber.github.io/TimeSeriesClustering.jl/stable): Please refer to this documentation for details on how to use TimeSeriesClustering the current version of TimeSeriesClustering. This is the documentation of the default version of the package.
+[Documentation (Stable)](https://holgerteichgraeber.github.io/TimeSeriesClustering.jl/stable): Please refer to this documentation for details on how to use TimeSeriesClustering the current version of TimeSeriesClustering. This is the documentation of the default version of the package. The default version is on the `master` branch.
 
-[Documentation (Development)](https://holgerteichgraeber.github.io/TimeSeriesClustering.jl/dev): If you like to try the development version of TimeSeriesClustering, please refer to this documentation.
+[Documentation (Development)](https://holgerteichgraeber.github.io/TimeSeriesClustering.jl/dev): If you like to try the development version of TimeSeriesClustering, please refer to this documentation. The development version is on the `dev` branch.
 
 **See [NEWS](NEWS.md) for significant breaking changes when updating from one version of TimeSeriesClustering to another.**
 
 ## Citing TimeSeriesClustering
-If you find TimeSeriesClustering useful in your work, we kindly request that you cite the following paper ([link](https://doi.org/10.1016/j.apenergy.2019.02.012)):
+If you find TimeSeriesClustering useful in your work, we kindly request that you cite the following paper ([link](https://doi.org/10.21105/joss.01573)):
 
-```
-  @article{Teichgraeber2019,
-  author = {Holger Teichgraeber and Adam Brandt},
-  title = {Clustering methods to find representative periods for the optimization of energy systems: An initial framework and comparison},
-  journal = {Applied Energy},
-  volume = {239},
-  pages = {1283–1293},
-  year = {2019},
-  doi = {https://doi.org/10.1016/j.apenergy.2019.02.012},
-  }
-```
+```@article{Teichgraeber2019joss,
+author = {Teichgraeber, Holger and Kuepper, Lucas Elias and Brandt, Adam R},
+doi = {https://doi.org/10.21105/joss.01573},
+journal = {Journal of Open Source Software},
+number = {41},
+pages = {1573},
+title = {TimeSeriesClustering : An extensible framework in Julia},
+volume = {4},
+year = {2019}
+}
+
+If you find this package useful, our paper [Clustering methods to find representative periods for the optimization of energy systems: An initial framework and comparison](https://doi.org/10.1016/j.apenergy.2019.02.012) may additionally be of interest.
 
 ## Quick Start Guide
 
