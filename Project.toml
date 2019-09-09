@@ -4,7 +4,7 @@ keywords = ["clustering", "data mining", "optimization", "motifs", "data segment
 license = "MIT"
 desc = "julia implementation of unsupervised learning methods for time series datasets. It provides functionality for clustering and aggregating, detecting motifs, and quantifying similarity between time series datasets."
 author = ["Holger Teichgraeber"]
-version = "0.5.2"
+version = "0.5.3"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
