@@ -5,9 +5,9 @@
 [![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](LICENSE)
 [![Build Status](https://travis-ci.com/holgerteichgraeber/TimeSeriesClustering.jl.svg?token=HRFemjSxM1NBCsbHGNDG&branch=master)](https://travis-ci.com/holgerteichgraeber/TimeSeriesClustering.jl)
 [![codecov](https://codecov.io/gh/holgerteichgraeber/TimeSeriesClustering.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/holgerteichgraeber/TimeSeriesClustering.jl)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.01573/status.svg)](https://doi.org/10.21105/joss.01573)
 
-
-[TimeSeriesClustering](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl) is a [Julia](https://www.juliaopt.com) implementation of unsupervised learning methods for time series datasets. It provides functionality for clustering and aggregating, detecting motifs, and quantifying similarity between time series datasets.
+[TimeSeriesClustering](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl) is a [Julia](https://julialang.org) implementation of unsupervised learning methods for time series datasets. It provides functionality for clustering and aggregating, detecting motifs, and quantifying similarity between time series datasets.
 The software provides a type system for temporal data, and provides an implementation of the most commonly used clustering methods and extreme value selection methods for temporal data.
 It provides simple integration of multi-dimensional time-series data (e.g. multiple attributes such as wind availability, solar availability, and electricity demand) in a single aggregation process.
 The software is applicable to general time series datasets and lends itself well to a multitude of application areas within the field of time series data mining.
@@ -38,30 +38,33 @@ Pkg.add("TimeSeriesClustering")
 ```
 
 ## Documentation
-[Documentation (Stable)](https://holgerteichgraeber.github.io/TimeSeriesClustering.jl/stable): Please refer to this documentation for details on how to use TimeSeriesClustering the current version of TimeSeriesClustering. This is the documentation of the default version of the package.
+[Documentation (Stable)](https://holgerteichgraeber.github.io/TimeSeriesClustering.jl/stable): Please refer to this documentation for details on how to use TimeSeriesClustering the current version of TimeSeriesClustering. This is the documentation of the default version of the package. The default version is on the `master` branch.
 
-[Documentation (Development)](https://holgerteichgraeber.github.io/TimeSeriesClustering.jl/dev): If you like to try the development version of TimeSeriesClustering, please refer to this documentation.
+[Documentation (Development)](https://holgerteichgraeber.github.io/TimeSeriesClustering.jl/dev): If you like to try the development version of TimeSeriesClustering, please refer to this documentation. The development version is on the `dev` branch.
 
 **See [NEWS](NEWS.md) for significant breaking changes when updating from one version of TimeSeriesClustering to another.**
 
 ## Citing TimeSeriesClustering
-If you find TimeSeriesClustering useful in your work, we kindly request that you cite the following paper ([link](https://doi.org/10.1016/j.apenergy.2019.02.012)):
+If you find TimeSeriesClustering useful in your work, we kindly request that you cite the following paper ([link](https://doi.org/10.21105/joss.01573)):
 
 ```
-  @article{Teichgraeber2019,
-  author = {Holger Teichgraeber and Adam Brandt},
-  title = {Clustering methods to find representative periods for the optimization of energy systems: An initial framework and comparison},
-  journal = {Applied Energy},
-  volume = {239},
-  pages = {1283–1293},
-  year = {2019},
-  doi = {https://doi.org/10.1016/j.apenergy.2019.02.012},
+  @article{Teichgraeber2019joss,
+  author = {Teichgraeber, Holger and Kuepper, Lucas Elias and Brandt, Adam R},
+  doi = {https://doi.org/10.21105/joss.01573},
+  journal = {Journal of Open Source Software},
+  number = {41},
+  pages = {1573},
+  title = {TimeSeriesClustering : An extensible framework in Julia},
+  volume = {4},
+  year = {2019}
   }
 ```
 
+If you find this package useful, our [paper](https://doi.org/10.1016/j.apenergy.2019.02.012) on comparing clustering methods for energy systems optimization problems may additionally be of interest.
+
 ## Quick Start Guide
 
-This quick start guide introduces the main concepts of using TimeSeriesClustering. For more detail on the different functionalities that TimeSeriesClustering provides, please refer to the subsequent chapters of the documentation or the examples in the [examples](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl/tree/master/examples) folder, specifically [workflow_introduction.jl](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl/blob/master/examples/workflow_introduction.jl).
+This quick start guide introduces the main concepts of using TimeSeriesClustering. The examples are taken from problems in the domain of scenario reduction for energy systems optimization. For more detail on the different functionalities that TimeSeriesClustering provides, please refer to the subsequent chapters of the documentation or the examples in the [examples](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl/tree/master/examples) folder, specifically [workflow_introduction.jl](https://github.com/holgerteichgraeber/TimeSeriesClustering.jl/blob/master/examples/workflow_introduction.jl).
 
 Generally, the workflow consists of three steps:
 - load data
@@ -97,5 +100,5 @@ ts_clust_data.data["wind-germany"] # the wind data. Note the dimensions compared
 ts_clust_data.K # number of periods
 ```
 
-If this package is used in the domain of energy systems optimization, the clustered input data can be used as input to an optimization problem.
+If this package is used in the domain of energy systems optimization, the clustered input data can be used as input to an [optimization problem](https://www.juliaopt.org).
 The optimization problem formulated in the package [CapacityExpansion](https://github.com/YoungFaithful/CapacityExpansion.jl) can be used with the data clustered in this example.
