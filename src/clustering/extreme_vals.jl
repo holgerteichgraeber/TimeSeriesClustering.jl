@@ -92,7 +92,19 @@ function simple_extr_val_ident(clust_data::ClustData,
                                extremum::String="max",
                                peak_def::String="absolute",
                                consecutive_periods::Int=1)
-  data=clust_data.data[data_type]
+  # all attribute-node pairs in clust_data
+  data_types = [k for k in keys(clust_data.data)]
+  attribute_nodes = data_types[occursin.(data_type, data_types)]
+  if isempty(attribute_nodes)
+    error("data_type=$data_type is neither an attribute-node pair nor is it an attribute")
+  # if data_type is an attribute only, aggregate data among all nodes that contain that attribute
+  # this contains the special case that data_type is an attribute-node pair
+  else
+    data = zeros(clust_data.T*length(attribute_nodes), clust_data.K)
+    for i in 1:length(attribute_nodes)
+      data[1+(i-1)*clust_data.T:i*clust_data.T, :] = clust_data.data[attribute_nodes[i]]
+    end
+  end
   delta_period=consecutive_periods-1
   # set data to be compared
   if peak_def=="absolute" && consecutive_periods==1
