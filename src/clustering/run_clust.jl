@@ -480,9 +480,9 @@ function run_clust_poncelet_centroid(
     data_norm::ClustDataMerged,
     n_clust::Int,
     iterations::Int;
-    bins::Int = 10,
+    bins::Int = 20,
     equal_weight::Bool = false,
-    time_limit::Float64=100,
+    time_limit::Float64=100.0,
     ponc_optimizer::Any = nothing)
 
     if isnothing(ponc_optimizer) error("Method requires to provide an optimizer via 'ponc_optimizer'") end
