@@ -482,9 +482,7 @@ function run_clust_poncelet_centroid(
     iterations::Int;
     bins::Int = 10,
     equal_weight::Bool = false,
-    mip_gap::Float64=0.55,
-    mipAbs_gap::Float64=1e-3,
-    iteraton_limit = 100000,
+    time_limit::Float64=100,
     ponc_optimizer::Any = nothing)
 
     if isnothing(ponc_optimizer) error("Method requires to provide an optimizer via 'ponc_optimizer'") end
@@ -537,7 +535,7 @@ function run_clust_poncelet_centroid(
     end
 
     @constraint(ponceletopti, controlSumWeights, sum(w[step] for step in STEP) == n_TotalStep)
-    MOI.set(ponceletopti, MOI.RawParameter("TimeLimit"), 100.0)
+    MOI.set(ponceletopti, MOI.RawParameter("TimeLimit"), time_limit)
     # solve problem
     JuMP.optimize!(ponceletopti)
     cost = JuMP.objective_value(ponceletopti)
