@@ -328,3 +328,15 @@ function run_pure_clust(data::ClustData;
   end
   return ClustResult(ClustData(data.region, data.years, data.K, data.T, mod_data, data.weights, data.k_ids;delta_t=data.delta_t),clust_result.cost, clust_result.config)
 end
+
+"""
+    quantile_durationCurve(c::Array,bin_dict::Dict,size_int)
+Compute the share of entries below a certain threshold for each value in input dictionary. Results correspond to points on a normalized duration curve.
+"""
+function quantile_durationCurve(c::Array,bin_dict::Dict,size_int)
+    h = Dict()
+    for bin in keys(bin_dict)
+        h[bin] = length(filter(x -> x >= bin_dict[bin],c))/size_int
+    end
+    return h
+end
