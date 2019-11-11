@@ -487,8 +487,6 @@ function run_clust_poncelet_centroid(
 
     if isnothing(ponc_optimizer) error("Method requires to provide an optimizer via 'ponc_optimizer'") end
 
-    # get name of the optimizer used (supports glpk, cbc and gurobi so far)
-    opt_name = split(string(@eval ponc_optimizer.name),".")[1]
     n_seg = data_norm.T
     n_TotalStep = size(data_norm.data,2)
 
@@ -537,16 +535,7 @@ function run_clust_poncelet_centroid(
     end
 
     @constraint(ponceletopti, controlSumWeights, sum(w[step] for step in STEP) == n_TotalStep)
-    # set time
-    if opt_name == "Gurobi"
-      MOI.set(ponceletopti, MOI.RawParameter("TimeLimit"), time_limit)
-    elseif opt_name == "Cbc"
-      MOI.set(ponceletopti, MOI.RawParameter("seconds"), time_limit)
-    elseif opt_name == "GLPK"
-      MOI.set(ponceletopti, MOI.RawParameter("TmLim"), time_limit)
-    else
-      error("Unsupported solver used!")
-    end
+    MOI.set(ponceletopti, MOI.RawParameter("TimeLimit"), time_limit)
     # solve problem
     JuMP.optimize!(ponceletopti)
     cost = JuMP.objective_value(ponceletopti)
