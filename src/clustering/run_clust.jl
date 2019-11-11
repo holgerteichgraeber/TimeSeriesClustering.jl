@@ -483,9 +483,9 @@ function run_clust_poncelet_centroid(
     bins::Int = 20,
     equal_weight::Bool = false,
     time_limit::Float64=100.0,
-    ponc_optimizer::Union{DataType,Nothing} = nothing)
+    ponc_optimizer::DataType = DataType)
 
-    if isnothing(ponc_optimizer) error("Method requires to provide an optimizer via 'ponc_optimizer'") end
+    if ponc_optimizer==DataType error("Method requires to provide an optimizer via 'ponc_optimizer'") end
 
     # get name of the optimizer used (supports glpk, cbc and gurobi so far)
     opt_name = split(repr(ponc_optimizer.name),".")[1]
