@@ -92,7 +92,30 @@ function simple_extr_val_ident(clust_data::ClustData,
                                extremum::String="max",
                                peak_def::String="absolute",
                                consecutive_periods::Int=1)
-  data=clust_data.data[data_type]
+  # if data we want to find exrema among all nodes, call data_type attribute_all (e.g. wind_all)
+  # TODO: put into own function
+  #### TEST FOR GER 18 multi node!
+  ks = collect(keys(clust_data.data))
+  if !(data_type in ks)
+    if data_type[end-3:end] == "-all" && any(occursin.(data_type[1:end-4], ks))
+      data = [] 
+      for k in ks
+        if occursin(data_type[1:end-4], k)
+          if isempty(data)
+            # initialize array
+            data = clust_data.data[k]
+          else
+            data = [data; clust_data.data[k]] # append in the timestep dimension
+          end
+        end
+      end
+    else
+      error("data_type $(data_type) is not contained in the list of loaded attributes")
+    end
+  else
+    data=clust_data.data[data_type]
+  end
+  
   delta_period=consecutive_periods-1
   # set data to be compared
   if peak_def=="absolute" && consecutive_periods==1

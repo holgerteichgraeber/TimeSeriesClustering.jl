@@ -53,6 +53,13 @@ ts_input_data = load_timeseries_data(:CEP_GER18)
         @test extr_idcs == [39,359,19]
 
     end
+
+ #@testset "-all single node system" begin
+ # load GER1 data
+ #       ts_input_data_mod,extr_vals,extr_idcs = simple_extr_val_sel(ts_input_data,ev;rep_mod_method="feasibility")  
+ #   ev_all = SimpleExtremeValueDescr("wind-all","max","absolute") #idx 39
+
+ #   end
 end
 
 @testset "representation modification" begin
