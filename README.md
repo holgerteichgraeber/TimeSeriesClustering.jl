@@ -13,7 +13,7 @@ It provides simple integration of multi-dimensional time-series data (e.g. multi
 The software is applicable to general time series datasets and lends itself well to a multitude of application areas within the field of time series data mining.
 
 The TimeSeriesClustering package was originally developed to perform time series aggregation for energy systems optimization problems. By reducing the number of time steps used in the optimization model, using representative periods leads to significant reductions in computational complexity of these problems.
-The packages was previously known as `ClustForOpt.jl`.
+The package was previously known as `ClustForOpt.jl`.
 
 The package has three main purposes:
 1) Provide a simple process of finding representative periods (reducing the number of observations) for time-series input data, with implementations of the most commonly used clustering methods and extreme value selection methods.
