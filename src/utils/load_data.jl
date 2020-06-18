@@ -152,7 +152,7 @@ find wich of the supported name in `name_itr` is used as an
 function find_column_name(df::DataFrame, name_itr::Array{Symbol,1}; error_msg::Bool=true)
     col_name=:none
     for name in name_itr
-        if name in names(df)
+        if name in propertynames(df)
             col_name=name
             break
         end
