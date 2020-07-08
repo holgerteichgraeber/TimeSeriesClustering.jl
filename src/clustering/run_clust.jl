@@ -515,7 +515,7 @@ function run_clust_poncelet_centroid(
     end
 
     # define selection and weighting variables
-    @variable(ponceletopti, n_TotalStep >= w[STEP])
+    @variable(ponceletopti, w[STEP] <= n_TotalStep)
     @variable(ponceletopti, u[STEP], binary = true)
 
 
