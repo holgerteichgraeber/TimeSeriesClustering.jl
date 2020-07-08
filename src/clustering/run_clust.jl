@@ -515,8 +515,9 @@ function run_clust_poncelet_centroid(
     end
 
     # define selection and weighting variables
-    @variable(ponceletopti, n_TotalStep >= w[STEP] >= 0.001)
+    @variable(ponceletopti, n_TotalStep >= w[STEP])
     @variable(ponceletopti, u[STEP], binary = true)
+
 
     # sets objective function
     @objective(ponceletopti, Min, sum(errorABS[type,bin] for bin in BIN, type in TYPE));
@@ -533,7 +534,8 @@ function run_clust_poncelet_centroid(
     if equal_weight
             @constraint(ponceletopti, relateVariables[step = STEP], w[step] == u[step] * n_TotalStep/n_clust)
     else
-            @constraint(ponceletopti, relateVariables[step = STEP], w[step] <= u[step] * n_TotalStep)
+            @constraint(ponceletopti, relateVariables1[step = STEP], w[step] <= u[step] * n_TotalStep)
+            @constraint(ponceletopti, relateVariables2[step = STEP], w[step] >= u[step] / n_TotalStep)
     end
 
     @constraint(ponceletopti, controlSumWeights, sum(w[step] for step in STEP) == n_TotalStep)
