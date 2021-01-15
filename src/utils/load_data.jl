@@ -130,7 +130,7 @@ function add_timeseries_data!(dt::Dict{String,Array},
     time_name=find_column_name(data, [:Timestamp, :timestamp, :Time, :time, :Zeit, :zeit, :Date, :date, :Datum, :datum]; error_msg=false)
     year_name=find_column_name(data, [:year, :Year, :jahr, :Jahr])
     data_selected=data[in.(data[!,year_name],[years]),:]
-    for column in eachcol(data_selected, true)
+    for column in Symbol.(names(data_selected)) .=> eachcol(data_selected)
         # check that this column isn't time or year
         if !(column[1] in [time_name, year_name])
             K_calc=Int(floor(length(column[2])/T))
