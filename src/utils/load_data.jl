@@ -111,7 +111,7 @@ function add_timeseries_data!(dt::Dict{String,Array},
                             T::Int=24,
                             years::Array{Int,1}=[2016])
     #Load the data
-    data_df=CSV.read(joinpath(data_path,data_name*".csv");strict=true)
+    data_df=CSV.read(joinpath(data_path,data_name*".csv"),DataFrame;strict=true)
     # Add it to the dictionary
     return add_timeseries_data!(dt,data_name, data_df; K=K, T=T, years=years)
 end
@@ -127,10 +127,11 @@ function add_timeseries_data!(dt::Dict{String,Array},
                             T::Int=24,
                             years::Array{Int,1}=[2016])
     # find the right years to select
-    time_name=find_column_name(data, [:Timestamp, :timestamp, :Time, :time, :Zeit, :zeit, :Date, :date, :Datum, :datum]; error=false)
+    time_name=find_column_name(data, [:Timestamp, :timestamp, :Time, :time, :Zeit, :zeit, :Date, :date, :Datum, :datum]; error_msg=false)
     year_name=find_column_name(data, [:year, :Year, :jahr, :Jahr])
-    data_selected=data[in.(data[year_name],[years]),:]
-    for column in eachcol(data_selected, true)
+    data_selected=data[in.(data[!,year_name],[years]),:]
+    cols = Symbol.(names(data_selected)) .=> eachcol(data_selected)
+    for column in cols
         # check that this column isn't time or year
         if !(column[1] in [time_name, year_name])
             K_calc=Int(floor(length(column[2])/T))
@@ -149,15 +150,15 @@ end
         find_column_name(df::DataFrame, name_itr::Arrray{Symbol,1})
 find wich of the supported name in `name_itr` is used as an
 """
-function find_column_name(df::DataFrame, name_itr::Array{Symbol,1}; error::Bool=true)
+function find_column_name(df::DataFrame, name_itr::Array{Symbol,1}; error_msg::Bool=true)
     col_name=:none
     for name in name_itr
-        if name in names(df)
+        if name in propertynames(df)
             col_name=name
             break
         end
     end
-    if error
+    if error_msg
         col_name!=:none || error("No $(name_itr) in $(repr(df)).")
     else
         col_name!=:none || @warn "No $(name_itr) in $(repr(df))."

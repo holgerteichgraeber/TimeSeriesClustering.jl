@@ -27,6 +27,7 @@ k-medoids clustering (partitional) | `<kmedoids>` | `<medoid>` | -
 k-medoids clustering (exact) | `<kmedoids_exact>` | `<medoid>` | requires Gurobi and the additional keyword argument `kmexact_optimizer`. See [examples] folder for example use. Set `n_init=1`
 hierarchical clustering with centroid representation | `<hierarchical>` | `<centroid>` | set `n_init=1`
 hierarchical clustering with medoid representation | `<hierarchical>` | `<medoid>` | set `n_init=1`
+optimization-based by poncelet | `<poncelet>` | `none` | requires solver and the additional keyword argument `ponc_optimizer`. See [examples] folder for example use and [Poncelet, 2016](https://ieeexplore.ieee.org/document/7527691) for documentation.
 
 The other optional inputs are:
 
@@ -100,7 +101,7 @@ end
                   orig_k_ids::Array{Int,1}=Array{Int,1}(),
                   kwargs...)
 
-method: "kmeans","kmedoids","kmedoids_exact","hierarchical"
+method: "kmeans","kmedoids","kmedoids_exact","hierarchical","poncelet"
 representation: "centroid","medoid"
 """
 function run_clust_method(data::ClustData;
@@ -122,6 +123,8 @@ function run_clust_method(data::ClustData;
       data_norm = attribute_weighting(data_norm,attribute_weights)
     end
     data_norm_merged = ClustDataMerged(data_norm)
+
+    if method == "poncelet" n_init = 1 end
 
     # initialize data arrays (all initial starting points)
     centers = Array{Array{Float64},1}(undef,n_init)
@@ -145,7 +148,6 @@ function run_clust_method(data::ClustData;
     end
     # find best. TODO: write as function
     cost_best,ind_mincost = findmin(cost)  # along dimension 2, only store indice
-
     k_ids=orig_k_ids
     k_ids[findall(orig_k_ids.!=0)]=clustids[ind_mincost]
     # save in merged format as array
@@ -155,7 +157,7 @@ function run_clust_method(data::ClustData;
     clust_data_merged = ClustDataMerged(data.region,data.years,n_clust,data.T,round.(centers[ind_mincost]; digits=n_digits_data_round),data_norm_merged.data_type,weights[ind_mincost],k_ids)
     clust_data = ClustData(clust_data_merged)
         return clust_data, cost_best, centers, weights, clustids, cost, iter
- end
+end
 
 """
     run_clust(
@@ -198,7 +200,7 @@ sup_kw_args["region"]=["GER","CA"]
 sup_kw_args["opt_problems"]=["battery","gas_turbine"]
 sup_kw_args["norm_op"]=["zscore"]
 sup_kw_args["norm_scope"]=["full","hourly","sequence"]
-sup_kw_args["method+representation"]=["kmeans+centroid","kmeans+medoid","kmedoids+medoid","kmedoids_exact+medoid","hierarchical+centroid","hierarchical+medoid"]#["dbaclust+centroid","kshape+centroid"]
+sup_kw_args["method+representation"]=["kmeans+centroid","kmeans+medoid","kmedoids+medoid","kmedoids_exact+medoid","hierarchical+centroid","hierarchical+medoid","poncelet+centroid"]#["dbaclust+centroid","kshape+centroid"]
 
 """
     get_sup_kw_args
@@ -458,4 +460,96 @@ function run_clust_hierarchical_medoid(
     centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv;idx=clustids)
 
     return centers,weights,clustids,cost,iter
+end
+
+"""
+    run_clust_poncelet_centroid(
+      data_norm::ClustDataMerged,
+      n_clust::Int,
+      iterations::Int
+    )
+# Options and default values:
+- `bins = 10`
+    - Number of bins the duration curve is split into.
+- `equal_weight = false`
+    - Set `true` to enforce equal weights for all representative periods.
+- `time_limit = 60`
+    - Time until the solver terminates.
+"""
+function run_clust_poncelet_centroid(
+    data_norm::ClustDataMerged,
+    n_clust::Int,
+    iterations::Int;
+    bins::Int = 20,
+    equal_weight::Bool = false,
+    time_limit::Float64=100.0,
+    ponc_optimizer::DataType = DataType)
+
+    if ponc_optimizer==DataType error("Method requires to provide an optimizer via 'ponc_optimizer'") end
+
+    # get name of the optimizer used (supports glpk, cbc and gurobi so far)
+    opt_name = split(repr(ponc_optimizer.name),".")[1]
+    n_seg = data_norm.T
+    n_TotalStep = size(data_norm.data,2)
+
+    # define sets
+    TYPE = collect(1:Int(size(data_norm.data,1)/n_seg))
+    STEP = collect(1:n_TotalStep)
+    BIN = collect(1:bins)
+
+    # prepare optimization by computing relevant parameters
+    data_dic = Dict(x => data_norm.data[1+(x-1)*n_seg:x*n_seg,:] for x in TYPE)
+
+    bin_dict = Dict(x => Dict(b => minimum(data_dic[x]) + (maximum(data_dic[x]) - minimum(data_dic[x]))/b  for b in 1:bins) for x in TYPE)
+
+    L =  Dict(t => quantile_durationCurve(data_dic[t], bin_dict[t], (n_seg*n_TotalStep)) for t in TYPE)
+    A = Dict(t => Dict(d => quantile_durationCurve(data_dic[t][:,d], bin_dict[t], n_seg) for d in 1:n_TotalStep) for t in TYPE)
+
+    # create optimization problem
+    ponceletopti = Model(with_optimizer(ponc_optimizer))
+
+    # define error variables
+    @variables ponceletopti begin
+            errorSIGN[TYPE,BIN]
+            errorABS[TYPE,BIN] >= 0
+    end
+
+    # define selection and weighting variables
+    @variable(ponceletopti, w[STEP] <= n_TotalStep)
+    @variable(ponceletopti, u[STEP], binary = true)
+
+
+    # sets objective function
+    @objective(ponceletopti, Min, sum(errorABS[type,bin] for bin in BIN, type in TYPE));
+
+    # sets constraints
+    @constraint(ponceletopti, errorcb[bin=BIN, type in TYPE], errorSIGN[type,bin] == L[type][bin] - sum(w[step]/n_TotalStep * A[type][step][bin] for step in STEP))
+
+    # ensure errorABS to be an absolute value
+    @constraint(ponceletopti, errorPositiv[bin=BIN, type in TYPE], errorABS[type,bin] >= errorSIGN[type,bin])
+    @constraint(ponceletopti, errorNegativ[bin=BIN, type in TYPE], errorABS[type,bin] >= -errorSIGN[type,bin])
+
+    @constraint(ponceletopti, controlNumberSelected, sum(u[step] for step in STEP) == n_clust)
+
+    if equal_weight
+            @constraint(ponceletopti, relateVariables[step = STEP], w[step] == u[step] * n_TotalStep/n_clust)
+    else
+            @constraint(ponceletopti, relateVariables1[step = STEP], w[step] <= u[step] * n_TotalStep)
+            @constraint(ponceletopti, relateVariables2[step = STEP], w[step] >= u[step] / n_TotalStep)
+    end
+
+    @constraint(ponceletopti, controlSumWeights, sum(w[step] for step in STEP) == n_TotalStep)
+    MOI.set(ponceletopti, MOI.TimeLimitSec(), time_limit)
+    # solve problem
+    JuMP.optimize!(ponceletopti)
+    cost = JuMP.objective_value(ponceletopti)
+
+    # obtains selected steps and their respecitve weights
+    selDays = findall(y -> y != 0, map(x -> value(u[x]), STEP))
+    centers_norm = hcat([data_norm.data[:, x] for x in selDays]...)
+    selWeights = map(x -> value(w[x]), STEP)[selDays]
+
+    centers = undo_z_normalize(centers_norm,data_norm.mean,data_norm.sdv)
+
+    return centers, selWeights, fill(1,n_TotalStep), cost, 1
 end
