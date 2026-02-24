@@ -1,11 +1,14 @@
-#TODO Rewrite battery problem / update to JuMP v0.19, give optimizer CLP as addtional argument
+#TODO Rewrite battery problem / update to modern JuMP, give optimizer as additional argument
 """
-    run_battery_opt(data::ClustData)
+    run_battery_opt(data::ClustData; optimizer=nothing)
 
 operational battery storage optimization problem
 runs every day seperately and adds results in the end
+
+Requires a linear optimizer (e.g., `using Clp; run_battery_opt(data; optimizer=Clp.Optimizer)`).
 """
-function run_battery_opt(data::ClustData)
+function run_battery_opt(data::ClustData; optimizer=nothing)
+  optimizer === nothing && error("Please provide an optimizer, e.g. Clp.Optimizer")
   prnt=false
   num_periods = data.K # number of periods, 1day, one week, etc.
   num_hours = data.T # hours per period (24 per day, 48 per 2days)
@@ -19,7 +22,6 @@ function run_battery_opt(data::ClustData)
   E_battery = 400; # MWh
   eff_Storage_in = 0.95;
   eff_Storage_out = 0.95;
-  #Stor_init = 0.5;
 
   # optimization
   # Sets
@@ -31,13 +33,12 @@ function run_battery_opt(data::ClustData)
   stor = zeros(num_hours +1,num_periods)
 
   obj = zeros(num_periods);
-  m= Model(optimizer=ClpSolver() )
+  m = Model(optimizer)
 
   # hourly energy output
   @variable(m, E_out[t=1:t_max] >= 0) # kWh
   # hourly energy input
-  @variable(m, E_in[t=1:t_max] >=# optimization problems
-   0) # kWh
+  @variable(m, E_in[t=1:t_max] >= 0) # kWh
   # storage level
   @variable(m, Stor_lev[t=1:t_max+1] >= 0) # kWh
 
@@ -66,38 +67,42 @@ function run_battery_opt(data::ClustData)
   for i =1:num_periods
     #objective
     @objective(m, Max, sum((E_out[t] - E_in[t])*el_price[t,i] for t=1:t_max) )
-    status = solve(m)
-    if status != :Optimal
+    JuMP.optimize!(m)
+    status = termination_status(m)
+    if status != MOI.OPTIMAL
       s=:NotSolved
     end
     if weight ==1
-      obj[i] = getobjectivevalue(m)
+      obj[i] = JuMP.objective_value(m)
     else
-      obj[i] = getobjectivevalue(m) * weight[i]
+      obj[i] = JuMP.objective_value(m) * weight[i]
     end
-    E_in_arr[:,i] = getvalue(E_in)
-    E_out_arr[:,i] = getvalue(E_out)
-    stor[:,i] = getvalue(Stor_lev)
+    E_in_arr[:,i] = JuMP.value.(E_in)
+    E_out_arr[:,i] = JuMP.value.(E_out)
+    stor[:,i] = JuMP.value.(Stor_lev)
   end
-  vars= Dict()
-  vars["E_out"] = OptVariable(E_out_arr,"operation")
-  vars["E_in"] = OptVariable(E_in_arr,"operation")
-  vars["Stor_level"] = OptVariable(stor,"operation")
-  res = OptResult(s,sum(obj),vars,Dict())
-  return res
+  results = Dict{String,Any}()
+  results["status"] = s
+  results["objective"] = sum(obj)
+  results["E_out"] = E_out_arr
+  results["E_in"] = E_in_arr
+  results["Stor_level"] = stor
+  return results
 end # run_battery_opt()
 
  ###
 
-#TODO update gas turbine problem, update to JuMP v0.19
+#TODO update gas turbine problem, update to modern JuMP
 """
-    run_gas_opt(data::ClustData)
+    run_gas_opt(data::ClustData; optimizer=nothing)
 
 operational gas turbine optimization problem
 runs every day seperately and adds results in the end
-"""
-function run_gas_opt(data::ClustData)
 
+Requires a linear optimizer (e.g., `using Clp; run_gas_opt(data; optimizer=Clp.Optimizer)`).
+"""
+function run_gas_opt(data::ClustData; optimizer=nothing)
+  optimizer === nothing && error("Please provide an optimizer, e.g. Clp.Optimizer")
 
   prnt=false
   num_periods = data.K # number of periods, 1day, one week, etc.
@@ -125,7 +130,7 @@ function run_gas_opt(data::ClustData)
   E_out_arr = zeros(num_hours,num_periods)
 
   obj = zeros(num_periods);
-  m= Model(optimizer=ClpSolver() )
+  m = Model(optimizer)
 
   # hourly energy output
   @variable(m, 0 <= E_out[t=1:t_max] <= P_gt) # MWh
@@ -134,21 +139,23 @@ function run_gas_opt(data::ClustData)
   for i =1:num_periods
     #objective
     @objective(m, Max, sum(E_out[t]*el_price[t,i] - 1/eta_t*E_out[t]*gas_price for t=1:t_max) )
-    status = solve(m)
-    if status != :Optimal
+    JuMP.optimize!(m)
+    status = termination_status(m)
+    if status != MOI.OPTIMAL
       s=:NotSolved
     end
 
     if weight ==1
-      obj[i] = getobjectivevalue(m)
+      obj[i] = JuMP.objective_value(m)
     else
-      obj[i] = getobjectivevalue(m) * weight[i]
+      obj[i] = JuMP.objective_value(m) * weight[i]
     end
-    E_out_arr[:,i] = getvalue(E_out)
+    E_out_arr[:,i] = JuMP.value.(E_out)
   end
 
-  op_vars= Dict()
-  op_vars["E_out"] = E_out_arr
-  res = OptResult(s,sum(obj),Dict(),op_vars,Dict())
-  return res
+  results = Dict{String,Any}()
+  results["status"] = s
+  results["objective"] = sum(obj)
+  results["E_out"] = E_out_arr
+  return results
 end # run_gas_opt()

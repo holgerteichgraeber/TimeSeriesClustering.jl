@@ -276,9 +276,9 @@ function ClustDataMerged(data::ClustData)
  data_merged= zeros(data.T*n_datasets,data.K)
  data_type=String[]
  i=0
- for (k,v) in data.data
+ for k in sort(collect(keys(data.data)))
    i+=1
-   data_merged[(1+data.T*(i-1)):(data.T*i),:] = v
+   data_merged[(1+data.T*(i-1)):(data.T*i),:] = data.data[k]
    push!(data_type,k)
  end
  if maximum(data.delta_t)!=1

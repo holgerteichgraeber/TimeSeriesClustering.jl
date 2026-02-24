@@ -34,7 +34,7 @@ function kmedoids_exact(
 
 
   # create jump model
-  m = JuMP.Model(with_optimizer(optimizer)) # GurobiSolver(env,OutputFlag=0)
+  m = JuMP.Model(optimizer)
   @variable(m,z[1:N_i,1:N_i],Bin)
   @variable(m,y[1:N_i],Bin)
   @objective(m,Min,sum(d_mat[i,j]*z[i,j] for i=1:N_i, j=1:N_i))

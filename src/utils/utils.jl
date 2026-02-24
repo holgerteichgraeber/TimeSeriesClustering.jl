@@ -24,8 +24,8 @@ function z_normalize(data::ClustData;
  data_norm = Dict{String,Array}()
  mean= Dict{String,Array}()
  sdv= Dict{String,Array}()
- for (k,v) in data.data
-   data_norm[k],mean[k],sdv[k] = z_normalize(v,scope=scope)
+ for k in sort(collect(keys(data.data)))
+   data_norm[k],mean[k],sdv[k] = z_normalize(data.data[k],scope=scope)
  end
  return ClustData(data.region,data.years,data.K,data.T,data_norm,data.weights,data.k_ids;delta_t=data.delta_t,mean=mean,sdv=sdv)
 end
@@ -92,9 +92,9 @@ function undo_z_normalize(data_norm_merged::Array,mn::Dict{String,Array},sdv::Di
   0 != rem(size(data_norm_merged)[1],length(keys(mn))) && error("dimension mismatch") # rem() checks the remainder. If not zero, throw error.
   data_merged = zeros(size(data_norm_merged))
   i=0
-  for (attr,mn_a) in mn
+  for attr in sort(collect(keys(mn)))
     i+=1
-    data_merged[(1+T*(i-1)):(T*i),:]=undo_z_normalize(data_norm_merged[(1+T*(i-1)):(T*i),:],mn_a,sdv[attr];idx=idx)
+    data_merged[(1+T*(i-1)):(T*i),:]=undo_z_normalize(data_norm_merged[(1+T*(i-1)):(T*i),:],mn[attr],sdv[attr];idx=idx)
   end
   return data_merged
 end
@@ -261,10 +261,10 @@ function resize_medoids(data::ClustData,centers::Array,weights::Array)
     centers_res = zeros(size(centers))
     # go through the attributes within data
     i=0
-    for (k,v) in data.data
+    for k in sort(collect(keys(data.data)))
       i+=1
       # calculate resized centers for each attribute
-      centers_res[(1+data.T*(i-1)):(data.T*i),:] = resize_medoids(v,centers[(1+data.T*(i-1)):(data.T*i),:],weights)
+      centers_res[(1+data.T*(i-1)):(data.T*i),:] = resize_medoids(data.data[k],centers[(1+data.T*(i-1)):(data.T*i),:],weights)
     end
     return centers_res
 end

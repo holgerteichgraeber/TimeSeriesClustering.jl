@@ -3,8 +3,8 @@ uuid = "61e8395a-c5b7-11e9-0bf6-872d3bc7175c"
 keywords = ["clustering", "data mining", "optimization", "motifs", "data segmentation"]
 license = "MIT"
 desc = "julia implementation of unsupervised learning methods for time series datasets. It provides functionality for clustering and aggregating, detecting motifs, and quantifying similarity between time series datasets."
+version = "0.5.4"
 author = ["Holger Teichgraeber"]
-version = "0.5.3"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -18,7 +18,7 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
-julia = "^1.0"
+julia = "1"
 
 [extras]
 Cbc = "9961bab8-2fa3-5c5a-9d89-47fab24efd76"
@@ -29,4 +29,4 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["StatsBase"]
+test = ["StatsBase", "Test", "Random", "JLD2", "Cbc", "Pkg"]
