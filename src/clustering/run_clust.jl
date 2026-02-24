@@ -506,7 +506,7 @@ function run_clust_poncelet_centroid(
     A = Dict(t => Dict(d => quantile_durationCurve(data_dic[t][:,d], bin_dict[t], n_seg) for d in 1:n_TotalStep) for t in TYPE)
 
     # create optimization problem
-    ponceletopti = Model(with_optimizer(ponc_optimizer))
+    ponceletopti = Model(ponc_optimizer)
 
     # define error variables
     @variables ponceletopti begin
